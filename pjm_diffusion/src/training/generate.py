@@ -1,0 +1,77 @@
+"""
+src/training/generate.py
+==========================
+After training: generate one synthetic sample for every real
+condition vector in the validation (or training) set.
+
+    for each z_i:
+        x_hat_i = generate(z_i)
+
+The generated dataset contains exactly the same number of samples
+as the real dataset it was conditioned on, which is required for
+the in-sample validation the PI requested.
+"""
+
+from __future__ import annotations
+from pathlib import Path
+
+import numpy as np
+import torch
+
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+
+from src.utils.config import PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR, DEVICE
+from src.models.denoiser import SimpleMLPDenoiser
+from src.models.diffusion import DDPM
+
+
+def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
+                      n_layers: int, use_val: bool = True,
+                      device: str = DEVICE) -> Path:
+    """
+    Load the best checkpoint for `run_id` and generate one synthetic
+    profile per real condition vector (using the validation set by
+    default, since that's what we report on).
+    """
+    Z = np.load(PROCESSED_DIR / ("Z_conditions_val.npy" if use_val
+                                  else "Z_conditions.npy"))
+    X_real = np.load(PROCESSED_DIR / ("X_daily_profiles_val.npy" if use_val
+                                       else "X_daily_profiles.npy"))
+
+    x_dim    = X_real.shape[1]
+    cond_dim = Z.shape[1]
+
+    model = SimpleMLPDenoiser(
+        x_dim=x_dim, cond_dim=cond_dim,
+        hidden_dim=hidden_dim, n_layers=n_layers,
+    ).to(device)
+    ckpt_path = CHECKPOINT_DIR / run_id / "best.pt"
+    model.load_state_dict(torch.load(ckpt_path, map_location=device))
+    model.eval()
+
+    ddpm = DDPM(T=diffusion_steps, device=device)
+    Z_t  = torch.tensor(Z, dtype=torch.float32, device=device)
+
+    print(f"Generating {len(Z)} synthetic samples for {run_id} "
+          f"(T={diffusion_steps})...")
+    X_gen = ddpm.generate_batch(model, Z_t, x_dim, batch_size=128)
+    X_gen_np = X_gen.cpu().numpy()
+
+    out_path = GENERATED_DIR / f"X_generated_{run_id}.npy"
+    np.save(out_path, X_gen_np)
+    print(f"Saved: {out_path}  shape={X_gen_np.shape}")
+
+    # Sanity check: same sample count as real dataset
+    assert X_gen_np.shape[0] == X_real.shape[0], (
+        f"Generated dataset has {X_gen_np.shape[0]} samples, "
+        f"expected {X_real.shape[0]} to match the real dataset."
+    )
+    return out_path
+
+
+if __name__ == "__main__":
+    from src.utils.config import DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, RunConfig
+
+    cfg = RunConfig()
+    generate_for_run(cfg.run_id, cfg.diffusion_steps, cfg.hidden_dim, cfg.n_layers)
