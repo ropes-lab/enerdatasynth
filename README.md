@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PJM Conditional Diffusion
 
 A reproducible conditional diffusion SDK for generating synthetic PJM
@@ -181,3 +182,7 @@ cp -r data/processed_backup data/processed
 
 The backup is written once, immediately after preprocessing completes,
 and is never touched again by any other script.
+=======
+# enerdatasynth
+A python package to generate energy system data from pre-trained generator models.
+>>>>>>> 4497f4b6e773a041049def19f7ac79ab2da6c008
