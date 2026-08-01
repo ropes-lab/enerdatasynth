@@ -9,10 +9,11 @@ underlying functions directly.
 
 Usage:
     powerdiffusion preprocess
-    powerdiffusion train [--diffusion-steps T] [--hidden-dim H] [--n-layers L] ...
+    powerdiffusion train [--architecture transformer|mlp] [--diffusion-steps T] [--hidden-dim H] [--n-layers L] ...
     powerdiffusion sweep [--epochs N] [--full-grid]
     powerdiffusion generate --diffusion-steps T --hidden-dim H --n-layers L
-    powerdiffusion evaluate --run-id T100_H128_L4
+    powerdiffusion calibrate --run-id transformer_T1000_H64_L2
+    powerdiffusion evaluate --run-id transformer_T1000_H64_L2
     powerdiffusion report
     powerdiffusion pipeline [--epochs N] [--full-grid] [--skip-preprocess]
 """
@@ -22,13 +23,18 @@ import argparse
 
 import numpy as np
 
-from powerdiffusion.utils.config import RunConfig, PROCESSED_DIR, DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS
+from powerdiffusion.utils.config import (
+    RunConfig, PROCESSED_DIR, DEFAULT_ARCHITECTURE,
+    DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_N_HEADS,
+)
 
 
 def _add_run_config_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--architecture", choices=["transformer", "mlp"], default=DEFAULT_ARCHITECTURE)
     parser.add_argument("--diffusion-steps", type=int, default=DEFAULT_T)
     parser.add_argument("--hidden-dim", type=int, default=DEFAULT_HIDDEN_DIM)
     parser.add_argument("--n-layers", type=int, default=DEFAULT_N_LAYERS)
+    parser.add_argument("--n-heads", type=int, default=DEFAULT_N_HEADS)
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--max-epochs", type=int, default=None)
@@ -38,9 +44,11 @@ def _add_run_config_args(parser: argparse.ArgumentParser) -> None:
 
 def _run_config_from_args(args: argparse.Namespace) -> RunConfig:
     kwargs = dict(
+        architecture=args.architecture,
         diffusion_steps=args.diffusion_steps,
         hidden_dim=args.hidden_dim,
         n_layers=args.n_layers,
+        n_heads=args.n_heads,
     )
     for field in ("batch_size", "lr", "max_epochs", "patience", "seed"):
         value = getattr(args, field, None)
@@ -77,7 +85,22 @@ def cmd_generate(args: argparse.Namespace) -> None:
         diffusion_steps=cfg.diffusion_steps,
         hidden_dim=cfg.hidden_dim,
         n_layers=cfg.n_layers,
+        architecture=cfg.architecture,
+        n_heads=cfg.n_heads,
     )
+
+
+def cmd_calibrate(args: argparse.Namespace) -> None:
+    from powerdiffusion.evaluation.calibration import calibrate_checkpoint
+    result = calibrate_checkpoint(
+        run_id=args.run_id,
+        architecture=args.architecture,
+        diffusion_steps=args.diffusion_steps,
+        hidden_dim=args.hidden_dim,
+        n_layers=args.n_layers,
+        n_heads=args.n_heads,
+    )
+    print(f"Scalar offset: {result['scalar']:+.5f}  (saved to {result['path']})")
 
 
 def cmd_evaluate(args: argparse.Namespace) -> None:
@@ -99,6 +122,7 @@ def cmd_pipeline(args: argparse.Namespace) -> None:
     from powerdiffusion.data.preprocess import run_preprocessing
     from powerdiffusion.training.sweep import run_sweep
     from powerdiffusion.sampling.generate import generate_for_run
+    from powerdiffusion.evaluation.calibration import calibrate_checkpoint
     from powerdiffusion.visualization.plots import run_all_validation_plots
     from powerdiffusion.evaluation.failure_analysis import analyze, write_failure_analysis_md
     from powerdiffusion.evaluation.results_report import generate_results_summary
@@ -109,12 +133,22 @@ def cmd_pipeline(args: argparse.Namespace) -> None:
     df = run_sweep(max_epochs=args.epochs, full_grid=args.full_grid)
     best_row = df.sort_values("best_val_loss").iloc[0]
     run_id = best_row["run_id"]
+    architecture = best_row.get("architecture", DEFAULT_ARCHITECTURE)
+    n_heads = int(best_row["n_heads"]) if "n_heads" in best_row else DEFAULT_N_HEADS
 
     generate_for_run(
         run_id=run_id,
         diffusion_steps=int(best_row["diffusion_steps"]),
         hidden_dim=int(best_row["hidden_dim"]),
         n_layers=int(best_row["n_layers"]),
+        architecture=architecture,
+        n_heads=n_heads,
+    )
+    calibrate_checkpoint(
+        run_id=run_id, architecture=architecture,
+        diffusion_steps=int(best_row["diffusion_steps"]),
+        hidden_dim=int(best_row["hidden_dim"]),
+        n_layers=int(best_row["n_layers"]), n_heads=n_heads,
     )
     run_all_validation_plots(run_id)
     result = analyze(run_id)
@@ -142,6 +176,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_generate = subparsers.add_parser("generate", help="Generate synthetic profiles from a trained checkpoint")
     _add_run_config_args(p_generate)
     p_generate.set_defaults(func=cmd_generate)
+
+    p_calibrate = subparsers.add_parser("calibrate", help="Fit the scalar bias correction for a trained checkpoint")
+    _add_run_config_args(p_calibrate)
+    p_calibrate.add_argument("--run-id", required=True)
+    p_calibrate.set_defaults(func=cmd_calibrate)
 
     p_evaluate = subparsers.add_parser("evaluate", help="Run validation plots + failure analysis for a run")
     p_evaluate.add_argument("--run-id", required=True)

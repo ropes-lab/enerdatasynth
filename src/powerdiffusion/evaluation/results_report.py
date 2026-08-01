@@ -101,9 +101,11 @@ def generate_results_summary() -> Path:
         "## Recommended Next Experiments",
         "",
         "See `reports/future_experiments.md` for the full list. "
-        "Per the PI's direction, these are NOT implemented yet:",
-        "- One-hot vs cyclic encoding",
-        "- Attention layers",
+        "Not yet implemented in this package:",
+        "- Re-sweeping hyperparameters for the transformer architecture "
+        "(the current defaults come from research_history, not a "
+        "from-scratch sweep against the package's own conditioning pipeline)",
+        "- One-hot vs the research lineage's raw (non-one-hot) conditioning encoding",
         "- MW anchor (multi-day continuity)",
         "- Unified PJM model (all zones)",
         "- Advanced conditioning (humidity, hourly temperatures)",

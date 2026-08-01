@@ -4,8 +4,8 @@ src/powerdiffusion/diffusion/ddpm.py
 Denoising Diffusion Probabilistic Model (DDPM) — forward noising
 process, training loss, and reverse sampling.
 
-Standard DDPM only. No custom losses, no Fourier/spectral losses,
-no moment-matching losses — per the PI's explicit instruction.
+Standard DDPM only: no custom losses, no Fourier/spectral losses,
+no moment-matching losses.
 """
 
 from __future__ import annotations
@@ -24,8 +24,11 @@ class DDPM:
 
     Reverse process (sampling):
         Standard ancestral sampling, following the original DDPM
-        sampling equations (Ho et al., 2020). No DDIM, no fancy
-        samplers — kept simple per the PI's request.
+        sampling equations (Ho et al., 2020). A DDIM sampler was tried
+        earlier in research and found buggy (see research_history/
+        scripts/sampler_bugfix.py) — this ancestral sampler is the
+        corrected, validated replacement and is the only one used
+        anywhere in this package.
     """
 
     def __init__(self, T: int, beta_start: float = 1e-4,

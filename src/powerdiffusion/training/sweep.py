@@ -1,23 +1,31 @@
 """
 src/powerdiffusion/training/sweep.py
 ======================================
-Runs the manual hyperparameter sweep requested by the PI:
+Runs a manual hyperparameter sweep over:
   Diffusion steps: 50, 100, 200
-  Hidden dimension: 64, 128, 256
+  Hidden dimension / model dimension: 64, 128, 256
   Number of layers: 2, 4, 6
 
-That's a 3x3x3 = 27-configuration grid. For each configuration we
-train, record train/val loss, training time, and generation time,
-then write hyperparameter_results.csv and rank configurations in
+That's a 3x3x3 = 27-configuration grid, for whichever architecture
+`RunConfig.architecture` is set to (default: transformer — see
+utils/config.py). For each configuration we train, record train/val
+loss, training time, and generation time, then write
+hyperparameter_results.csv and rank configurations in
 hyperparameter_summary.md.
 
-NOTE: 27 full training runs at max_epochs=200 is a lot of compute.
-For the *diffusion steps* experiment specifically (the one the PI
-asked to track most closely: 50 / 100 / 200), we hold hidden_dim and
-n_layers at their defaults and vary T. For the full 27-cell grid we
-also run a shorter max_epochs unless `full=True` is passed, to keep
-sweep time reasonable for a baseline study. This is documented in
-hyperparameter_summary.md so it's never a hidden decision.
+Note: this grid was originally tuned while comparing MLP
+hyperparameters (research_history/); it has not itself been re-swept
+for the transformer architecture, so treat "T1000_H64_L2" as the
+validated default rather than the winner of a from-scratch transformer
+sweep. Running `run_sweep()` against the current default architecture
+is a reasonable next step, not something this module does implicitly.
+
+NOTE: 27 full training runs at max_epochs=400 is a lot of compute. For
+the *diffusion steps* axis specifically, we hold hidden_dim/model_dim
+and n_layers at their defaults and vary T. For the full 27-cell grid
+we also run a shorter max_epochs unless `full=True` is passed, to keep
+sweep time reasonable. This is documented in hyperparameter_summary.md
+so it's never a hidden decision.
 """
 
 from __future__ import annotations

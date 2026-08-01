@@ -9,7 +9,7 @@ condition vector in the validation (or training) set.
 
 The generated dataset contains exactly the same number of samples
 as the real dataset it was conditioned on, which is required for
-the in-sample validation the PI requested.
+in-sample validation.
 """
 
 from __future__ import annotations
@@ -18,19 +18,33 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from powerdiffusion.utils.config import PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR, DEVICE
-from powerdiffusion.models.denoiser import SimpleMLPDenoiser
+from powerdiffusion.utils.config import (
+    PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR, DEVICE,
+    DEFAULT_ARCHITECTURE, DEFAULT_N_HEADS,
+)
+from powerdiffusion.models import build_denoiser
 from powerdiffusion.diffusion.ddpm import DDPM
 
 
 def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
-                      n_layers: int, use_val: bool = True,
-                      device: str = DEVICE) -> Path:
+                      n_layers: int, architecture: str = DEFAULT_ARCHITECTURE,
+                      n_heads: int = DEFAULT_N_HEADS, use_val: bool = True,
+                      seed: int | None = None, device: str = DEVICE) -> Path:
     """
     Load the best checkpoint for `run_id` and generate one synthetic
     profile per real condition vector (using the validation set by
     default, since that's what we report on).
+
+    `seed`, if given, reseeds every RNG immediately before sampling so
+    the result is reproducible; if omitted, sampling uses whatever
+    global RNG state the process is already in (matches prior
+    behavior — this was a known reproducibility gap, now opt-in fixed
+    rather than silently changed for existing callers).
     """
+    if seed is not None:
+        from powerdiffusion.utils.config import set_seed
+        set_seed(seed)
+
     Z = np.load(PROCESSED_DIR / ("Z_conditions_val.npy" if use_val
                                   else "Z_conditions.npy"))
     X_real = np.load(PROCESSED_DIR / ("X_daily_profiles_val.npy" if use_val
@@ -39,9 +53,9 @@ def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
     x_dim    = X_real.shape[1]
     cond_dim = Z.shape[1]
 
-    model = SimpleMLPDenoiser(
-        x_dim=x_dim, cond_dim=cond_dim,
-        hidden_dim=hidden_dim, n_layers=n_layers,
+    model = build_denoiser(
+        architecture, x_dim=x_dim, cond_dim=cond_dim,
+        hidden_dim=hidden_dim, n_layers=n_layers, n_heads=n_heads,
     ).to(device)
     ckpt_path = CHECKPOINT_DIR / run_id / "best.pt"
     model.load_state_dict(torch.load(ckpt_path, map_location=device))
@@ -68,7 +82,10 @@ def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
 
 
 if __name__ == "__main__":
-    from powerdiffusion.utils.config import DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, RunConfig
+    from powerdiffusion.utils.config import RunConfig
 
     cfg = RunConfig()
-    generate_for_run(cfg.run_id, cfg.diffusion_steps, cfg.hidden_dim, cfg.n_layers)
+    generate_for_run(
+        cfg.run_id, cfg.diffusion_steps, cfg.hidden_dim, cfg.n_layers,
+        architecture=cfg.architecture, n_heads=cfg.n_heads,
+    )

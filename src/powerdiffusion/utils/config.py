@@ -2,17 +2,24 @@
 src/powerdiffusion/utils/config.py
 ====================================
 Central configuration for the entire pipeline. Single source of truth
-for paths, conditioning definitions, and reproducibility settings.
+for paths, conditioning definitions, architecture defaults, and
+reproducibility settings.
 
-Per the PI's request, this baseline is intentionally simple:
+Pipeline summary:
   - conditioning: month (one-hot), dow (one-hot), holiday (binary),
                   Tmax (z-scored), Tmin (z-scored), spread (z-scored)
-  - architecture: simple MLP
-  - loss: standard diffusion MSE only
+  - architecture: transformer denoiser (default) — the Week-6
+                  architecture-comparison winner, promoted to primary
+                  baseline in Week 7 research; a simple MLP remains
+                  available (`architecture="mlp"`) as a legacy baseline
+  - schedule:     linear beta schedule — validated against cosine and
+                  quadratic alternatives in research_history and found
+                  best (see research_history/reports/week6/noise/)
+  - loss:         standard diffusion MSE only
 
-Anything not listed above (MW_anchor, Fourier modes, attention,
-custom losses, unified model) is explicitly out of scope for this
-baseline and is tracked only as future work.
+Anything not listed above (MW_anchor, Fourier modes, custom losses,
+a unified multi-zone model) is out of scope for this baseline and is
+tracked only as future work in reports/future_experiments.md.
 """
 
 from __future__ import annotations
@@ -43,9 +50,17 @@ for d in [RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, CHECKPOINT_DIR,
 ZONE = "PS"   # PSE&G / New Jersey
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Conditioning vector definition  (PI-approved baseline — DO NOT extend)
+# Conditioning vector definition
 # ─────────────────────────────────────────────────────────────────────────────
 # z = [month_onehot(12), dow_onehot(7), is_holiday(1), Tmax_z(1), Tmin_z(1), spread_z(1)]
+#
+# Caveat: the transformer architecture below was validated in
+# research_history against a DIFFERENT 6-dimensional raw conditioning
+# vector ("Z5": month and day-of-week as integers, not one-hot) — not
+# this one. The one-hot encoding here is this package's deliberate,
+# documented choice, but it has not itself been re-validated against
+# the transformer/calibration results quoted in this file. See the
+# migration report for details; this is flagged, not silently resolved.
 N_MONTHS    = 12
 N_DOW       = 7
 COND_DIM    = N_MONTHS + N_DOW + 1 + 1 + 1 + 1   # = 23
@@ -62,9 +77,20 @@ CONDITION_SPEC = {
 
 EXCLUDED_BY_DESIGN = [
     "MW_anchor", "Fourier modes", "custom losses", "higher moments",
-    "user-facing abstractions", "unified PJM model", "attention",
-    "transformers",
+    "user-facing abstractions", "unified multi-zone model",
 ]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Architecture defaults
+# ─────────────────────────────────────────────────────────────────────────────
+# "transformer": the Week-6 architecture-comparison winner, promoted
+#   to primary baseline in Week 7 (research_history/reports/week6/arch/,
+#   research_history/reports/week7/summary_report.md). model_dim=64,
+#   num_layers=2, num_heads=4, T=1000 are the exact hyperparameters
+#   that produced those validated results.
+# "mlp": the original simple baseline, kept as a legacy/research option.
+DEFAULT_ARCHITECTURE = "transformer"
+DEFAULT_N_HEADS       = 4   # transformer-only
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Hyperparameter sweep grid
@@ -73,9 +99,9 @@ SWEEP_DIFFUSION_STEPS = [50, 100, 200]
 SWEEP_HIDDEN_DIM      = [64, 128, 256]
 SWEEP_N_LAYERS        = [2, 4, 6]
 
-DEFAULT_T          = 100
-DEFAULT_HIDDEN_DIM = 128
-DEFAULT_N_LAYERS   = 4
+DEFAULT_T          = 1000   # matches the validated transformer/calibration research
+DEFAULT_HIDDEN_DIM = 64     # transformer model_dim (also a valid MLP hidden_dim)
+DEFAULT_N_LAYERS   = 2      # transformer encoder layers (also a valid MLP block count)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Training defaults
@@ -83,17 +109,19 @@ DEFAULT_N_LAYERS   = 4
 SEED            = 42
 BATCH_SIZE      = 64
 LEARNING_RATE   = 3e-4
-MAX_EPOCHS      = 200
-EARLY_STOP_PATIENCE = 10   # set to None to disable early stopping
+MAX_EPOCHS      = 400        # matches the transformer convergence run (week7.py --epochs 400)
+EARLY_STOP_PATIENCE = 40     # matches week7.py --patience 40; set to None to disable
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
 
 
 @dataclass
 class RunConfig:
     """One configuration in the hyperparameter sweep."""
+    architecture: str    = DEFAULT_ARCHITECTURE
     diffusion_steps: int = DEFAULT_T
     hidden_dim: int      = DEFAULT_HIDDEN_DIM
     n_layers: int        = DEFAULT_N_LAYERS
+    n_heads: int         = DEFAULT_N_HEADS
     batch_size: int      = BATCH_SIZE
     lr: float            = LEARNING_RATE
     max_epochs: int      = MAX_EPOCHS
@@ -102,7 +130,7 @@ class RunConfig:
 
     @property
     def run_id(self) -> str:
-        return f"T{self.diffusion_steps}_H{self.hidden_dim}_L{self.n_layers}"
+        return f"{self.architecture}_T{self.diffusion_steps}_H{self.hidden_dim}_L{self.n_layers}"
 
 
 def set_seed(seed: int = SEED) -> None:

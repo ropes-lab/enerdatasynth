@@ -22,7 +22,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from powerdiffusion.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, DEVICE
-from powerdiffusion.models.denoiser import SimpleMLPDenoiser
+from powerdiffusion.models import build_denoiser
 from powerdiffusion.diffusion.ddpm import DDPM
 from powerdiffusion.visualization.plots import plot_loss_curve
 
@@ -43,9 +43,9 @@ def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
     x_dim    = X_train.shape[1]
     cond_dim = Z_train.shape[1]
 
-    model = SimpleMLPDenoiser(
-        x_dim=x_dim, cond_dim=cond_dim,
-        hidden_dim=cfg.hidden_dim, n_layers=cfg.n_layers,
+    model = build_denoiser(
+        cfg.architecture, x_dim=x_dim, cond_dim=cond_dim,
+        hidden_dim=cfg.hidden_dim, n_layers=cfg.n_layers, n_heads=cfg.n_heads,
     ).to(device)
     n_params = model.count_parameters()
 
@@ -140,9 +140,13 @@ def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
 
     result = {
         "run_id": run_id,
+        "architecture": cfg.architecture,
+        "x_dim": x_dim,
+        "cond_dim": cond_dim,
         "diffusion_steps": cfg.diffusion_steps,
         "hidden_dim": cfg.hidden_dim,
         "n_layers": cfg.n_layers,
+        "n_heads": cfg.n_heads,
         "n_params": n_params,
         "epochs_trained": history["epoch"][-1],
         "best_epoch": best_epoch,
@@ -175,5 +179,5 @@ if __name__ == "__main__":
     X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
     Z_val   = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
 
-    cfg = RunConfig()  # defaults: T=100, hidden=128, layers=4
+    cfg = RunConfig()  # defaults: transformer, T=1000, model_dim=64, layers=2, heads=4
     train_one_config(X_train, Z_train, X_val, Z_val, cfg)

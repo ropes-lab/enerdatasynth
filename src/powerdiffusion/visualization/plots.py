@@ -7,13 +7,13 @@ code (previously `PRIMARY_COLOR`/`SECONDARY_COLOR` were hardcoded
 independently in both `src/validation/metrics.py` and
 `src/training/train.py` with the same two hex values).
 
-Includes the three validation plots requested by the PI:
+Includes the three validation plots the project reports on:
   1. Hourly distribution comparison (overlapping boxplots)
   2. First-difference distribution comparison
   3. Autocorrelation comparison
 
 All three compare REAL vs GENERATED profiles built from the SAME
-conditioning vectors (in-sample validation, as the PI requested).
+conditioning vectors (in-sample validation).
 
 Also includes the training loss-curve plot (moved here from
 `training/train.py` so both call sites share one palette) and

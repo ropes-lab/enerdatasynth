@@ -1,12 +1,15 @@
 """
 src/powerdiffusion/models/denoiser.py
 =======================================
-Simple MLP denoiser for the conditional diffusion model.
+Simple feedforward MLP denoiser for the conditional diffusion model.
 
-Per the PI's instruction: keep architecture simple. No attention,
-no transformers, no Fourier features. Just a feedforward network
-that takes the noisy profile, the diffusion timestep, and the
-condition vector, and predicts the noise that was added.
+This was the original baseline architecture. Research later found a
+transformer denoiser (`powerdiffusion.models.transformer.TransformerDenoiser`)
+performs better on generation quality at a fraction of the parameters
+— see research_history/reports/week6/arch/summary_report.md — and
+`architecture="transformer"` is now the package default. This module
+is kept as the `architecture="mlp"` option: a legacy/research baseline,
+still fully supported, useful as a simpler point of comparison.
 """
 
 from __future__ import annotations
