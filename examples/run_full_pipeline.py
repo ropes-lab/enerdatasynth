@@ -18,11 +18,11 @@ package installed):
 
 from __future__ import annotations
 
-from powerdiffusion.data.preprocess import run_preprocessing
-from powerdiffusion.training.train import train_one_config
-from powerdiffusion.sampling.generate import generate_for_run
-from powerdiffusion.visualization.plots import run_all_validation_plots
-from powerdiffusion.utils.config import RunConfig, PROCESSED_DIR
+from pjm_diffusion.data.preprocess import run_preprocessing
+from pjm_diffusion.training.train import train_one_config
+from pjm_diffusion.sampling.generate import generate_for_run
+from pjm_diffusion.visualization.plots import run_all_validation_plots
+from pjm_diffusion.utils.config import RunConfig, PROCESSED_DIR
 import numpy as np
 
 

@@ -12,16 +12,16 @@ filenames or chronology alone.
 
 | Module | Change |
 |---|---|
-| `src/powerdiffusion/models/__init__.py` | New. `build_denoiser(architecture, ...)` factory — training/sampling/API code now selects architecture by name instead of importing a specific class. |
-| `src/powerdiffusion/models/transformer.py` | New. `TransformerDenoiser`, extracted from `research_history/scripts/week7.py`. |
-| `src/powerdiffusion/models/denoiser.py` | Docstring only — reframed as the `architecture="mlp"` legacy option; no logic changed. |
-| `src/powerdiffusion/evaluation/calibration.py` | New. Scalar bias correction, extracted from `research_history/scripts/week7_calibrate.py`. |
-| `src/powerdiffusion/api.py` | New. `LoadDiffusionModel` — the public high-level interface (Phase 4 API). |
-| `src/powerdiffusion/utils/config.py` | `RunConfig` gained `architecture` (default `"transformer"`) and `n_heads` fields; `DEFAULT_T` 100→1000, `DEFAULT_HIDDEN_DIM` 128→64, `DEFAULT_N_LAYERS` 4→2, `MAX_EPOCHS` 200→400, `EARLY_STOP_PATIENCE` 10→40 — all now match the actual validated transformer/convergence run (`week7.py --epochs 400 --patience 40`) instead of the earlier MLP-sweep defaults. `run_id` format changed from `T{steps}_H{hidden}_L{layers}` to `{architecture}_T{steps}_H{hidden}_L{layers}` to avoid collisions between architectures. |
-| `src/powerdiffusion/training/train.py` | Calls `build_denoiser(cfg.architecture, ...)` instead of hardcoding `SimpleMLPDenoiser`. `result.json` now also records `architecture`, `x_dim`, `cond_dim`, `n_heads` (needed by `LoadDiffusionModel.from_run_id`). |
-| `src/powerdiffusion/sampling/generate.py` | Same factory swap; gained optional `architecture`, `n_heads`, and `seed` parameters (the last fixes a previously-flagged reproducibility gap — opt-in, doesn't change default behavior for existing callers). |
-| `src/powerdiffusion/cli.py` | Added `--architecture`/`--n-heads` flags to `train`/`generate`; added a new `calibrate` subcommand; `pipeline` now runs calibration as a stage. |
-| `src/powerdiffusion/__init__.py` | Exports `LoadDiffusionModel`, `TransformerDenoiser`, `build_denoiser`, `calibrate_checkpoint`. Version bumped 0.1.0 → 0.2.0 (new default behavior, not just additive). |
+| `src/pjm_diffusion/models/__init__.py` | New. `build_denoiser(architecture, ...)` factory — training/sampling/API code now selects architecture by name instead of importing a specific class. |
+| `src/pjm_diffusion/models/transformer.py` | New. `TransformerDenoiser`, extracted from `research_history/scripts/week7.py`. |
+| `src/pjm_diffusion/models/denoiser.py` | Docstring only — reframed as the `architecture="mlp"` legacy option; no logic changed. |
+| `src/pjm_diffusion/evaluation/calibration.py` | New. Scalar bias correction, extracted from `research_history/scripts/week7_calibrate.py`. |
+| `src/pjm_diffusion/api.py` | New. `LoadDiffusionModel` — the public high-level interface (Phase 4 API). |
+| `src/pjm_diffusion/utils/config.py` | `RunConfig` gained `architecture` (default `"transformer"`) and `n_heads` fields; `DEFAULT_T` 100→1000, `DEFAULT_HIDDEN_DIM` 128→64, `DEFAULT_N_LAYERS` 4→2, `MAX_EPOCHS` 200→400, `EARLY_STOP_PATIENCE` 10→40 — all now match the actual validated transformer/convergence run (`week7.py --epochs 400 --patience 40`) instead of the earlier MLP-sweep defaults. `run_id` format changed from `T{steps}_H{hidden}_L{layers}` to `{architecture}_T{steps}_H{hidden}_L{layers}` to avoid collisions between architectures. |
+| `src/pjm_diffusion/training/train.py` | Calls `build_denoiser(cfg.architecture, ...)` instead of hardcoding `SimpleMLPDenoiser`. `result.json` now also records `architecture`, `x_dim`, `cond_dim`, `n_heads` (needed by `LoadDiffusionModel.from_run_id`). |
+| `src/pjm_diffusion/sampling/generate.py` | Same factory swap; gained optional `architecture`, `n_heads`, and `seed` parameters (the last fixes a previously-flagged reproducibility gap — opt-in, doesn't change default behavior for existing callers). |
+| `src/pjm_diffusion/cli.py` | Added `--architecture`/`--n-heads` flags to `train`/`generate`; added a new `calibrate` subcommand; `pipeline` now runs calibration as a stage. |
+| `src/pjm_diffusion/__init__.py` | Exports `LoadDiffusionModel`, `TransformerDenoiser`, `build_denoiser`, `calibrate_checkpoint`. Version bumped 0.1.0 → 0.2.0 (new default behavior, not just additive). |
 
 ## 2. Outdated implementations replaced
 
@@ -43,13 +43,13 @@ filenames or chronology alone.
 
 ## 5. Where the final implementation could not be determined with certainty
 
-**This is the most important item in this report.** Every validated result cited above (architecture comparison, noise-schedule test, transformer promotion, calibration, 17-zone replication) was produced using the research lineage's **6-dimensional raw "Z5" conditioning vector** (month and day-of-week as plain integers, not one-hot). The package's own preprocessing, `powerdiffusion.data.preprocess.build_conditioning_vector`, produces a **23-dimensional one-hot conditioning vector** instead — a different, deliberate, documented encoding, but one that was never itself run through the architecture/schedule/calibration experiments.
+**This is the most important item in this report.** Every validated result cited above (architecture comparison, noise-schedule test, transformer promotion, calibration, 17-zone replication) was produced using the research lineage's **6-dimensional raw "Z5" conditioning vector** (month and day-of-week as plain integers, not one-hot). The package's own preprocessing, `pjm_diffusion.data.preprocess.build_conditioning_vector`, produces a **23-dimensional one-hot conditioning vector** instead — a different, deliberate, documented encoding, but one that was never itself run through the architecture/schedule/calibration experiments.
 
 I did not have evidence to determine which conditioning scheme is actually "final":
 - The one-hot encoding is a defensible, arguably more principled choice for categorical variables (no false ordinal distance between e.g. December and January), and was clearly a deliberate design decision (documented in `config.py`, described as the package's baseline).
 - But it was never validated against the transformer/calibration pipeline the way the raw Z5 encoding was, repeatedly, across multiple research phases.
 
-**What I did, given that ambiguity**: kept the current one-hot preprocessing unchanged (did not silently rewrite it to match Z5), and built the transformer/calibration code generically (accepting whatever `cond_dim` the active preprocessing produces) rather than hardcoding either scheme. **Consequence**: the exact numbers quoted throughout this report and the README (RMSE 0.0215, 6/7 metrics, 66% energy-error reduction) are proven for the Z5 6-dim conditioning, not guaranteed to reproduce identically under the current 23-dim one-hot conditioning. No pretrained checkpoint compatible with the current preprocessing pipeline exists — `checkpoints/` has no transformer runs at all yet. Training one (`powerdiffusion train`) is required, and re-running the evaluation suite against it would confirm or refute whether the one-hot conditioning preserves the transformer's advantage.
+**What I did, given that ambiguity**: kept the current one-hot preprocessing unchanged (did not silently rewrite it to match Z5), and built the transformer/calibration code generically (accepting whatever `cond_dim` the active preprocessing produces) rather than hardcoding either scheme. **Consequence**: the exact numbers quoted throughout this report and the README (RMSE 0.0215, 6/7 metrics, 66% energy-error reduction) are proven for the Z5 6-dim conditioning, not guaranteed to reproduce identically under the current 23-dim one-hot conditioning. No pretrained checkpoint compatible with the current preprocessing pipeline exists — `checkpoints/` has no transformer runs at all yet. Training one (`pjm_diffusion train`) is required, and re-running the evaluation suite against it would confirm or refute whether the one-hot conditioning preserves the transformer's advantage.
 
 I'm flagging this explicitly rather than picking one silently, since changing `preprocess.py`'s conditioning scheme is a much larger-blast-radius decision (it would affect the MLP baseline's existing checkpoints too, and the exact conditioning contract several other modules assume) than swapping a model class.
 
@@ -59,4 +59,89 @@ I'm flagging this explicitly rather than picking one silently, since changing `p
 - A real (if tiny) end-to-end run through the new default path succeeded: train → calibrate → `LoadDiffusionModel.from_run_id` → `.sample()`.
 - Calibration verified to actually change output, and same-seed sampling verified reproducible (previously it was not).
 - Package rebuilt (`python -m build`) and both the wheel and sdist pass `twine check` at the new version (0.2.0).
-- `powerdiffusion --help` and all subcommands (including the new `calibrate`) verified via `--help`.
+- `pjm-diffusion --help` and all subcommands (including the new `calibrate`) verified via `--help`.
+
+---
+
+## Addendum — Production-Quality SDK Pass (v0.3.0)
+
+A second pass, requested explicitly as "production-quality open-source
+research software... comparable to mature research projects." Two
+decisions here were confirmed with the user rather than assumed:
+
+1. **Package renamed** `powerdiffusion` → `pjm_diffusion` (import name),
+   PyPI distribution name `pjm-diffusion`, CLI command `pjm-diffusion`.
+   The prior name was fully built and packaging-verified before this
+   rename; nothing about the rename itself changed behavior, only
+   names (verified: reinstalled editable, rebuilt wheel/sdist, both
+   pass `twine check` again under the new name).
+2. **"Unified SDK exposing both load and wind generation"**: built the
+   *interface* (`pjm_diffusion.generators.BaseGenerator`, an
+   `ABC` — genuinely enforced, not just documentation, see
+   `tests/test_generators.py`) and made `LoadDiffusionModel` implement
+   it. Did **not** fabricate a wind model, wind data, or wind results —
+   none exist anywhere in this project. See `docs/extending.md`.
+
+### New in this pass
+
+- `src/pjm_diffusion/generators/` — `base.py` (`BaseGenerator`), `load.py`
+  (`LoadDiffusionModel`, moved from the old `api.py` and now inheriting
+  `BaseGenerator`).
+- `configs/transformer.yaml`, `configs/mlp.yaml` + `RunConfig.from_yaml()`/
+  `.to_yaml()` — the original Phase 5 ask ("move every hyperparameter
+  into YAML"), not previously done. Unknown keys raise rather than
+  being silently ignored. Wired into the CLI as `--config`.
+- `tests/` — 38 pytest tests (~2s), covering model shapes, DDPM/schedule
+  math, metrics correctness, calibration math, YAML config I/O, and a
+  real (tiny) end-to-end train → checkpoint → `LoadDiffusionModel` →
+  sample round trip. Deliberately synthetic/self-contained — no
+  dependency on the real dataset being present.
+- `docs/` — installation, quickstart, architecture, evaluation,
+  extending (the wind-interface question, answered honestly),
+  contributing, and research_notes (**strictly limited to claims
+  traceable to a specific file under `research_history/`** — the
+  "Complete Reconstruction Report" the user supplied alongside this
+  request contains substantial detail — PI email content, a Week-2
+  slide deck, specific meeting feedback — that I have no way to verify
+  against anything in this repository, and none of it is repeated here
+  as fact).
+- `benchmarks/run_benchmark.py` — classical-vs-diffusion comparison
+  script, built entirely from library calls (`evaluation.baselines`,
+  `evaluation.metrics`, `generators.LoadDiffusionModel`), verified to
+  run end-to-end against a real checkpoint.
+
+### A regression caught and fixed during this pass
+
+`LoadDiffusionModel.from_run_id` originally defaulted a missing
+`architecture` field in `result.json` to `DEFAULT_ARCHITECTURE`
+("transformer"). The 7 checkpoints already in `checkpoints/` (from the
+original MLP sweep, trained before the `architecture` field existed)
+have no such field — loading any of them would have tried to
+instantiate a transformer and load MLP weights into it, failing. Fixed
+to default missing-field checkpoints to `"mlp"` specifically (the only
+architecture that existed when those checkpoints were written), not to
+whatever the current default happens to be. Verified against a real
+legacy checkpoint (`T100_H128_L2`) and covered by a regression test
+(`test_from_run_id_defaults_missing_architecture_to_mlp_not_current_default`).
+
+### Explicitly out of scope for this pass, and why
+
+The user's supplied reconstruction report proposes several additional
+artifacts. These were deliberately not built:
+
+- **A LaTeX paper draft** (`paper/`) — writing manuscript prose isn't
+  a software-engineering deliverable, and fabricating paper content
+  risks misrepresenting what's actually been validated.
+- **A hosted documentation site** (Sphinx/MkDocs + CI deploy) — a real
+  infrastructure decision (hosting, CI, domain) beyond "write good
+  docs," which `docs/*.md` does provide.
+- **Resume bullets** — not a repository artifact.
+- **Fixing the DOM zone failure, the CNN 118-minute runtime anomaly,
+  or reconciling any AE-zone metric discrepancy** — these are research/
+  debugging questions requiring actual compute and investigation, not
+  something to resolve by editing code structure. They're recorded as
+  open items in `docs/research_notes.md` instead of silently "fixed"
+  with a fabricated explanation.
+- **`assets/` figure regeneration** — would require rerunning full
+  training; the existing figures under `reports/` and
+  `research_history/reports/` remain the source of truth.

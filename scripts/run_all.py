@@ -21,12 +21,12 @@ Usage (from the project root, with the package installed or
 from __future__ import annotations
 import argparse
 
-from powerdiffusion.data.preprocess import run_preprocessing
-from powerdiffusion.training.sweep import run_sweep
-from powerdiffusion.sampling.generate import generate_for_run
-from powerdiffusion.visualization.plots import run_all_validation_plots
-from powerdiffusion.evaluation.failure_analysis import analyze, write_failure_analysis_md
-from powerdiffusion.evaluation.results_report import generate_results_summary
+from pjm_diffusion.data.preprocess import run_preprocessing
+from pjm_diffusion.training.sweep import run_sweep
+from pjm_diffusion.sampling.generate import generate_for_run
+from pjm_diffusion.visualization.plots import run_all_validation_plots
+from pjm_diffusion.evaluation.failure_analysis import analyze, write_failure_analysis_md
+from pjm_diffusion.evaluation.results_report import generate_results_summary
 
 
 def main():

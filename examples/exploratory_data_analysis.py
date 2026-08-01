@@ -2,7 +2,7 @@
 examples/exploratory_data_analysis.py
 =======================================
 Small demonstration of inspecting the processed dataset that
-`powerdiffusion.data.preprocess` produces: mean daily load shape,
+`pjm_diffusion.data.preprocess` produces: mean daily load shape,
 per-hour spread, and the train/val split sizes from metadata.json.
 
 This is intentionally lightweight — it demonstrates how to work with
@@ -23,8 +23,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from powerdiffusion.utils.config import PROCESSED_DIR
-from powerdiffusion.visualization.plots import PRIMARY_COLOR, SECONDARY_COLOR
+from pjm_diffusion.utils.config import PROCESSED_DIR
+from pjm_diffusion.visualization.plots import PRIMARY_COLOR, SECONDARY_COLOR
 
 
 def main():
