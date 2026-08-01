@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "powerdiffusion"
+dynamic = ["version"]
+description = "Conditional diffusion model for synthetic PJM electric load profile generation"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
+]
+requires-python = ">=3.10"
+keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "torch",
+    "scikit-learn",
+    "statsmodels",
+    "holidays",
+    "matplotlib",
+    "requests",
+    "tqdm",
+    "pyarrow",
+]
+
+[project.optional-dependencies]
+viz = [
+    "seaborn>=0.13",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "build",
+    "twine",
+]
+
+[project.scripts]
+powerdiffusion = "powerdiffusion.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "powerdiffusion.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]

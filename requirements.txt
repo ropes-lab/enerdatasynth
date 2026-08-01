@@ -1,0 +1,18 @@
+# Pinned to the exact environment that produced the checkpoints/results
+# currently committed under checkpoints/ and reports/. For normal
+# development, prefer `pip install -e .` (pyproject.toml resolves
+# compatible ranges); use this file when you need to reproduce results
+# bit-for-bit against a known-working dependency set.
+numpy==2.4.4
+pandas==3.0.2
+torch==2.11.0
+scikit-learn==1.8.0
+statsmodels==0.14.6
+holidays==0.99
+matplotlib==3.10.9
+requests==2.33.1
+tqdm==4.67.3
+pyarrow==24.0.0
+
+# Optional (viz extra) — only needed for research_history/eda_exploration.py
+seaborn==0.13.2
