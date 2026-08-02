@@ -16,12 +16,17 @@
 pip install enerdatasynth
 ```
 
-```python
+The lines below are **Python, not shell** — run them inside a Python interpreter, e.g. paste this whole block into your terminal as-is (it wraps the code in `python3 -c "..."` for you):
+
+```bash
+python3 -c "
 import enerdatasynth
 
-load = enerdatasynth.model("pjm_load", zone="PS")
+load = enerdatasynth.model('pjm_load', zone='PS')
 load.set(month=7, Tmax=86, Tmin=70, weekday=True)
 samples = load.sample(n=100)   # (100, 24) — real MW, ready to use
+print(samples.shape, samples[0])
+"
 ```
 
 > `pip install enerdatasynth` installs the library only — it doesn't ship trained checkpoints or data (by design; see [`docs/packaging.md`](docs/packaging.md)). The snippet above needs both, already present if you clone [this repo](.) and run from its root; see [Quick Start](#-quick-start) below for training your own from scratch elsewhere.
@@ -71,6 +76,8 @@ pip install ".[viz,dev]"      # + seaborn, + pytest/ruff/mypy/build/twine
 ```
 
 ## 🚀 Quick Start
+
+Run inside Python (a `.py` file, `python3` interactive shell, or a notebook) — not pasted directly into your terminal's shell prompt:
 
 ```python
 import enerdatasynth

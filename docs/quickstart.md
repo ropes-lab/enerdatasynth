@@ -2,6 +2,8 @@
 
 ## If a model is already trained (the common case)
 
+Run inside Python (a `.py` file, `python3` interactive shell, or a notebook) — not pasted directly into your terminal's shell prompt:
+
 ```python
 import enerdatasynth
 
