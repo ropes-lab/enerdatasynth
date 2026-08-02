@@ -11,7 +11,7 @@ license = { text = "MIT" }
 authors = [
     { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy", "generative-model", "research-sdk"]
 classifiers = [
     "Development Status :: 3 - Alpha",

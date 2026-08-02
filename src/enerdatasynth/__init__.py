@@ -48,7 +48,7 @@ from enerdatasynth.evaluation.metrics import compute_metrics
 from enerdatasynth.evaluation.calibration import calibrate_checkpoint
 from enerdatasynth.generators import BaseGenerator, LoadDiffusionModel
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "__version__",
