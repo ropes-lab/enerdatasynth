@@ -1,26 +1,26 @@
 # Research Notes
 
-Findings below are drawn directly from files under `research_history/`
+Findings below are drawn directly from files under `data/research_history/`
 (scripts and their generated reports). Anything not traceable to a
 specific file is omitted rather than reconstructed from memory — this
 page is deliberately narrower than a full project history might be.
 
 ## The sampler bug
 
-The original sampler (`research_history/scripts/week3.py`'s
+The original sampler (`data/research_history/scripts/week3.py`'s
 `ddim_sample`) reused a single noise prediction across a truncated
 step schedule instead of recomputing it every step. Diagnosed in
-`research_history/scripts/sampler_bugfix.py` Part 1
+`data/research_history/scripts/sampler_bugfix.py` Part 1
 (`diagnose_converged.py`): generated values pinned near the ±3 clamp
 bound, with an increasing out-of-range fraction as step count grew.
 Fixed in the same file's Part 2 (`sampler_fixed.py`): a correct
 ancestral sampler that recomputes the noise prediction at every
 timestep. This is the only sampler in the maintained package
-(`pjm_diffusion.diffusion.ddpm.DDPM.sample`) — see `docs/architecture.md`.
+(`enerdatasynth.diffusion.ddpm.DDPM.sample`) — see `docs/architecture.md`.
 
 ## Architecture comparison
 
-`research_history/reports/week6/arch/summary_report.md`: MLP, CNN,
+`data/research_history/reports/week6/arch/summary_report.md`: MLP, CNN,
 attention, and transformer denoisers compared under identical data,
 conditioning, schedule, and sampler.
 
@@ -37,7 +37,7 @@ validation loss alone — transformer was selected on that basis.
 
 ## Noise schedule comparison
 
-`research_history/reports/week6/noise/summary_report.md`: linear,
+`data/research_history/reports/week6/noise/summary_report.md`: linear,
 cosine, and quadratic beta schedules compared with everything else
 held fixed. Linear won on both validation loss (0.01407) and generated
 RMSE (0.0241) — unlike the architecture comparison, this one didn't
@@ -45,7 +45,7 @@ have a val-loss-vs-quality disagreement to resolve.
 
 ## Transformer promoted to baseline
 
-`research_history/reports/week7/summary_report.md`: the transformer
+`data/research_history/reports/week7/summary_report.md`: the transformer
 trained to convergence, then re-evaluated head-to-head against the old
 MLP baseline and four classical models (AR/ARMA/ARIMA/SARIMA).
 
@@ -58,7 +58,7 @@ MLP baseline and four classical models (AR/ARMA/ARIMA/SARIMA).
 
 ## Calibration
 
-`research_history/reports/week7/calibration_report.md`: the
+`data/research_history/reports/week7/calibration_report.md`: the
 transformer carries a small systematic per-hour level offset
 (scalar +0.00920) that compounds into daily-energy error when summed
 over 24 hours. A single scalar correction, fit on the training set
@@ -71,7 +71,7 @@ calibration at all — the report's own output explicitly recorded
 
 ## Zone generalization (Phase 2)
 
-`research_history/reports/phase2/summary_report.md`: the full
+`data/research_history/reports/phase2/summary_report.md`: the full
 validated pipeline (transformer + linear schedule + corrected sampler
 + scalar calibration) replicated across 17 PJM zones, each with its
 own preprocessing/scalers/checkpoint. Best zone: AP (RMSE 0.0086).
@@ -85,8 +85,8 @@ noted as a candidate future extension (`MIGRATION.md` §4).
 
 ## What isn't in this page
 
-Detailed per-experiment error analysis (`research_history/scripts/
+Detailed per-experiment error analysis (`data/research_history/scripts/
 week7_erroranalysis.py`), the full per-zone results table, and the
-zone-expansion build/train/report tooling are in `research_history/`
+zone-expansion build/train/report tooling are in `data/research_history/`
 directly — this page summarizes, it doesn't replace reading the
 underlying reports.

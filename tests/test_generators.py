@@ -1,5 +1,5 @@
 """
-Tests for pjm_diffusion.generators: the BaseGenerator interface and
+Tests for enerdatasynth.generators: the BaseGenerator interface and
 LoadDiffusionModel, including a real (if tiny) end-to-end round trip
 through train -> checkpoint -> LoadDiffusionModel.from_run_id -> sample.
 """
@@ -8,8 +8,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from pjm_diffusion.generators.base import BaseGenerator
-from pjm_diffusion.generators import LoadDiffusionModel
+from enerdatasynth.generators.base import BaseGenerator
+from enerdatasynth.generators import LoadDiffusionModel
 
 
 def test_base_generator_cannot_be_instantiated_directly():
@@ -81,7 +81,7 @@ def test_from_run_id_defaults_missing_architecture_to_mlp_not_current_default(tm
     """
     import json
     import torch
-    from pjm_diffusion.models.denoiser import SimpleMLPDenoiser
+    from enerdatasynth.models.denoiser import SimpleMLPDenoiser
 
     run_id = "legacy_no_architecture_field"
     ckpt_dir = tmp_path / run_id

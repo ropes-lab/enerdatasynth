@@ -12,16 +12,16 @@ filenames or chronology alone.
 
 | Module | Change |
 |---|---|
-| `src/pjm_diffusion/models/__init__.py` | New. `build_denoiser(architecture, ...)` factory — training/sampling/API code now selects architecture by name instead of importing a specific class. |
-| `src/pjm_diffusion/models/transformer.py` | New. `TransformerDenoiser`, extracted from `research_history/scripts/week7.py`. |
-| `src/pjm_diffusion/models/denoiser.py` | Docstring only — reframed as the `architecture="mlp"` legacy option; no logic changed. |
-| `src/pjm_diffusion/evaluation/calibration.py` | New. Scalar bias correction, extracted from `research_history/scripts/week7_calibrate.py`. |
-| `src/pjm_diffusion/api.py` | New. `LoadDiffusionModel` — the public high-level interface (Phase 4 API). |
-| `src/pjm_diffusion/utils/config.py` | `RunConfig` gained `architecture` (default `"transformer"`) and `n_heads` fields; `DEFAULT_T` 100→1000, `DEFAULT_HIDDEN_DIM` 128→64, `DEFAULT_N_LAYERS` 4→2, `MAX_EPOCHS` 200→400, `EARLY_STOP_PATIENCE` 10→40 — all now match the actual validated transformer/convergence run (`week7.py --epochs 400 --patience 40`) instead of the earlier MLP-sweep defaults. `run_id` format changed from `T{steps}_H{hidden}_L{layers}` to `{architecture}_T{steps}_H{hidden}_L{layers}` to avoid collisions between architectures. |
-| `src/pjm_diffusion/training/train.py` | Calls `build_denoiser(cfg.architecture, ...)` instead of hardcoding `SimpleMLPDenoiser`. `result.json` now also records `architecture`, `x_dim`, `cond_dim`, `n_heads` (needed by `LoadDiffusionModel.from_run_id`). |
-| `src/pjm_diffusion/sampling/generate.py` | Same factory swap; gained optional `architecture`, `n_heads`, and `seed` parameters (the last fixes a previously-flagged reproducibility gap — opt-in, doesn't change default behavior for existing callers). |
-| `src/pjm_diffusion/cli.py` | Added `--architecture`/`--n-heads` flags to `train`/`generate`; added a new `calibrate` subcommand; `pipeline` now runs calibration as a stage. |
-| `src/pjm_diffusion/__init__.py` | Exports `LoadDiffusionModel`, `TransformerDenoiser`, `build_denoiser`, `calibrate_checkpoint`. Version bumped 0.1.0 → 0.2.0 (new default behavior, not just additive). |
+| `src/enerdatasynth/models/__init__.py` | New. `build_denoiser(architecture, ...)` factory — training/sampling/API code now selects architecture by name instead of importing a specific class. |
+| `src/enerdatasynth/models/transformer.py` | New. `TransformerDenoiser`, extracted from `research_history/scripts/week7.py`. |
+| `src/enerdatasynth/models/denoiser.py` | Docstring only — reframed as the `architecture="mlp"` legacy option; no logic changed. |
+| `src/enerdatasynth/evaluation/calibration.py` | New. Scalar bias correction, extracted from `research_history/scripts/week7_calibrate.py`. |
+| `src/enerdatasynth/api.py` | New. `LoadDiffusionModel` — the public high-level interface (Phase 4 API). |
+| `src/enerdatasynth/utils/config.py` | `RunConfig` gained `architecture` (default `"transformer"`) and `n_heads` fields; `DEFAULT_T` 100→1000, `DEFAULT_HIDDEN_DIM` 128→64, `DEFAULT_N_LAYERS` 4→2, `MAX_EPOCHS` 200→400, `EARLY_STOP_PATIENCE` 10→40 — all now match the actual validated transformer/convergence run (`week7.py --epochs 400 --patience 40`) instead of the earlier MLP-sweep defaults. `run_id` format changed from `T{steps}_H{hidden}_L{layers}` to `{architecture}_T{steps}_H{hidden}_L{layers}` to avoid collisions between architectures. |
+| `src/enerdatasynth/training/train.py` | Calls `build_denoiser(cfg.architecture, ...)` instead of hardcoding `SimpleMLPDenoiser`. `result.json` now also records `architecture`, `x_dim`, `cond_dim`, `n_heads` (needed by `LoadDiffusionModel.from_run_id`). |
+| `src/enerdatasynth/sampling/generate.py` | Same factory swap; gained optional `architecture`, `n_heads`, and `seed` parameters (the last fixes a previously-flagged reproducibility gap — opt-in, doesn't change default behavior for existing callers). |
+| `src/enerdatasynth/cli.py` | Added `--architecture`/`--n-heads` flags to `train`/`generate`; added a new `calibrate` subcommand; `pipeline` now runs calibration as a stage. |
+| `src/enerdatasynth/__init__.py` | Exports `LoadDiffusionModel`, `TransformerDenoiser`, `build_denoiser`, `calibrate_checkpoint`. Version bumped 0.1.0 → 0.2.0 (new default behavior, not just additive). |
 
 ## 2. Outdated implementations replaced
 
@@ -43,13 +43,13 @@ filenames or chronology alone.
 
 ## 5. Where the final implementation could not be determined with certainty
 
-**This is the most important item in this report.** Every validated result cited above (architecture comparison, noise-schedule test, transformer promotion, calibration, 17-zone replication) was produced using the research lineage's **6-dimensional raw "Z5" conditioning vector** (month and day-of-week as plain integers, not one-hot). The package's own preprocessing, `pjm_diffusion.data.preprocess.build_conditioning_vector`, produces a **23-dimensional one-hot conditioning vector** instead — a different, deliberate, documented encoding, but one that was never itself run through the architecture/schedule/calibration experiments.
+**This is the most important item in this report.** Every validated result cited above (architecture comparison, noise-schedule test, transformer promotion, calibration, 17-zone replication) was produced using the research lineage's **6-dimensional raw "Z5" conditioning vector** (month and day-of-week as plain integers, not one-hot). The package's own preprocessing, `enerdatasynth.data.preprocess.build_conditioning_vector`, produces a **23-dimensional one-hot conditioning vector** instead — a different, deliberate, documented encoding, but one that was never itself run through the architecture/schedule/calibration experiments.
 
 I did not have evidence to determine which conditioning scheme is actually "final":
 - The one-hot encoding is a defensible, arguably more principled choice for categorical variables (no false ordinal distance between e.g. December and January), and was clearly a deliberate design decision (documented in `config.py`, described as the package's baseline).
 - But it was never validated against the transformer/calibration pipeline the way the raw Z5 encoding was, repeatedly, across multiple research phases.
 
-**What I did, given that ambiguity**: kept the current one-hot preprocessing unchanged (did not silently rewrite it to match Z5), and built the transformer/calibration code generically (accepting whatever `cond_dim` the active preprocessing produces) rather than hardcoding either scheme. **Consequence**: the exact numbers quoted throughout this report and the README (RMSE 0.0215, 6/7 metrics, 66% energy-error reduction) are proven for the Z5 6-dim conditioning, not guaranteed to reproduce identically under the current 23-dim one-hot conditioning. No pretrained checkpoint compatible with the current preprocessing pipeline exists — `checkpoints/` has no transformer runs at all yet. Training one (`pjm_diffusion train`) is required, and re-running the evaluation suite against it would confirm or refute whether the one-hot conditioning preserves the transformer's advantage.
+**What I did, given that ambiguity**: kept the current one-hot preprocessing unchanged (did not silently rewrite it to match Z5), and built the transformer/calibration code generically (accepting whatever `cond_dim` the active preprocessing produces) rather than hardcoding either scheme. **Consequence**: the exact numbers quoted throughout this report and the README (RMSE 0.0215, 6/7 metrics, 66% energy-error reduction) are proven for the Z5 6-dim conditioning, not guaranteed to reproduce identically under the current 23-dim one-hot conditioning. No pretrained checkpoint compatible with the current preprocessing pipeline exists — `checkpoints/` has no transformer runs at all yet. Training one (`enerdatasynth train`) is required, and re-running the evaluation suite against it would confirm or refute whether the one-hot conditioning preserves the transformer's advantage.
 
 I'm flagging this explicitly rather than picking one silently, since changing `preprocess.py`'s conditioning scheme is a much larger-blast-radius decision (it would affect the MLP baseline's existing checkpoints too, and the exact conditioning contract several other modules assume) than swapping a model class.
 
@@ -59,7 +59,7 @@ I'm flagging this explicitly rather than picking one silently, since changing `p
 - A real (if tiny) end-to-end run through the new default path succeeded: train → calibrate → `LoadDiffusionModel.from_run_id` → `.sample()`.
 - Calibration verified to actually change output, and same-seed sampling verified reproducible (previously it was not).
 - Package rebuilt (`python -m build`) and both the wheel and sdist pass `twine check` at the new version (0.2.0).
-- `pjm-diffusion --help` and all subcommands (including the new `calibrate`) verified via `--help`.
+- `enerdatasynth --help` and all subcommands (including the new `calibrate`) verified via `--help`.
 
 ---
 
@@ -74,9 +74,11 @@ decisions here were confirmed with the user rather than assumed:
    The prior name was fully built and packaging-verified before this
    rename; nothing about the rename itself changed behavior, only
    names (verified: reinstalled editable, rebuilt wheel/sdist, both
-   pass `twine check` again under the new name).
+   pass `twine check` again under the new name). **This name did not
+   last** — see the next addendum below for a second rename to
+   `enerdatasynth`, driven by evidence found in the repository itself.
 2. **"Unified SDK exposing both load and wind generation"**: built the
-   *interface* (`pjm_diffusion.generators.BaseGenerator`, an
+   *interface* (`enerdatasynth.generators.BaseGenerator`, an
    `ABC` — genuinely enforced, not just documentation, see
    `tests/test_generators.py`) and made `LoadDiffusionModel` implement
    it. Did **not** fabricate a wind model, wind data, or wind results —
@@ -84,7 +86,7 @@ decisions here were confirmed with the user rather than assumed:
 
 ### New in this pass
 
-- `src/pjm_diffusion/generators/` — `base.py` (`BaseGenerator`), `load.py`
+- `src/enerdatasynth/generators/` — `base.py` (`BaseGenerator`), `load.py`
   (`LoadDiffusionModel`, moved from the old `api.py` and now inheriting
   `BaseGenerator`).
 - `configs/transformer.yaml`, `configs/mlp.yaml` + `RunConfig.from_yaml()`/
@@ -145,3 +147,123 @@ artifacts. These were deliberately not built:
 - **`assets/` figure regeneration** — would require rerunning full
   training; the existing figures under `reports/` and
   `research_history/reports/` remain the source of truth.
+
+---
+
+## Addendum — Research SDK Redesign (v0.4.0)
+
+A third pass: redesign the public API as a fluent, implementation-hiding
+SDK (`model()` / `.set()` / `.sample()`), rewrite the README as a
+landing page, add a model card, and round out documentation and test
+coverage for a package meant to accompany a paper submission.
+
+### Second package rename: `pjm_diffusion` → `enerdatasynth`
+
+While fixing README.md for this pass, I found it had an **unresolved
+git merge conflict since the repository's very first commit** —
+literal `<<<<<<<`/`=======`/`>>>>>>>` markers, despite a commit in the
+log titled "Resolved merge conflict in README.md". The losing side of
+that conflict read: `# enerdatasynth — A python package to generate
+energy system data from pre-trained generator models.` That's
+suspiciously specific and close to what this project actually is, and
+it directly conflicted with the `edatasynth` name I'd started applying
+based on this pass's `import edatasynth` example. I stopped, fixed the
+conflict markers (kept the actively-maintained HEAD content, since the
+other side was a one-line stub), and asked the user which name was
+correct before doing any further work that would need it — confirmed:
+`enerdatasynth`. Renamed `pjm_diffusion` → `enerdatasynth` throughout
+(import name, PyPI distribution name, CLI command — no hyphenation
+needed this time, unlike `pjm-diffusion`).
+
+### Public API
+
+`enerdatasynth.model(name, zone=...)` returns a `ResourceModel` that
+never exposes tensors, architecture classes, or checkpoint paths.
+`.set(**kwargs)` accepts human-readable conditioning (Tmax, Tmin,
+month, weekday, holiday); `.sample(n=...)` generates. See
+`docs/api_reference.md` for the exact contract and the specific
+UX decisions this required (weekday sampling semantics, the
+unavoidable "spread" default) — those are real design calls made
+without research to back a "correct" answer, documented rather than
+hidden.
+
+### A real packaging bug caught by actually running `pip install dist/*.whl`
+
+`PROJECT_ROOT` (and everything derived from it: `RAW_DIR`,
+`PROCESSED_DIR`, `CHECKPOINT_DIR`, ...) was computed as `Path(__file__)
+.resolve().parents[3]`. That only works for an editable install, where
+the source tree stays in place next to `data/`/`checkpoints/`. A real
+`pip install .` or `pip install dist/*.whl` copies the code into
+site-packages, nowhere near any project directory — `parents[3]` from
+`site-packages/enerdatasynth/utils/config.py` silently resolved to
+`/opt/homebrew/lib/python3.11/`, and `enerdatasynth.model(...)` failed
+looking for data under there. This is exactly the kind of bug that
+only surfaces by actually installing the built wheel and running
+something, not by reading the code — verified only because this pass
+did all three real installs (`pip install -e .`, `pip install .`,
+`pip install dist/*.whl`) rather than treating one as a stand-in for
+the others.
+
+Fixed: `PROJECT_ROOT` now comes from `$ENERDATASYNTH_PROJECT_ROOT` if
+set, else the current working directory — matching how the CLI is
+actually meant to be used (`cd` into a project directory, run
+`enerdatasynth ...`), independent of where pip put the code. Verified
+via a real subprocess launched from a different `cwd`
+(`tests/test_config.py::test_project_root_is_not_derived_from_installed_package_location`),
+plus manual verification of all three install modes from both the
+project directory and elsewhere with/without the override set.
+
+### Verification performed this pass
+
+See the final verification section the assistant reported at the end
+of this pass's turn for the concrete commands run (tests, `pip install
+.`, `pip install dist/*.whl`, CLI, fluent API round trip).
+
+---
+
+## Addendum — Repo Root Consolidation (v0.4.0, same release)
+
+Requested directly: reduce the repo root to ~4-5 folders so a first
+look isn't a dozen artifact directories deep. Purely a physical
+reorganization — no behavior changed, verified by the full test suite
+and a fluent-API smoke test passing identically before and after.
+
+**Note on reading the rest of this document**: everywhere above this
+point, bare paths like `checkpoints/`, `outputs/`, `reports/`,
+`configs/`, `research_history/`, `scripts/run_all.py`, and
+`benchmarks/run_benchmark.py` describe the repository structure *as it
+was at that point in the project's history* — accurate when written,
+not retroactively rewritten here. As of this addendum, the actual
+locations are:
+
+| Then (described above) | Now |
+|---|---|
+| `checkpoints/` | `data/checkpoints/` |
+| `outputs/` | `data/outputs/` |
+| `reports/` | `data/reports/` |
+| `configs/` | `data/configs/` |
+| `research_history/` | `data/research_history/` |
+| `scripts/run_all.py` | `examples/run_all.py` |
+| `benchmarks/run_benchmark.py` | `examples/run_benchmark.py` |
+
+Root is now exactly 5 folders: `src/`, `tests/`, `docs/`, `examples/`,
+`data/`. `data/` holds everything that isn't source code, tests, docs,
+or example scripts: `raw/`, `processed/`, `processed_backup/`,
+`checkpoints/`, `outputs/`, `reports/`, `configs/`, and
+`research_history/` (nested here deliberately — it's reference/archival
+material, not installable software, consistent with why it was already
+excluded from the package).
+
+Also folded in: the orphaned top-level `temperature data/` folder (a
+single leftover `README.md` from before `pjm_hourly_temps.py` was
+promoted into `src/enerdatasynth/data/temperature.py` — content moved
+to `docs/temperature_data.md`, folder removed).
+
+`src/enerdatasynth/utils/config.py`'s path constants were updated
+accordingly (`CHECKPOINT_DIR`, `OUTPUTS_DIR`, `REPORTS_DIR`,
+`CONFIGS_DIR` now nest under a new `DATA_ROOT = PROJECT_ROOT / "data"`;
+new `RESEARCH_HISTORY_DIR` constant added) — this is the single source
+of truth every other module already read from, so no other production
+code needed to change. Every current-state doc (README, MODEL_CARD,
+`docs/*.md`) was swept to the new paths; this file's historical
+sections were deliberately left describing what was true when written.

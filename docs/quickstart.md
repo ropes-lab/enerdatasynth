@@ -1,17 +1,31 @@
 # Quick Start
 
+## If a model is already trained (the common case)
+
+```python
+import enerdatasynth
+
+load = enerdatasynth.model("pjm_load", zone="PS")
+load.set(month=7, Tmax=86, Tmin=70, weekday=True, holiday=False)
+samples = load.sample(n=100, seed=0)   # (100, 24) ndarray, MW
+```
+
+That's it — no tensors, checkpoints, or architecture choices to think about. See [`docs/api_reference.md`](api_reference.md) for the full `.set()`/`.sample()` contract, and [`MODEL_CARD.md`](../MODEL_CARD.md) for what this model was trained on and its limitations.
+
+This repository already has trained checkpoints and processed data committed, so the above works immediately after `pip install -e .` (or a real install — see [`docs/installation.md`](installation.md)). The rest of this page covers training a model from scratch.
+
 ## 1. Get raw data in place
 
 Put PJM `hrl_load_metered_*.csv` files and `pjm_hourly_temps_wide.csv`
 in `data/raw/` (already populated in this repository; see
 `data/raw/PUT_RAW_CSVS_HERE.txt` for the expected filenames if starting
-from scratch, and `src/pjm_diffusion/data/temperature.py` to rebuild
+from scratch, and `src/enerdatasynth/data/temperature.py` to rebuild
 the temperature file from NOAA).
 
 ## 2. Preprocess
 
 ```bash
-pjm-diffusion preprocess
+enerdatasynth preprocess
 ```
 
 Builds `data/processed/{X_daily_profiles,Z_conditions}[_val].npy`,
@@ -20,27 +34,29 @@ Builds `data/processed/{X_daily_profiles,Z_conditions}[_val].npy`,
 ## 3. Train
 
 ```bash
-pjm-diffusion train                      # transformer, validated defaults
-pjm-diffusion train --config configs/mlp.yaml   # legacy MLP baseline instead
+enerdatasynth train                             # transformer, validated defaults
+enerdatasynth train --config data/configs/mlp.yaml   # legacy MLP baseline instead
 ```
 
-Writes `checkpoints/<run_id>/{best.pt,latest.pt,loss_curve.png,result.json}`
-and `outputs/logs/<run_id>_training_log.csv`.
+Writes `data/checkpoints/<run_id>/{best.pt,latest.pt,loss_curve.png,result.json}`
+and `data/outputs/logs/<run_id>_training_log.csv`. See [`docs/training.md`](training.md) for the full training workflow (sweeps, configs, reproducibility).
 
 ## 4. Calibrate (recommended)
 
 ```bash
-pjm-diffusion calibrate --run-id transformer_T1000_H64_L2
+enerdatasynth calibrate --run-id transformer_T1000_H64_L2
 ```
 
-Fits the scalar bias correction (see `docs/evaluation.md`) and saves
-`checkpoints/<run_id>/calibration.json`. `LoadDiffusionModel` applies
-it automatically once it exists.
+Fits the scalar bias correction (see [`docs/evaluation.md`](evaluation.md)) and saves
+`data/checkpoints/<run_id>/calibration.json`. Both `enerdatasynth.model(...)` and
+`LoadDiffusionModel` apply it automatically once it exists.
 
 ## 5. Generate
 
+Via the fluent SDK (see above), or the lower-level API if you already have raw conditioning vectors:
+
 ```python
-from pjm_diffusion import LoadDiffusionModel
+from enerdatasynth import LoadDiffusionModel
 import numpy as np
 
 model = LoadDiffusionModel.from_run_id("transformer_T1000_H64_L2")
@@ -54,18 +70,17 @@ samples = model.sample(z, seed=0)   # (10, 24), calibration applied automaticall
 ## 6. Evaluate
 
 ```bash
-pjm-diffusion evaluate --run-id transformer_T1000_H64_L2
-pjm-diffusion report
+enerdatasynth evaluate --run-id transformer_T1000_H64_L2
+enerdatasynth report
 ```
 
-Writes the three validation plots, `reports/failure_analysis.md`, and
-`reports/results_summary.md`.
+Writes the three validation plots, `data/reports/failure_analysis.md`, and
+`data/reports/results_summary.md`.
 
 ## All at once
 
 ```bash
-pjm-diffusion pipeline   # preprocess -> sweep -> generate -> calibrate -> validate -> report
+enerdatasynth pipeline   # preprocess -> sweep -> generate -> calibrate -> validate -> report
 ```
 
-See `scripts/run_all.py` for the equivalent as a plain script, and
-`examples/` for small standalone demonstrations of each piece.
+See `examples/run_all.py` for the equivalent as a plain script, [`docs/examples.md`](examples.md) for runnable example scripts, and [`docs/training.md`](training.md) for the full training reference.

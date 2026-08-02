@@ -1,0 +1,20 @@
+# Validated default configuration — the exact hyperparameters that
+# produced the transformer results cited throughout README.md and
+# MIGRATION.md (see research_history/reports/week7/summary_report.md).
+# This mirrors RunConfig()'s built-in defaults; the file exists so the
+# configuration is self-documenting and diffable, not just implicit
+# in Python code.
+#
+# Usage:
+#   from enerdatasynth.utils.config import RunConfig
+#   cfg = RunConfig.from_yaml("configs/transformer.yaml")
+architecture: transformer
+diffusion_steps: 1000
+hidden_dim: 64      # transformer model_dim
+n_layers: 2         # transformer encoder layers
+n_heads: 4
+batch_size: 64
+lr: 0.0003
+max_epochs: 400
+patience: 40
+seed: 42

@@ -18,11 +18,11 @@ package installed):
 
 from __future__ import annotations
 
-from pjm_diffusion.data.preprocess import run_preprocessing
-from pjm_diffusion.training.train import train_one_config
-from pjm_diffusion.sampling.generate import generate_for_run
-from pjm_diffusion.visualization.plots import run_all_validation_plots
-from pjm_diffusion.utils.config import RunConfig, PROCESSED_DIR
+from enerdatasynth.data.preprocess import run_preprocessing
+from enerdatasynth.training.train import train_one_config
+from enerdatasynth.sampling.generate import generate_for_run
+from enerdatasynth.visualization.plots import run_all_validation_plots
+from enerdatasynth.utils.config import RunConfig, PROCESSED_DIR
 import numpy as np
 
 

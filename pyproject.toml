@@ -3,16 +3,16 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pjm-diffusion"
+name = "enerdatasynth"
 dynamic = ["version"]
-description = "Conditional diffusion model for synthetic PJM electric load profile generation"
+description = "A research SDK for synthetic PJM energy resource profiles (electric load today; a common interface for future resource types)"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
     { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
 ]
 requires-python = ">=3.10"
-keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy"]
+keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy", "generative-model", "research-sdk"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
@@ -52,10 +52,10 @@ dev = [
 ]
 
 [project.scripts]
-pjm-diffusion = "pjm_diffusion.cli:main"
+enerdatasynth = "enerdatasynth.cli:main"
 
 [tool.setuptools.dynamic]
-version = { attr = "pjm_diffusion.__version__" }
+version = { attr = "enerdatasynth.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]

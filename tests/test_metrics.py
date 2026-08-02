@@ -1,9 +1,9 @@
-"""Tests for pjm_diffusion.evaluation.metrics: the canonical 7-metric comparison suite."""
+"""Tests for enerdatasynth.evaluation.metrics: the canonical 7-metric comparison suite."""
 
 from __future__ import annotations
 import numpy as np
 
-from pjm_diffusion.evaluation.metrics import compute_metrics, autocorrelation, METRIC_KEYS
+from enerdatasynth.evaluation.metrics import compute_metrics, autocorrelation, METRIC_KEYS
 
 
 def test_compute_metrics_zero_when_real_equals_generated(rng):

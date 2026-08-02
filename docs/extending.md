@@ -1,6 +1,6 @@
 # Extending: Adding a New Generator (e.g. Wind)
 
-This package's public interface, `pjm_diffusion.generators.BaseGenerator`,
+This package's public interface, `enerdatasynth.generators.BaseGenerator`,
 is deliberately thin so a different PJM resource type (wind, solar, ...)
 could be added as a first-class citizen of the SDK — callable through
 the same `.sample(z, seed=...)` contract as `LoadDiffusionModel` — without
@@ -9,7 +9,7 @@ to special-case it.
 
 **Nothing wind-specific exists in this package today.** There is no
 wind data, wind-trained checkpoint, or wind-validated architecture
-anywhere in this repository or in `research_history/`. This page
+anywhere in this repository or in `data/research_history/`. This page
 describes what implementing one would involve, not something already
 built — don't infer from its existence that wind support is ready to
 use.
@@ -17,7 +17,7 @@ use.
 ## What `BaseGenerator` requires
 
 ```python
-from pjm_diffusion.generators.base import BaseGenerator
+from enerdatasynth.generators.base import BaseGenerator
 
 class WindDiffusionModel(BaseGenerator):
     domain = "wind"
@@ -52,12 +52,25 @@ Deliberately, `BaseGenerator` says nothing about:
   may warrant different modeling choices, decided by whoever actually
   does that research.
 
+## Wiring it into `enerdatasynth.model(...)`
+
+Once a real `WindDiffusionModel(BaseGenerator)` exists, making it reachable via the fluent SDK is a small, mechanical step — register it in `src/enerdatasynth/sdk.py`'s `_REGISTRY`:
+
+```python
+_REGISTRY = {
+    "pjm_load": {"generator_cls": LoadDiffusionModel, "zones": ["PS"]},
+    "wind": {"generator_cls": WindDiffusionModel, "zones": [...]},
+}
+```
+
+`enerdatasynth.model("wind", zone=...)` would then work through the exact same `ResourceModel` wrapper — but `ResourceModel._build_conditioning` currently hardcodes the load conditioning schema (month/dow/holiday/Tmax/Tmin/spread) and `_denormalize` hardcodes `load_scaler`'s structure from `metadata.json`. A real wind integration means generalizing (or subclassing) `ResourceModel` for wind's own conditioning schema and scaler — not something to paper over by forcing wind's inputs through load's `.set()` parameters. This is real design work, not a registry one-liner, despite the registry itself being trivial.
+
 ## Suggested real first step
 
 Before writing any model code: get real wind data, do the EDA, and
 figure out what a sensible conditioning vector and evaluation metric
-suite look like for wind — mirroring how `research_history/` shows the
+suite look like for wind — mirroring how `data/research_history/` shows the
 load pipeline's conditioning and metrics were arrived at empirically,
-not assumed upfront. `pjm_diffusion.evaluation.metrics.compute_metrics`
+not assumed upfront. `enerdatasynth.evaluation.metrics.compute_metrics`
 may or may not be the right metric suite for wind; check before reusing
 it uncritically.

@@ -3,9 +3,9 @@ tests/conftest.py
 ====================
 Shared fixtures. Tests use small synthetic arrays rather than the
 real (multi-hundred-MB) dataset under data/, so the suite runs
-without requiring `pjm-diffusion preprocess` to have been run first.
+without requiring `enerdatasynth preprocess` to have been run first.
 
-One real constraint, noted rather than hidden: `pjm_diffusion.utils.
+One real constraint, noted rather than hidden: `enerdatasynth.utils.
 config` binds its path constants (CHECKPOINT_DIR, PROCESSED_DIR, ...)
 at import time, and other modules do `from ...config import
 CHECKPOINT_DIR` — a name binding, not a live attribute lookup — so
@@ -25,7 +25,7 @@ import numpy as np
 import pytest
 import torch
 
-from pjm_diffusion.utils.config import CHECKPOINT_DIR, LOGS_DIR
+from enerdatasynth.utils.config import CHECKPOINT_DIR, LOGS_DIR
 
 N_DAYS = 40
 X_DIM = 24
@@ -53,8 +53,8 @@ def tiny_trained_checkpoint(synthetic_profiles):
     actual training/checkpoint/result.json code path, not a mock.
     Cleans up the checkpoint dir and log file it creates afterward.
     """
-    from pjm_diffusion.utils.config import RunConfig
-    from pjm_diffusion.training.train import train_one_config
+    from enerdatasynth.utils.config import RunConfig
+    from enerdatasynth.training.train import train_one_config
 
     X, Z = synthetic_profiles
     cfg = RunConfig(
