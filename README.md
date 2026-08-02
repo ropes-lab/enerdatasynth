@@ -4,12 +4,17 @@
 
 ### A research SDK for synthetic PJM energy resource profiles
 
+[![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
 [![Tests: 59 passing](https://img.shields.io/badge/tests-59%20passing-brightgreen.svg)](tests/)
 [![Packaging: verified](https://img.shields.io/badge/packaging-pip%20install%20verified-blue.svg)](MIGRATION.md)
 
 **Generate realistic synthetic electric-load profiles from a fitted diffusion model — no ML expertise required.**
+
+```bash
+pip install enerdatasynth
+```
 
 ```python
 import enerdatasynth
@@ -19,19 +24,15 @@ load.set(month=7, Tmax=86, Tmin=70, weekday=True)
 samples = load.sample(n=100)   # (100, 24) — real MW, ready to use
 ```
 
+> `pip install enerdatasynth` installs the library only — it doesn't ship trained checkpoints or data (by design; see [`docs/packaging.md`](docs/packaging.md)). The snippet above needs both, already present if you clone [this repo](.) and run from its root; see [Quick Start](#-quick-start) below for training your own from scratch elsewhere.
+
 [Quick Start](#-quick-start) · [Documentation](#-documentation) · [Model Card](MODEL_CARD.md) · [Benchmark Results](#-benchmark-results) · [Citation](#-citation)
 
 </div>
 
 <br>
 
-<div align="center">
-<img src="data/research_history/reports/week7/profiles_headtohead.png" alt="Mean daily load profile: enerdatasynth's transformer baseline vs. classical time-series baselines vs. real data" width="720">
-
-<sub>Mean daily profile — the validated transformer architecture (data/research_history/) vs. classical baselines vs. real PJM load. See <a href="#-benchmark-results">Benchmark Results</a> for numbers from the currently-shipped pipeline.</sub>
-</div>
-
-<br>
+> **Note on figures:** this README is also this package's PyPI long description, which can't render images hosted in this repository until the repo's public URL is finalized. See [`data/research_history/reports/week7/profiles_headtohead.png`](data/research_history/reports/week7/profiles_headtohead.png) and [Benchmark Results](#-benchmark-results) below for the same comparison in table form.
 
 ---
 
@@ -58,12 +59,12 @@ Utilities, grid operators, and energy researchers frequently need realistic synt
 ## 📦 Installation
 
 ```bash
-pip install .                 # from a local clone
-# or, once built:
-pip install dist/*.whl
+pip install enerdatasynth     # from PyPI — library only, see the note above
+# or, for the full repo (data + trained checkpoints included):
+git clone <this repo> && cd enerdatasynth && pip install .
 ```
 
-Both install paths — plus `pip install -e .` for development — are verified end-to-end (see [MIGRATION.md](MIGRATION.md) for what "verified" means here, including a real packaging bug that was only caught by actually installing the built wheel).
+All install paths — PyPI, `pip install .` from a clone, `pip install dist/*.whl`, and `pip install -e .` for development — are verified end-to-end (see [MIGRATION.md](MIGRATION.md) for what "verified" means here, including a real packaging bug that was only caught by actually installing the built wheel).
 
 ```bash
 pip install ".[viz,dev]"      # + seaborn, + pytest/ruff/mypy/build/twine
@@ -107,12 +108,7 @@ Full detail — why transformer over MLP/CNN/attention, why the ancestral sample
 
 ## 📊 Evaluation Pipeline
 
-Every comparison in this project uses the same 7-metric suite (`Hourly`, `FirstDiff`, `ACF`, `RMSE`, `Peak`, `Energy`, `Ramp` — all lower-is-better, defined in [`docs/evaluation.md`](docs/evaluation.md)), computed by `enerdatasynth.evaluation.metrics.compute_metrics`. The same suite backs the automatic failure-mode detector (`evaluation.failure_analysis`) and the benchmark script below.
-
-<div align="center">
-<img src="data/reports/figures/hourly_distribution_comparison_T100_H256_L4.png" alt="Hourly distribution comparison, real vs generated, currently-shipped model" width="600">
-<br><sub>Per-hour distribution, real vs. generated — the currently auto-discovered default model (see Benchmark Results).</sub>
-</div>
+Every comparison in this project uses the same 7-metric suite (`Hourly`, `FirstDiff`, `ACF`, `RMSE`, `Peak`, `Energy`, `Ramp` — all lower-is-better, defined in [`docs/evaluation.md`](docs/evaluation.md)), computed by `enerdatasynth.evaluation.metrics.compute_metrics`. The same suite backs the automatic failure-mode detector (`evaluation.failure_analysis`) and the benchmark script below. A real per-hour distribution comparison (real vs. generated, currently auto-discovered default model) is at [`data/reports/figures/hourly_distribution_comparison_T100_H256_L4.png`](data/reports/figures/hourly_distribution_comparison_T100_H256_L4.png).
 
 ## 🏆 Benchmark Results
 
