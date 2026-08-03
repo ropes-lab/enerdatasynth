@@ -51,7 +51,7 @@ Utilities, grid operators, and energy researchers frequently need realistic synt
 - **A validated transformer architecture** — selected via a controlled 4-way architecture comparison (MLP/CNN/attention/transformer), not the first thing that was tried. See [Research Summary](#-research-summary).
 - **A corrected diffusion sampler** — an earlier DDIM-style sampler was found to silently corrupt every result it touched; the fix is the only sampler shipped today.
 - **Automatic bias calibration** — a systematic energy-error offset, diagnosed and corrected, applied automatically at generation time.
-- **A second resource type, wind** — `enerdatasynth.model("wind", zone="1ch")`, wrapping a vendored diffusion pipeline (`wind_diffusion`, from a separate Data-For-Good project) through the exact same `BaseGenerator`/`ResourceModel` contract as load. `1ch` ships with a real trained checkpoint bundled in this repo; `2ch`/`3ch` don't have published weights yet. See [Supported Generators](#-supported-generators) and [Extending](docs/extending.md).
+- **A second resource type, wind** — `enerdatasynth.model("wind", zone="1ch")`, wrapping a vendored diffusion pipeline (`wind_diffusion`, from a separate Data-For-Good project) through the exact same `BaseGenerator`/`ResourceModel` contract as load. All three channel presets (`1ch`/`2ch`/`3ch`) ship with real trained checkpoints bundled in this repo. See [Supported Generators](#-supported-generators) and [Extending](docs/extending.md).
 - **Config-driven, YAML-first** hyperparameters (`data/configs/`), a real test suite (`tests/`, ~2–20s), and a full audit trail of every design decision ([MIGRATION.md](MIGRATION.md)) — nothing here is asserted without a file backing it.
 
 ## 🔌 Supported Generators
@@ -59,9 +59,9 @@ Utilities, grid operators, and energy researchers frequently need realistic synt
 | Resource | Status | Zones / presets | Entry point |
 |---|---|---|---|
 | Electric load | ✅ Available | `PS` (PJM/PSE&G, NJ) | `enerdatasynth.model("pjm_load", zone="PS")` |
-| Wind | ⚠️ Partially available | `1ch` ✅ (bundled checkpoint) · `2ch`/`3ch` 🧩 (code ready, no published weights) | `enerdatasynth.model("wind", zone="1ch")` |
+| Wind | ✅ Available | `1ch` / `2ch` / `3ch` — all bundled checkpoints | `enerdatasynth.model("wind", zone="1ch")` |
 
-Wind wraps a separately-developed diffusion pipeline (`wind_diffusion`, vendored from a Data-For-Good research project) behind the same `.set()`/`.sample()` contract load uses — see [`docs/api_reference.md`](docs/api_reference.md) for its full parameter reference and [`docs/extending.md`](docs/extending.md) for how it's wired in (useful if you're adding a third resource type). `2ch`/`3ch` raise `wind_diffusion.exceptions.CheckpointNotFoundError` until trained weights are published for them — not a bug, just not done yet.
+Wind wraps a separately-developed diffusion pipeline (`wind_diffusion`, vendored from a Data-For-Good research project) behind the same `.set()`/`.sample()` contract load uses — see [`docs/api_reference.md`](docs/api_reference.md) for its full parameter reference and [`docs/extending.md`](docs/extending.md) for how it's wired in (useful if you're adding a third resource type). Each preset uses its own measured-best generation recipe automatically (`2ch` specifically requires different settings than `1ch`/`3ch` — see `docs/api_reference.md`); `units="m/s"` is the only unit wind supports today, for every preset.
 
 ## 📦 Installation
 
@@ -89,7 +89,7 @@ load.set(month=7, Tmax=86, Tmin=70, weekday=True, holiday=False)
 samples = load.sample(n=100, seed=0)   # (100, 24) ndarray, MW
 ```
 
-Wind (`1ch` preset, bundled checkpoint — no extra setup needed):
+Wind (any of `1ch`/`2ch`/`3ch` — all bundled, no extra setup needed):
 
 ```python
 wind = enerdatasynth.model("wind", zone="1ch")
@@ -198,9 +198,9 @@ No accompanying paper has been published yet. If you use this software, please c
 - [ ] Re-validate the transformer/calibration pipeline under the package's current one-hot conditioning (see the caveat in [`docs/architecture.md`](docs/architecture.md))
 - [ ] Multi-zone support (17 zones explored in `data/research_history/scripts/zone_expansion.py`, not yet promoted)
 - [ ] A friendlier `set()` for `spread` (currently defaults to the training-set mean; see [`docs/api_reference.md`](docs/api_reference.md))
-- [x] Wind generation for `1ch` (`enerdatasynth.model("wind", zone="1ch")`, bundled checkpoint)
-- [ ] Published weights for wind's `2ch`/`3ch` presets (code is ready; `wind_diffusion.manifest.json` still says `"pending"` for both — see [`docs/extending.md`](docs/extending.md))
+- [x] Wind generation for `1ch`/`2ch`/`3ch` (`enerdatasynth.model("wind", zone=...)`, all three bundled with real checkpoints)
 - [ ] `units="normalized"` for wind (only `"m/s"` is supported today — `generate_multiple_for_condition` bakes denormalization into its output rather than exposing a raw option; a real gap, not prioritized)
+- [ ] A proper weights-distribution mechanism for wind (`wind_diffusion.manifest.json`'s download-with-sha256-verification path, vs. today's ad hoc `data/checkpoints/wind/` bundling directly into git)
 - [ ] Re-sweep hyperparameters for the transformer architecture specifically (the current defaults are inherited from `data/research_history/`, never re-swept against this package's own pipeline)
 
 Tracked in detail in [`data/reports/future_experiments.md`](data/reports/future_experiments.md) and [`MIGRATION.md`](MIGRATION.md).

@@ -11,9 +11,9 @@ to special-case it.
 not hypothetical anymore. It wraps a diffusion pipeline developed
 separately (`wind_diffusion`, vendored from a Data-For-Good research
 project — see `src/wind_diffusion/`), reachable via
-`enerdatasynth.model("wind", zone="1ch")` with a real trained checkpoint
-bundled in this repo (`data/checkpoints/wind/1ch/`); `"2ch"`/`"3ch"` have
-working code but no published weights yet. See
+`enerdatasynth.model("wind", zone=...)` with real trained checkpoints
+bundled in this repo for all three channel presets
+(`data/checkpoints/wind/{1ch,2ch,3ch}/`). See
 [`docs/api_reference.md`](api_reference.md#wind) for its full parameter
 reference. This page now describes both what `BaseGenerator` requires in
 the abstract *and*, concretely, how wind actually satisfies it — useful
@@ -166,17 +166,36 @@ hook is the same idea for cheap introspection without constructing a full
 `ResourceModel` (wind's delegates to `wind_diffusion.list_models()`
 rather than load's irrelevant `CHECKPOINT_DIR` scan).
 
+**One more thing that needed to be per-resource, discovered only once
+multiple wind presets were actually exercised together**: generation-time
+settings (`eta`, `guidance_scale`, ...) aren't safely shareable across
+even a *single* resource's own presets, let alone across resources —
+`1ch`/`3ch`'s recommended `eta=1.0` is measurably wrong for `2ch`
+(`eta=0.0`). `WindDiffusionModel` now reads each preset's own
+`recommended_generation` from `wind_diffusion`'s bundled `manifest.json`
+at construction time rather than hardcoding one set of Tier-2 defaults —
+see [`docs/api_reference.md`](api_reference.md#checkpoints) for the
+concrete numbers. Worth checking for in a third resource too if it ends
+up with multiple presets/variants of its own.
+
 ## What's still genuinely unfinished for wind
 
 Concrete, not hand-wavy — these are the actual open items, in rough
 priority order:
 
-- **`"2ch"`/`"3ch"` have no published checkpoint.** Trained weights exist
-  (in the source Data-For-Good project's local `outputs/`, gitignored
-  there and never published), but only `"1ch"`'s were copied into this
-  repo. Copying the others in (or setting up `wind_diffusion.manifest.json`'s
-  proper download mechanism instead of ad hoc bundling) is the most
-  concrete next step.
+- **Checkpoints are bundled ad hoc, not properly published.** All three
+  presets' weights are committed directly under `data/checkpoints/wind/`
+  (copied from the source Data-For-Good project's local `outputs/`,
+  gitignored there and never published anywhere else) rather than going
+  through `wind_diffusion.manifest.json`'s intended mechanism (a declared
+  download URL + sha256, resolved and cached by
+  `wind_diffusion.registry.resolve_weights` on demand). That mechanism
+  already exists and works — it's just not wired up for any preset yet.
+  Committing ~14MB of checkpoint binaries directly into this repo's git
+  history was the fast path, not the durable one; moving to real
+  published weights (GitHub Releases or similar) is the concrete next
+  step, most valuable once checkpoint updates need to happen more than
+  once.
 - **`units="normalized"` isn't offered for wind at all** — see
   [`docs/api_reference.md`](api_reference.md#wind-units-only-ms-is-supported).
 - **`previous_day_windspeed`'s smarter default isn't replicated.**
@@ -184,8 +203,8 @@ priority order:
   value from the regime-matched empirical distribution when this isn't
   given; `wind_condition_builder` here falls back to the plain neutral
   default instead (see that function's docstring). Only matters for a
-  checkpoint trained with wind-persistence conditioning, which the
-  bundled `1ch` one isn't.
+  checkpoint trained with wind-persistence conditioning, which none of
+  the three bundled checkpoints are.
 - **No multi-zone equivalent for wind** — `wind_diffusion` was trained on
   a single WTK grid point (offshore NJ); `zone` for wind means channel
   preset, not geography, so there's no "add more zones" story the way
