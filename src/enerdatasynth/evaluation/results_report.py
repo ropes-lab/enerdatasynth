@@ -14,10 +14,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from enerdatasynth.utils.config import PROCESSED_DIR, REPORTS_DIR, CHECKPOINT_DIR
+from enerdatasynth.utils.config import PROCESSED_DIR, REPORTS_DIR, CHECKPOINT_DIR, ensure_dirs
 
 
 def generate_results_summary() -> Path:
+    ensure_dirs()
     with open(PROCESSED_DIR / "metadata.json") as f:
         meta = json.load(f)
 

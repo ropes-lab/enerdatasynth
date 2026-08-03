@@ -20,7 +20,7 @@ import torch
 
 from enerdatasynth.utils.config import (
     PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR, DEVICE,
-    DEFAULT_ARCHITECTURE, DEFAULT_N_HEADS,
+    DEFAULT_ARCHITECTURE, DEFAULT_N_HEADS, ensure_dirs,
 )
 from enerdatasynth.models import build_denoiser
 from enerdatasynth.diffusion.ddpm import DDPM
@@ -41,6 +41,7 @@ def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
     behavior — this was a known reproducibility gap, now opt-in fixed
     rather than silently changed for existing callers).
     """
+    ensure_dirs()
     if seed is not None:
         from enerdatasynth.utils.config import set_seed
         set_seed(seed)

@@ -61,9 +61,28 @@ REPORTS_DIR      = DATA_ROOT / "reports"
 FIGURES_DIR      = REPORTS_DIR / "figures"
 RESEARCH_HISTORY_DIR = DATA_ROOT / "research_history"
 
-for d in [RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, CHECKPOINT_DIR,
-          GENERATED_DIR, LOGS_DIR, REPORTS_DIR, FIGURES_DIR]:
-    d.mkdir(parents=True, exist_ok=True)
+_ALL_DATA_DIRS = [RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, CHECKPOINT_DIR,
+                   GENERATED_DIR, LOGS_DIR, REPORTS_DIR, FIGURES_DIR]
+
+
+def ensure_dirs() -> None:
+    """Create the data/ directory scaffold. Previously ran unconditionally
+    at *module import time*, which meant a plain `import enerdatasynth`
+    from inside any unrelated project silently created data/raw/,
+    data/processed/, etc. in that project's cwd (PROJECT_ROOT defaults to
+    Path.cwd() when $ENERDATASYNTH_PROJECT_ROOT isn't set) -- a library
+    shouldn't mutate the filesystem just from being imported. Now called
+    explicitly, at call time, by every function that actually writes into
+    this tree (run_preprocessing, train_one_config, run_sweep,
+    generate_for_run, calibrate_checkpoint, run_all_validation_plots,
+    write_failure_analysis_md, generate_results_summary -- the same set
+    re-exported as this package's public API), so the directories still
+    appear exactly when needed, not merely from importing the module.
+    Idempotent (`exist_ok=True`), safe to call redundantly.
+    """
+    for d in _ALL_DATA_DIRS:
+        d.mkdir(parents=True, exist_ok=True)
+
 
 ZONE = "PS"   # PSE&G / New Jersey
 

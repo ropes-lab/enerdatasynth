@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from enerdatasynth.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, DEVICE
+from enerdatasynth.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, DEVICE, ensure_dirs
 from enerdatasynth.models import build_denoiser
 from enerdatasynth.diffusion.ddpm import DDPM
 from enerdatasynth.visualization.plots import plot_loss_curve
@@ -38,6 +38,7 @@ def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
     to the saved checkpoint and loss curve — everything the sweep
     runner and results report need.
     """
+    ensure_dirs()
     set_seed(cfg.seed)
 
     x_dim    = X_train.shape[1]

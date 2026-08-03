@@ -114,10 +114,11 @@ def calibrate_checkpoint(run_id: str, architecture: str, diffusion_steps: int,
     ("stored in calibration.json next to the checkpoint... applied at
     generation time"). `LoadDiffusionModel` auto-discovers this file.
     """
-    from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, DEVICE
+    from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, DEVICE, ensure_dirs
     from enerdatasynth.models import build_denoiser
     from enerdatasynth.diffusion.ddpm import DDPM
 
+    ensure_dirs()
     X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
     Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
 

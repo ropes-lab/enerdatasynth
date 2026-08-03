@@ -57,8 +57,10 @@ YEARS = range(2016, 2026)  # 2016 through 2025 inclusive
 # of being run as a standalone script from the repo root.
 OUT_DIR = RAW_DIR
 CACHE_DIR = PROJECT_ROOT / "data" / "cache"
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
+# NOT created here at module-import time (same anti-pattern fixed in
+# utils.config.ensure_dirs -- see its docstring): `import
+# enerdatasynth.data.temperature` shouldn't silently create directories.
+# Created lazily in main(), the actual entry point that writes into them.
 
 ISD_URL = "https://www.ncei.noaa.gov/data/global-hourly/access/{year}/{sid}.csv"
 ISD_INVENTORY_URL = "https://www.ncei.noaa.gov/pub/data/noaa/isd-history.csv"
@@ -347,6 +349,8 @@ def build_zone_panel(station_panel: pd.DataFrame) -> pd.DataFrame:
 # --------------------------------------------------------------------------- #
 
 def main():
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     inv = load_inventory()
     resolved = load_resolved_ids()
 
