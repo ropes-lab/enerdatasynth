@@ -112,8 +112,12 @@ def test_list_resources_reports_pjm_load():
     assert "pjm_load" in info
     assert info["pjm_load"]["zones"] == ["PS"]
     assert info["pjm_load"]["domain"] == "load"
+    # Includes "weekday" alongside the ConditionField-modeled names --
+    # condition_fields reflects everything .set() actually accepts
+    # (condition_spec fields + extra_set_keys), not just the spec-modeled
+    # subset (a gap found while wiring up wind's own extra_set_keys).
     assert set(info["pjm_load"]["condition_fields"]) == {
-        "month", "day_of_week", "holiday", "Tmax", "Tmin", "spread",
+        "month", "day_of_week", "holiday", "Tmax", "Tmin", "spread", "weekday",
     }
     assert info["pjm_load"]["checkpoint_available"] is True
     assert info["pjm_load"]["best_run_id"]

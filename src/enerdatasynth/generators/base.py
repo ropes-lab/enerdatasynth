@@ -2,23 +2,25 @@
 src/enerdatasynth/generators/base.py
 ======================================
 Common interface for every domain-specific synthetic-generation model
-in this package (today: electric load, via `LoadDiffusionModel`).
+in this package: electric load (`LoadDiffusionModel`) and wind
+(`WindDiffusionModel`, wrapping the vendored `wind_diffusion` package).
 
 The package's ultimate goal is a unified SDK across multiple PJM
-resource types (electric load, and eventually wind or other
-generation types) that downstream tooling — CLIs, dashboards,
-benchmarking harnesses — can drive without a domain-specific branch:
+resource types that downstream tooling — CLIs, dashboards, benchmarking
+harnesses — can drive without a domain-specific branch:
 
     samples = generator.sample(z, seed=0)
 
-A wind-generation counterpart is NOT implemented here: there is no
-wind data, trained model, or validated research behind one anywhere
-in this project (see MIGRATION.md and research_history/ — everything
-is PJM electric load). Fabricating a `WindDiffusionModel` with no
-underlying research would misrepresent what's actually been validated.
-This module exists so that when real wind work is ready, it has a
-concrete contract to implement rather than an ad hoc, incompatible API
-— see `docs/extending.md` for what implementing a new domain involves.
+`WindDiffusionModel` is a structural/API skeleton, not a validated model:
+it wraps real, previously-published wind research (`wind_diffusion`,
+vendored from a separate Data-For-Good project), but no trained wind
+checkpoint has been published into this package yet
+(`wind_diffusion/manifest.json`'s presets are all `"pending"`) --
+constructing it against the bundled manifest raises
+`wind_diffusion.exceptions.CheckpointNotFoundError` until one exists. This
+is a real, credited implementation with real research behind it, just not
+yet backed by a shipped checkpoint -- distinct from fabricating one with
+no underlying work.
 """
 
 from __future__ import annotations

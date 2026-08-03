@@ -17,11 +17,21 @@ resolved" notes on individual `set()` parameters below for the
 specific UX decisions this required where no single "correct" answer
 exists (weekday sampling semantics, the unavoidable `spread` default).
 
-Adding a new resource type (e.g. wind) means registering a new entry
-in `_REGISTRY` pointing at a `BaseGenerator` subclass and its own
-conditioning-building logic — `model("wind")` would work through this
-exact same interface once that exists. Nothing wind-specific is
-implemented here; see `docs/extending.md`.
+A second resource type, wind, is registered the same way:
+
+    wind = enerdatasynth.model("wind", zone="3ch")   # zone = channel preset
+    wind.set(wind_regime="mid", month=7, temp_min=10, temp_max=22)
+    samples = wind.sample(n=100, units="m/s")        # (100, 288, 2): [...,0]=speed, [...,1]=direction
+
+No trained wind checkpoint has been published yet (see
+`generators/wind.py`), so `model("wind", ...)` raises
+`wind_diffusion.exceptions.CheckpointNotFoundError` until one exists --
+expected, not a wiring bug. Its conditioning shape didn't fit the generic
+`ConditionField`-based mechanism `_REGISTRY["pjm_load"]` uses (dynamic
+field presence, a derived+jointly-scaled field, checkpoint-level onehot-
+vs-ordinal encoding) -- `ResourceModel` supports an optional
+`condition_builder` escape hatch for exactly this case; see
+`generators/wind_conditioning.py`.
 """
 
 from __future__ import annotations
@@ -33,28 +43,9 @@ import numpy as np
 
 from enerdatasynth import conditioning
 from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR
-from enerdatasynth.generators import LoadDiffusionModel, BaseGenerator
+from enerdatasynth.generators import LoadDiffusionModel, WindDiffusionModel, BaseGenerator
 from enerdatasynth.generators.load_conditioning import LOAD_CONDITION_SPEC, LOAD_EXTRA_SET_KEYS
-
-# Resource types this SDK currently knows how to serve. Adding a new one
-# (e.g. "wind") means adding an entry here once a real generator for it
-# exists -- see docs/extending.md -- plus its own `<domain>_conditioning.py`
-# module providing `condition_spec` (see `generators/load_conditioning.py`
-# for the reference implementation). `ResourceModel` reads `condition_spec`
-# generically (via `conditioning.py`) rather than hardcoding any one
-# resource's field names, so a second entry here is genuinely additive --
-# no changes needed to ResourceModel itself. Zones are constrained to what
-# the underlying preprocessing pipeline actually supports; see
-# MIGRATION.md for why this is PS-only today (config.ZONE) even though
-# research_history/scripts/zone_expansion.py explored 17 zones.
-_REGISTRY = {
-    "pjm_load": {
-        "generator_cls": LoadDiffusionModel,
-        "zones": ["PS"],
-        "condition_spec": LOAD_CONDITION_SPEC,
-        "extra_set_keys": LOAD_EXTRA_SET_KEYS,
-    },
-}
+from enerdatasynth.generators.wind_conditioning import WIND_EXTRA_SET_KEYS, wind_checkpoint_status, wind_construct
 
 
 def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
@@ -69,6 +60,12 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     resolves to the best legacy MLP run, and will silently start
     resolving to a transformer run automatically once one is trained
     (`enerdatasynth train`), with no code changes needed here.
+
+    Load-specific: scans CHECKPOINT_DIR for result.json files, a
+    convention only enerdatasynth's own training pipeline produces. Wind's
+    equivalent (`generators/wind_conditioning.py`'s `wind_construct`)
+    resolves checkpoints through `wind_diffusion.registry` instead --
+    a different mechanism entirely, not something this function generalizes.
     """
     checkpoint_root = Path(checkpoint_root)
     candidates = []
@@ -92,6 +89,78 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     return best["run_id"]
 
 
+def _load_construct(zone: str) -> dict:
+    """`model("pjm_load", zone=...)`'s construction hook (see `_REGISTRY`
+    below) -- the exact logic `model()` used to run inline before
+    construction became resource-delegated, moved here unchanged so wind
+    (`wind_conditioning.wind_construct`) can provide its own without
+    `model()` needing an if/else per resource."""
+    metadata_path = PROCESSED_DIR / "metadata.json"
+    if not metadata_path.exists():
+        raise FileNotFoundError(
+            f"No processed dataset found at {metadata_path}. "
+            f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
+        )
+    with open(metadata_path) as f:
+        metadata = json.load(f)
+
+    run_id = _discover_best_checkpoint()
+    generator = LoadDiffusionModel.from_run_id(run_id)
+    return {
+        "generator": generator,
+        "metadata": metadata,
+        "condition_spec": LOAD_CONDITION_SPEC,
+        "extra_set_keys": LOAD_EXTRA_SET_KEYS,
+    }
+
+
+def _load_checkpoint_status() -> dict:
+    """`describe_resource("pjm_load")`'s checkpoint-availability hook."""
+    status = {"processed_dataset_available": (PROCESSED_DIR / "metadata.json").exists()}
+    try:
+        status["best_run_id"] = _discover_best_checkpoint()
+        status["checkpoint_available"] = True
+    except FileNotFoundError:
+        status["best_run_id"] = None
+        status["checkpoint_available"] = False
+    return status
+
+
+# Resource types this SDK currently knows how to serve. Each entry's
+# `construct(zone) -> dict` is the one thing that actually varies enough
+# between resources that ResourceModel can't build it generically --
+# where checkpoints/metadata live and how they're resolved (load: a local
+# CHECKPOINT_DIR scan + PROCESSED_DIR/metadata.json; wind: wind_diffusion's
+# own sha256-verified registry, keyed by preset) -- everything downstream
+# of that (conditioning vector construction, units/denormalization) is
+# generic, driven by whatever `construct` returns. See `_load_construct`
+# above and `generators/wind_conditioning.py`'s `wind_construct` for the
+# two reference implementations. Zones are constrained to what each
+# resource's pipeline actually supports; see MIGRATION.md for why
+# "pjm_load" is PS-only today even though
+# research_history/scripts/zone_expansion.py explored 17 zones. Wind
+# repurposes "zone" as its channel preset ("1ch"/"2ch"/"3ch") -- see
+# wind_construct's docstring for why.
+_REGISTRY = {
+    "pjm_load": {
+        "generator_cls": LoadDiffusionModel,
+        "zones": ["PS"],
+        "condition_spec": LOAD_CONDITION_SPEC,
+        "extra_set_keys": LOAD_EXTRA_SET_KEYS,
+        "construct": _load_construct,
+        "checkpoint_status": _load_checkpoint_status,
+    },
+    "wind": {
+        "generator_cls": WindDiffusionModel,
+        "zones": ["1ch", "2ch", "3ch"],
+        "condition_spec": [],
+        "extra_set_keys": WIND_EXTRA_SET_KEYS,
+        "construct": wind_construct,
+        "checkpoint_status": wind_checkpoint_status,
+    },
+}
+
+
 class ResourceModel:
     """
     A configured, ready-to-sample generator for one resource type and
@@ -111,13 +180,17 @@ class ResourceModel:
     def __init__(
         self, name: str, zone: str, generator: BaseGenerator, metadata: dict,
         condition_spec: list[conditioning.ConditionField], extra_set_keys: Optional[list[str]] = None,
+        condition_builder=None, valid_units: tuple = ("MW", "normalized"), postprocess=None,
     ):
         self._name = name
         self._zone = zone
         self._generator = generator
         self._metadata = metadata
         self._condition_spec = condition_spec
+        self._condition_builder = condition_builder
         self._valid_set_keys = {f.name for f in condition_spec} | set(extra_set_keys or [])
+        self._valid_units = tuple(valid_units)
+        self._postprocess = postprocess
         self._conditions: dict = {}
 
     def __repr__(self) -> str:
@@ -148,34 +221,48 @@ class ResourceModel:
         return self
 
     def _missing_required(self) -> list:
+        if self._condition_builder is not None:
+            return []  # wind (and any condition_builder resource): nothing hard-required today
         return conditioning.missing_required(self._condition_spec, self._conditions)
 
     def _build_conditioning(self, n: int, rng: np.random.Generator) -> np.ndarray:
+        if self._condition_builder is not None:
+            return self._condition_builder(self._conditions, self._metadata, n, rng)
         return conditioning.build_condition_vector(
             self._condition_spec, self._conditions, self._metadata, n, rng,
         )
 
     def _denormalize(self, X_normalized: np.ndarray) -> np.ndarray:
+        """Load's default `postprocess`-equivalent when a resource doesn't
+        provide its own (see `sample()`): a MinMax denormalization against
+        `self._metadata["load_scaler"]` -- load-specific, only ever
+        reached when `self._postprocess is None`, which today is only
+        true for `"pjm_load"`."""
         data_min = np.asarray(self._metadata["load_scaler"]["data_min_"])
         data_max = np.asarray(self._metadata["load_scaler"]["data_max_"])
         return X_normalized * (data_max - data_min) + data_min
 
-    def sample(self, n: int = 1, seed: Optional[int] = None, units: str = "MW") -> np.ndarray:
+    def sample(self, n: int = 1, seed: Optional[int] = None, units: Optional[str] = None) -> np.ndarray:
         """
         Generate `n` synthetic daily profiles under the currently-set
         conditions (call `.set()` first).
 
-        units : "MW" (default) — denormalized to real load units using
-                the scaler fit during preprocessing — or "normalized"
-                for the raw [0,1] model output.
+        units : defaults to the resource's first valid unit if omitted
+                (`"MW"` for `"pjm_load"`, `"m/s"` for `"wind"`) -- see
+                `enerdatasynth.describe_resource(name)` to check which
+                units a given resource actually supports; raises
+                `ValueError` for anything else.
         """
-        if units not in ("MW", "normalized"):
-            raise ValueError(f"units must be 'MW' or 'normalized', got {units!r}")
+        units = self._valid_units[0] if units is None else units
+        if units not in self._valid_units:
+            raise ValueError(f"units must be one of {self._valid_units}, got {units!r}")
 
         rng = np.random.default_rng(seed)
         z = self._build_conditioning(n, rng)
         samples = self._generator.sample(z, seed=seed)
 
+        if self._postprocess is not None:
+            return self._postprocess(samples, units)
         if units == "normalized":
             return samples
         return self._denormalize(samples)
@@ -202,18 +289,15 @@ def describe_resource(name: str) -> dict:
         raise ValueError(f"Unknown model {name!r}. Available: {sorted(_REGISTRY)}")
 
     entry = _REGISTRY[name]
+    condition_fields = sorted(
+        {f.name for f in entry["condition_spec"]} | set(entry.get("extra_set_keys") or [])
+    )
     info: dict = {
         "zones": entry["zones"],
         "domain": entry["generator_cls"].domain,
-        "condition_fields": [f.name for f in entry["condition_spec"]],
-        "processed_dataset_available": (PROCESSED_DIR / "metadata.json").exists(),
+        "condition_fields": condition_fields,
     }
-    try:
-        info["best_run_id"] = _discover_best_checkpoint()
-        info["checkpoint_available"] = True
-    except FileNotFoundError:
-        info["best_run_id"] = None
-        info["checkpoint_available"] = False
+    info.update(entry["checkpoint_status"]())
     return info
 
 
@@ -244,19 +328,12 @@ def model(name: str, zone: Optional[str] = None) -> ResourceModel:
             f"multi-zone work not yet promoted into this package."
         )
 
-    metadata_path = PROCESSED_DIR / "metadata.json"
-    if not metadata_path.exists():
-        raise FileNotFoundError(
-            f"No processed dataset found at {metadata_path}. "
-            f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
-        )
-    with open(metadata_path) as f:
-        metadata = json.load(f)
-
-    run_id = _discover_best_checkpoint()
-    generator = entry["generator_cls"].from_run_id(run_id)
-
+    built = entry["construct"](zone)
     return ResourceModel(
-        name=name, zone=zone, generator=generator, metadata=metadata,
-        condition_spec=entry["condition_spec"], extra_set_keys=entry.get("extra_set_keys"),
+        name=name, zone=zone,
+        generator=built["generator"], metadata=built["metadata"],
+        condition_spec=built["condition_spec"], extra_set_keys=built.get("extra_set_keys"),
+        condition_builder=built.get("condition_builder"),
+        valid_units=built.get("valid_units", ("MW", "normalized")),
+        postprocess=built.get("postprocess"),
     )
