@@ -161,3 +161,27 @@ def test_wind_sample_seed_reproducible(tiny_wind_checkpoint_dir):
     a = wind.sample(n=2, seed=42)
     b = wind.sample(n=2, seed=42)
     np.testing.assert_array_equal(a, b)
+
+
+def test_wind_reset_clears_conditions(tiny_wind_checkpoint_dir):
+    import enerdatasynth
+
+    wind = enerdatasynth.model("wind", zone="2ch")
+    wind.set(wind_regime="mid", month=3)
+    result = wind.reset()
+    assert result is wind
+    assert wind._conditions == {}
+
+
+def test_wind_sample_with_metadata(tiny_wind_checkpoint_dir):
+    import enerdatasynth
+
+    wind = enerdatasynth.model("wind", zone="2ch")
+    wind.set(wind_regime="mid", month=3)
+    samples, meta = wind.sample(n=2, seed=0, with_metadata=True)
+    assert samples.shape == (2, SEQ_LEN, 2)
+    assert meta["name"] == "wind"
+    assert meta["zone"] == "2ch"
+    assert meta["units"] == "m/s"
+    assert meta["conditions"] == {"wind_regime": "mid", "month": 3}
+    assert wind.last_metadata() == meta

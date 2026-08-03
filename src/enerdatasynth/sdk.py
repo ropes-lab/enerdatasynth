@@ -168,13 +168,19 @@ class ResourceModel:
     directly.
 
     Generic across resource types: `.set()`/`.sample()` build the raw
-    conditioning vector via `conditioning.build_condition_vector()` against
-    whichever `condition_spec` `_REGISTRY[name]` provides (see
-    `generators/load_conditioning.py`'s `LOAD_CONDITION_SPEC` for the
-    reference implementation and the per-field UX notes -- e.g. why
-    `weekday` samples a different day per realization -- that used to live
-    directly on this class's `.set()` docstring). This class itself no
-    longer hardcodes any single resource's field names.
+    conditioning vector via whichever `condition_spec` (or, for a resource
+    whose conditioning shape doesn't fit that model, `condition_builder`
+    override -- see `generators/wind_conditioning.py`) `_REGISTRY[name]`
+    provides. This class itself no longer hardcodes any single resource's
+    field names.
+
+    `.set()` mutates state on the instance and accumulates silently across
+    calls -- a real footgun for a long-lived instance reused across
+    requests. `.reset()` clears it. `.sample()`'s default return is a bare
+    array (matching this SDK's existing minimalism), but `with_metadata=
+    True` (or `.last_metadata()` afterward, regardless of that flag)
+    recovers what actually produced it -- the resolved `n`/`seed`/`units`
+    and the conditions in effect at that call.
     """
 
     def __init__(
@@ -192,6 +198,7 @@ class ResourceModel:
         self._valid_units = tuple(valid_units)
         self._postprocess = postprocess
         self._conditions: dict = {}
+        self._last_metadata: Optional[dict] = None
 
     def __repr__(self) -> str:
         return f"<ResourceModel {self._name!r} zone={self._zone!r} domain={self._generator.domain!r}>"
@@ -220,6 +227,35 @@ class ResourceModel:
                 self._conditions[key] = value
         return self
 
+    def reset(self) -> "ResourceModel":
+        """
+        Clear every condition set via `.set()` so far. Chainable — returns
+        self.
+
+        `.set()` mutates state on the instance and accumulates silently
+        across calls, which is a real footgun for a long-lived
+        `ResourceModel` reused across requests (a value set three calls
+        ago can still be in effect without anything visibly wrong at the
+        call site that forgot it). `.reset()` is the escape hatch: call it
+        before reconfiguring from scratch instead of constructing a new
+        `enerdatasynth.model(...)` instance just to clear state.
+        """
+        self._conditions.clear()
+        return self
+
+    def last_metadata(self) -> Optional[dict]:
+        """
+        Provenance for the most recent `.sample()` call on this instance
+        (`None` if `.sample()` hasn't been called yet): the resolved `n`,
+        `seed`, `units`, and a snapshot of the conditions in effect at
+        that call. Recoverable regardless of whether `with_metadata=True`
+        was passed to that particular `.sample()` call -- provenance is
+        never silently lost, it's just not forced into `.sample()`'s
+        default return shape (a bare array, matching this SDK's existing
+        minimalism) unless you ask for it inline.
+        """
+        return self._last_metadata
+
     def _missing_required(self) -> list:
         if self._condition_builder is not None:
             return []  # wind (and any condition_builder resource): nothing hard-required today
@@ -242,7 +278,10 @@ class ResourceModel:
         data_max = np.asarray(self._metadata["load_scaler"]["data_max_"])
         return X_normalized * (data_max - data_min) + data_min
 
-    def sample(self, n: int = 1, seed: Optional[int] = None, units: Optional[str] = None) -> np.ndarray:
+    def sample(
+        self, n: int = 1, seed: Optional[int] = None, units: Optional[str] = None,
+        with_metadata: bool = False,
+    ):
         """
         Generate `n` synthetic daily profiles under the currently-set
         conditions (call `.set()` first).
@@ -252,6 +291,13 @@ class ResourceModel:
                 `enerdatasynth.describe_resource(name)` to check which
                 units a given resource actually supports; raises
                 `ValueError` for anything else.
+        with_metadata : False (default) returns a bare array, matching
+                this SDK's existing minimalism. True returns
+                `(array, metadata)` instead. Either way, `.last_metadata()`
+                recovers the same dict afterward -- provenance (the
+                resolved `n`/`seed`/`units` and the conditions actually in
+                effect) is never silently lost, just not forced into the
+                default return shape.
         """
         units = self._valid_units[0] if units is None else units
         if units not in self._valid_units:
@@ -262,10 +308,18 @@ class ResourceModel:
         samples = self._generator.sample(z, seed=seed)
 
         if self._postprocess is not None:
-            return self._postprocess(samples, units)
-        if units == "normalized":
-            return samples
-        return self._denormalize(samples)
+            result = self._postprocess(samples, units)
+        elif units == "normalized":
+            result = samples
+        else:
+            result = self._denormalize(samples)
+
+        self._last_metadata = {
+            "name": self._name, "zone": self._zone,
+            "n": n, "seed": seed, "units": units,
+            "conditions": dict(self._conditions),
+        }
+        return (result, self._last_metadata) if with_metadata else result
 
 
 def list_resources() -> dict:
