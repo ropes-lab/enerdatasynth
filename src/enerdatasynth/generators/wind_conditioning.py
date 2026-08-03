@@ -30,6 +30,17 @@ from wind_diffusion.data import NormStats
 from wind_diffusion.evaluate import build_condition_vector as _wind_build_condition_vector
 
 from enerdatasynth.generators.wind import WindDiffusionModel
+from enerdatasynth.utils.config import CHECKPOINT_DIR
+
+# enerdatasynth's own convention for a locally-bundled wind checkpoint --
+# checked before falling back to wind_diffusion's own resolution chain
+# (explicit path > WIND_DIFFUSION_CHECKPOINTS env dir > manifest-declared
+# download > CheckpointNotFoundError). Mirrors this repo's existing
+# practice of committing load's checkpoints directly under
+# data/checkpoints/ (unlike the source wind_diffusion project, which
+# gitignores its own outputs/ and has never published weights anywhere).
+# Currently populated for "1ch" only -- see README.md/docs/api_reference.md.
+_WIND_CHECKPOINT_ROOT = CHECKPOINT_DIR / "wind"
 
 # .set()-accepted keys, mirroring generate_wind_profile's human-facing
 # conditioning args (see the original repo's API_REVIEW.md "core" group)
@@ -104,9 +115,17 @@ def wind_construct(zone: str) -> dict:
 
     Raises `wind_diffusion.exceptions.CheckpointNotFoundError` if no
     trained checkpoint has been published for the requested preset yet
-    (expected today -- `manifest.json`'s presets are all `"pending"`).
+    (expected for "2ch"/"3ch" today -- see `_WIND_CHECKPOINT_ROOT`'s note;
+    "1ch" resolves to the bundled checkpoint below without needing any
+    env var or explicit path).
     """
-    generator = WindDiffusionModel(preset=zone)
+    bundled_dir = _WIND_CHECKPOINT_ROOT / zone
+    bundled_checkpoint = bundled_dir / "model_checkpoint.pt"
+    bundled_norm_stats = bundled_dir / "norm_stats.json"
+    if bundled_checkpoint.exists() and bundled_norm_stats.exists():
+        generator = WindDiffusionModel(preset=zone, checkpoint=bundled_checkpoint, norm_stats=bundled_norm_stats)
+    else:
+        generator = WindDiffusionModel(preset=zone)  # falls through to wind_diffusion's own resolution chain
     return {
         "generator": generator,
         "metadata": {

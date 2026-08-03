@@ -77,16 +77,37 @@ def tiny_wind_checkpoint_dir(tmp_path, monkeypatch):
 
 
 def test_wind_no_checkpoint_raises_wind_diffusions_own_exception(monkeypatch):
-    """No wiring bug when no weights are published yet (manifest.json's
-    presets are all "pending") -- must be wind_diffusion's own, actionable
-    CheckpointNotFoundError, not some generic AttributeError/KeyError from
-    bad registry plumbing."""
+    """No wiring bug when no weights are published yet -- must be
+    wind_diffusion's own, actionable CheckpointNotFoundError, not some
+    generic AttributeError/KeyError from bad registry plumbing. Uses
+    "2ch" specifically: "1ch" now resolves via the bundled checkpoint
+    under data/checkpoints/wind/1ch/ regardless of these env vars (see
+    test_wind_1ch_uses_bundled_checkpoint_without_any_env_setup) --
+    "2ch"/"3ch" still have no weights anywhere, bundled or otherwise."""
     monkeypatch.delenv("WIND_DIFFUSION_CHECKPOINTS", raising=False)
     monkeypatch.setenv("WIND_DIFFUSION_OFFLINE", "1")
 
     import enerdatasynth
     with pytest.raises(CheckpointNotFoundError):
-        enerdatasynth.model("wind", zone="1ch")
+        enerdatasynth.model("wind", zone="2ch")
+
+
+def test_wind_1ch_uses_bundled_checkpoint_without_any_env_setup(monkeypatch):
+    """The whole point of bundling data/checkpoints/wind/1ch/: a fresh
+    clone with no WIND_DIFFUSION_CHECKPOINTS/manifest download setup must
+    still be able to generate "1ch" wind profiles out of the box."""
+    monkeypatch.delenv("WIND_DIFFUSION_CHECKPOINTS", raising=False)
+    monkeypatch.delenv("WIND_DIFFUSION_OFFLINE", raising=False)
+
+    from wind_diffusion import evaluate as wind_evaluate
+    wind_evaluate._MODEL_CACHE.clear()
+
+    import enerdatasynth
+    wind = enerdatasynth.model("wind", zone="1ch")
+    wind.set(wind_regime="mid", month=7)
+    samples = wind.sample(n=2, seed=0)
+    assert samples.shape == (2, 288, 2)
+    assert np.isfinite(samples).all()
 
 
 def test_wind_list_and_describe_resources(tiny_wind_checkpoint_dir):
