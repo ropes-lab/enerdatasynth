@@ -19,8 +19,8 @@ import numpy as np
 import torch
 
 from enerdatasynth.utils.config import (
-    PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR, DEVICE,
-    DEFAULT_ARCHITECTURE, DEFAULT_N_HEADS, ensure_dirs,
+    PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR,
+    DEFAULT_ARCHITECTURE, DEFAULT_N_HEADS, ensure_dirs, resolve_device,
 )
 from enerdatasynth.models import build_denoiser
 from enerdatasynth.diffusion.ddpm import DDPM
@@ -29,7 +29,7 @@ from enerdatasynth.diffusion.ddpm import DDPM
 def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
                       n_layers: int, architecture: str = DEFAULT_ARCHITECTURE,
                       n_heads: int = DEFAULT_N_HEADS, use_val: bool = True,
-                      seed: int | None = None, device: str = DEVICE) -> Path:
+                      seed: int | None = None, device: str | None = None) -> Path:
     """
     Load the best checkpoint for `run_id` and generate one synthetic
     profile per real condition vector (using the validation set by
@@ -42,6 +42,7 @@ def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
     rather than silently changed for existing callers).
     """
     ensure_dirs()
+    device = resolve_device(device)
     if seed is not None:
         from enerdatasynth.utils.config import set_seed
         set_seed(seed)

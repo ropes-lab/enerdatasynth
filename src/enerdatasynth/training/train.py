@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from enerdatasynth.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, DEVICE, ensure_dirs
+from enerdatasynth.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, ensure_dirs, resolve_device
 from enerdatasynth.models import build_denoiser
 from enerdatasynth.diffusion.ddpm import DDPM
 from enerdatasynth.visualization.plots import plot_loss_curve
@@ -29,7 +29,7 @@ from enerdatasynth.visualization.plots import plot_loss_curve
 
 def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
                       X_val: np.ndarray, Z_val: np.ndarray,
-                      cfg: RunConfig, device: str = DEVICE,
+                      cfg: RunConfig, device: str | None = None,
                       verbose: bool = True) -> dict:
     """
     Train a single model configuration end-to-end.
@@ -39,6 +39,7 @@ def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
     runner and results report need.
     """
     ensure_dirs()
+    device = resolve_device(device)
     set_seed(cfg.seed)
 
     x_dim    = X_train.shape[1]

@@ -148,7 +148,26 @@ BATCH_SIZE      = 64
 LEARNING_RATE   = 3e-4
 MAX_EPOCHS      = 400        # matches the transformer convergence run (week7.py --epochs 400)
 EARLY_STOP_PATIENCE = 40     # matches week7.py --patience 40; set to None to disable
+# NOTE: kept for informational/backward-compat use (e.g. displaying "what
+# would resolve_device() pick right now"), but NOT used as a function
+# parameter default anywhere -- `device: str = DEVICE` bakes this value in
+# at *function-definition* (import) time, since Python evaluates defaults
+# once. If CUDA becomes available later in the same process (common in
+# notebooks, or workers that attach a GPU after start), every call would
+# silently keep using the stale default. Use `resolve_device(device)`
+# instead, called at call time, with `device: str | None = None`.
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def resolve_device(device: str | None = None) -> str:
+    """`device` if given, else "cuda"/"cpu" resolved fresh, at call time.
+
+    Use as `device = resolve_device(device)` inside a function whose own
+    parameter defaults to `None` -- NOT as `device: str = resolve_device()`
+    in a signature, which would just reintroduce the same frozen-at-import
+    problem this exists to fix.
+    """
+    return device if device is not None else ("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @dataclass
