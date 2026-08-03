@@ -106,6 +106,30 @@ def test_invalid_month_raises():
         load.sample(n=1)
 
 
+def test_list_resources_reports_pjm_load():
+    import enerdatasynth
+    info = enerdatasynth.list_resources()
+    assert "pjm_load" in info
+    assert info["pjm_load"]["zones"] == ["PS"]
+    assert info["pjm_load"]["domain"] == "load"
+    assert set(info["pjm_load"]["condition_fields"]) == {
+        "month", "day_of_week", "holiday", "Tmax", "Tmin", "spread",
+    }
+    assert info["pjm_load"]["checkpoint_available"] is True
+    assert info["pjm_load"]["best_run_id"]
+
+
+def test_describe_resource_matches_list_resources_entry():
+    import enerdatasynth
+    assert enerdatasynth.describe_resource("pjm_load") == enerdatasynth.list_resources()["pjm_load"]
+
+
+def test_describe_resource_unknown_name_raises():
+    import enerdatasynth
+    with pytest.raises(ValueError, match="Unknown model"):
+        enerdatasynth.describe_resource("solar_farm")
+
+
 def test_repr_does_not_leak_internals():
     import enerdatasynth
     load = enerdatasynth.model("pjm_load")

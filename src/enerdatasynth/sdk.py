@@ -181,6 +181,42 @@ class ResourceModel:
         return self._denormalize(samples)
 
 
+def list_resources() -> dict:
+    """List every resource type this SDK knows how to serve, with its
+    supported zones and current checkpoint availability -- lets a caller
+    discover what's registered without reading `_REGISTRY` in source.
+    Mirrors `wind_diffusion`'s `list_models()`/`describe_model()` pattern.
+    """
+    return {name: describe_resource(name) for name in _REGISTRY}
+
+
+def describe_resource(name: str) -> dict:
+    """Describe one registered resource type: supported zones, its
+    conditioning fields (the keys `.set()` accepts), and whether a trained
+    checkpoint is currently available. Unlike `model(name)`, never raises
+    for a missing checkpoint/processed dataset -- reports their absence
+    instead, so this is safe to call for discovery before attempting to
+    actually construct a `ResourceModel`.
+    """
+    if name not in _REGISTRY:
+        raise ValueError(f"Unknown model {name!r}. Available: {sorted(_REGISTRY)}")
+
+    entry = _REGISTRY[name]
+    info: dict = {
+        "zones": entry["zones"],
+        "domain": entry["generator_cls"].domain,
+        "condition_fields": [f.name for f in entry["condition_spec"]],
+        "processed_dataset_available": (PROCESSED_DIR / "metadata.json").exists(),
+    }
+    try:
+        info["best_run_id"] = _discover_best_checkpoint()
+        info["checkpoint_available"] = True
+    except FileNotFoundError:
+        info["best_run_id"] = None
+        info["checkpoint_available"] = False
+    return info
+
+
 def model(name: str, zone: Optional[str] = None) -> ResourceModel:
     """
     Construct a ready-to-configure generator for a resource type.
