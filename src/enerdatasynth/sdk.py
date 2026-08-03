@@ -27,20 +27,23 @@ implemented here; see `docs/extending.md`.
 from __future__ import annotations
 import json
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 import numpy as np
 
-from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, N_MONTHS, N_DOW
+from enerdatasynth import conditioning
+from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR
 from enerdatasynth.generators import LoadDiffusionModel, BaseGenerator
+from enerdatasynth.generators.load_conditioning import LOAD_CONDITION_SPEC, LOAD_EXTRA_SET_KEYS
 
-_DOW_NAMES = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-_WEEKDAY_INDICES = [0, 1, 2, 3, 4]
-_WEEKEND_INDICES = [5, 6]
-
-# Resource types this SDK currently knows how to serve. Adding a new
-# one (e.g. "wind") means adding an entry here once a real generator
-# for it exists — see docs/extending.md. Zones are constrained to what
+# Resource types this SDK currently knows how to serve. Adding a new one
+# (e.g. "wind") means adding an entry here once a real generator for it
+# exists -- see docs/extending.md -- plus its own `<domain>_conditioning.py`
+# module providing `condition_spec` (see `generators/load_conditioning.py`
+# for the reference implementation). `ResourceModel` reads `condition_spec`
+# generically (via `conditioning.py`) rather than hardcoding any one
+# resource's field names, so a second entry here is genuinely additive --
+# no changes needed to ResourceModel itself. Zones are constrained to what
 # the underlying preprocessing pipeline actually supports; see
 # MIGRATION.md for why this is PS-only today (config.ZONE) even though
 # research_history/scripts/zone_expansion.py explored 17 zones.
@@ -48,6 +51,8 @@ _REGISTRY = {
     "pjm_load": {
         "generator_cls": LoadDiffusionModel,
         "zones": ["PS"],
+        "condition_spec": LOAD_CONDITION_SPEC,
+        "extra_set_keys": LOAD_EXTRA_SET_KEYS,
     },
 }
 
@@ -87,131 +92,68 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     return best["run_id"]
 
 
-def _parse_day_of_week(value: Union[int, str]) -> int:
-    if isinstance(value, str):
-        key = value.strip().lower()
-        if key in _DOW_NAMES:
-            return _DOW_NAMES.index(key)
-        abbrevs = {n[:3]: i for i, n in enumerate(_DOW_NAMES)}
-        if key in abbrevs:
-            return abbrevs[key]
-        raise ValueError(f"Unrecognized day_of_week: {value!r}")
-    if isinstance(value, int) and 0 <= value <= 6:
-        return value
-    raise ValueError(f"day_of_week must be 0-6 or a day name, got {value!r}")
-
-
 class ResourceModel:
     """
     A configured, ready-to-sample generator for one resource type and
     zone. Returned by `enerdatasynth.model(...)` — not constructed
     directly.
+
+    Generic across resource types: `.set()`/`.sample()` build the raw
+    conditioning vector via `conditioning.build_condition_vector()` against
+    whichever `condition_spec` `_REGISTRY[name]` provides (see
+    `generators/load_conditioning.py`'s `LOAD_CONDITION_SPEC` for the
+    reference implementation and the per-field UX notes -- e.g. why
+    `weekday` samples a different day per realization -- that used to live
+    directly on this class's `.set()` docstring). This class itself no
+    longer hardcodes any single resource's field names.
     """
 
-    def __init__(self, name: str, zone: str, generator: BaseGenerator, metadata: dict):
+    def __init__(
+        self, name: str, zone: str, generator: BaseGenerator, metadata: dict,
+        condition_spec: list[conditioning.ConditionField], extra_set_keys: Optional[list[str]] = None,
+    ):
         self._name = name
         self._zone = zone
         self._generator = generator
         self._metadata = metadata
+        self._condition_spec = condition_spec
+        self._valid_set_keys = {f.name for f in condition_spec} | set(extra_set_keys or [])
         self._conditions: dict = {}
 
     def __repr__(self) -> str:
         return f"<ResourceModel {self._name!r} zone={self._zone!r} domain={self._generator.domain!r}>"
 
-    def set(self, *, month: Optional[int] = None,
-            Tmax: Optional[float] = None, Tmin: Optional[float] = None,
-            weekday: Optional[bool] = None, holiday: Optional[bool] = None,
-            day_of_week: Optional[Union[int, str]] = None,
-            spread: Optional[float] = None) -> "ResourceModel":
+    def set(self, **kwargs) -> "ResourceModel":
         """
-        Set conditioning variables. Chainable — returns self. Only
-        the keys you pass are updated; previously-set values persist
-        across calls, so you can build up conditions incrementally.
+        Set conditioning variables. Chainable — returns self. Only the
+        keys you pass are updated; previously-set values persist across
+        calls, so you can build up conditions incrementally.
 
-        month       : 1-12 (calendar month). Required before sample().
-        Tmax, Tmin  : daily max/min temperature, in degrees Fahrenheit
-                      — the same units as the training data
-                      (`research_history/`'s NOAA temperature pipeline
-                      converts to °F; this SDK does not silently
-                      convert units, to avoid guessing wrong). Required
-                      before sample().
-        weekday     : True samples a uniformly random weekday (Mon-Fri)
-                      independently for each generated profile; False
-                      samples a random weekend day (Sat-Sun). Default:
-                      True. This is a genuine UX decision, not a
-                      validated finding — the model's actual
-                      conditioning is a specific day-of-week, not a
-                      "weekday" category, and there's no single
-                      "correct" weekday to pick, so this samples one
-                      per profile instead of arbitrarily fixing e.g.
-                      Wednesday for every sample. Use `day_of_week`
-                      for exact control.
-        day_of_week : Exact override, 0=Monday..6=Sunday, or a name
-                      ("Monday", "Mon", ...). Takes precedence over
-                      `weekday` when both are set.
-        holiday     : US federal holiday flag. Default: False.
-        spread      : Daily load range (max MW - min MW), which the
-                      model was also conditioned on during training.
-                      Not something a caller predicting from weather
-                      alone would actually know in advance — defaults
-                      to the training set's mean spread (a "typical
-                      variability" day) if not given. This is a
-                      documented simplification, not a validated
-                      estimate of what spread a given weather condition
-                      implies; see docs/api_reference.md.
+        Accepted keys depend on the resource (`enerdatasynth.model(name,
+        ...)`'s `name`) — see `docs/api_reference.md` for `"pjm_load"`'s
+        full parameter reference (`month`, `Tmax`, `Tmin`, `weekday`,
+        `day_of_week`, `holiday`, `spread`) including the UX notes behind
+        each default. Unknown keys for the current resource raise
+        `ValueError` immediately rather than being silently ignored.
         """
-        updates = dict(month=month, Tmax=Tmax, Tmin=Tmin, weekday=weekday,
-                        holiday=holiday, day_of_week=day_of_week, spread=spread)
-        for key, value in updates.items():
+        unknown = set(kwargs) - self._valid_set_keys
+        if unknown:
+            raise ValueError(
+                f"Unknown condition(s) for {self._name!r}: {sorted(unknown)}. "
+                f"Valid keys: {sorted(self._valid_set_keys)}."
+            )
+        for key, value in kwargs.items():
             if value is not None:
                 self._conditions[key] = value
         return self
 
     def _missing_required(self) -> list:
-        return [k for k in ("month", "Tmax", "Tmin") if k not in self._conditions]
+        return conditioning.missing_required(self._condition_spec, self._conditions)
 
     def _build_conditioning(self, n: int, rng: np.random.Generator) -> np.ndarray:
-        missing = self._missing_required()
-        if missing:
-            raise ValueError(
-                f"Missing required condition(s) before sample(): {missing}. "
-                f"Call .set({', '.join(f'{m}=...' for m in missing)}) first."
-            )
-
-        temp_scaler = self._metadata["temp_scaler"]
-        spread_scaler = self._metadata["spread_scaler"]
-        tmax_mean, tmin_mean = temp_scaler["mean_"]
-        tmax_scale, tmin_scale = temp_scaler["scale_"]
-        spread_mean, spread_scale = spread_scaler["mean_"][0], spread_scaler["scale_"][0]
-
-        month = self._conditions["month"]
-        if not (1 <= month <= 12):
-            raise ValueError(f"month must be 1-12, got {month}")
-        Tmax_z = (self._conditions["Tmax"] - tmax_mean) / tmax_scale
-        Tmin_z = (self._conditions["Tmin"] - tmin_mean) / tmin_scale
-        holiday_flag = float(self._conditions.get("holiday", False))
-
-        if "spread" in self._conditions:
-            spread_z = (self._conditions["spread"] - spread_mean) / spread_scale
-        else:
-            spread_z = 0.0  # dataset-mean spread; see set()'s docstring
-
-        if "day_of_week" in self._conditions:
-            dow_choices = np.full(n, _parse_day_of_week(self._conditions["day_of_week"]))
-        else:
-            is_weekday = self._conditions.get("weekday", True)
-            pool = _WEEKDAY_INDICES if is_weekday else _WEEKEND_INDICES
-            dow_choices = rng.choice(pool, size=n)
-
-        Z = np.zeros((n, N_MONTHS + N_DOW + 1 + 1 + 1 + 1), dtype=np.float32)
-        Z[:, month - 1] = 1.0
-        for i, dow in enumerate(dow_choices):
-            Z[i, N_MONTHS + dow] = 1.0
-        Z[:, N_MONTHS + N_DOW] = holiday_flag
-        Z[:, N_MONTHS + N_DOW + 1] = Tmax_z
-        Z[:, N_MONTHS + N_DOW + 2] = Tmin_z
-        Z[:, N_MONTHS + N_DOW + 3] = spread_z
-        return Z
+        return conditioning.build_condition_vector(
+            self._condition_spec, self._conditions, self._metadata, n, rng,
+        )
 
     def _denormalize(self, X_normalized: np.ndarray) -> np.ndarray:
         data_min = np.asarray(self._metadata["load_scaler"]["data_min_"])
@@ -278,4 +220,7 @@ def model(name: str, zone: Optional[str] = None) -> ResourceModel:
     run_id = _discover_best_checkpoint()
     generator = entry["generator_cls"].from_run_id(run_id)
 
-    return ResourceModel(name=name, zone=zone, generator=generator, metadata=metadata)
+    return ResourceModel(
+        name=name, zone=zone, generator=generator, metadata=metadata,
+        condition_spec=entry["condition_spec"], extra_set_keys=entry.get("extra_set_keys"),
+    )
