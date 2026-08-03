@@ -76,26 +76,30 @@ def tiny_wind_checkpoint_dir(tmp_path, monkeypatch):
     return tmp_path
 
 
-def test_wind_no_checkpoint_raises_wind_diffusions_own_exception(monkeypatch):
-    """No wiring bug when no weights are published yet -- must be
+def test_wind_no_checkpoint_raises_wind_diffusions_own_exception(tmp_path, monkeypatch):
+    """No wiring bug when no weights are available anywhere -- must be
     wind_diffusion's own, actionable CheckpointNotFoundError, not some
-    generic AttributeError/KeyError from bad registry plumbing. Uses
-    "2ch" specifically: "1ch" now resolves via the bundled checkpoint
-    under data/checkpoints/wind/1ch/ regardless of these env vars (see
-    test_wind_1ch_uses_bundled_checkpoint_without_any_env_setup) --
-    "2ch"/"3ch" still have no weights anywhere, bundled or otherwise."""
+    generic AttributeError/KeyError from bad registry plumbing. All three
+    presets now have real bundled checkpoints (data/checkpoints/wind/),
+    so this forces the fallback path by pointing wind_conditioning's
+    bundled-checkpoint root at an empty directory instead."""
     monkeypatch.delenv("WIND_DIFFUSION_CHECKPOINTS", raising=False)
     monkeypatch.setenv("WIND_DIFFUSION_OFFLINE", "1")
 
+    from enerdatasynth.generators import wind_conditioning
+    monkeypatch.setattr(wind_conditioning, "_WIND_CHECKPOINT_ROOT", tmp_path / "no_checkpoints_here")
+
     import enerdatasynth
     with pytest.raises(CheckpointNotFoundError):
-        enerdatasynth.model("wind", zone="2ch")
+        enerdatasynth.model("wind", zone="1ch")
 
 
-def test_wind_1ch_uses_bundled_checkpoint_without_any_env_setup(monkeypatch):
-    """The whole point of bundling data/checkpoints/wind/1ch/: a fresh
-    clone with no WIND_DIFFUSION_CHECKPOINTS/manifest download setup must
-    still be able to generate "1ch" wind profiles out of the box."""
+def test_wind_bundled_checkpoints_work_without_any_env_setup(monkeypatch):
+    """The whole point of bundling data/checkpoints/wind/<preset>/: a
+    fresh clone with no WIND_DIFFUSION_CHECKPOINTS/manifest download setup
+    must still be able to generate wind profiles for every preset out of
+    the box, each with its own correct recommended generation settings
+    (see WindDiffusionModel.__init__'s _recommended_generation)."""
     monkeypatch.delenv("WIND_DIFFUSION_CHECKPOINTS", raising=False)
     monkeypatch.delenv("WIND_DIFFUSION_OFFLINE", raising=False)
 
@@ -103,11 +107,14 @@ def test_wind_1ch_uses_bundled_checkpoint_without_any_env_setup(monkeypatch):
     wind_evaluate._MODEL_CACHE.clear()
 
     import enerdatasynth
-    wind = enerdatasynth.model("wind", zone="1ch")
-    wind.set(wind_regime="mid", month=7)
-    samples = wind.sample(n=2, seed=0)
-    assert samples.shape == (2, 288, 2)
-    assert np.isfinite(samples).all()
+    expected_eta = {"1ch": 1.0, "2ch": 0.0, "3ch": 1.0}
+    for preset in ("1ch", "2ch", "3ch"):
+        wind = enerdatasynth.model("wind", zone=preset)
+        assert wind._generator._recommended_generation["eta"] == expected_eta[preset]
+        wind.set(wind_regime="mid", month=7)
+        samples = wind.sample(n=2, seed=0)
+        assert samples.shape == (2, 288, 2)
+        assert np.isfinite(samples).all()
 
 
 def test_wind_list_and_describe_resources(tiny_wind_checkpoint_dir):

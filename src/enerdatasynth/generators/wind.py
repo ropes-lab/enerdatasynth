@@ -27,8 +27,25 @@ from wind_diffusion.config import PresetName
 from wind_diffusion.data import NormStats
 from wind_diffusion.diffusion import DiffusionSchedule
 from wind_diffusion.evaluate import generate_multiple_for_condition, get_cached_model
-from wind_diffusion.registry import resolve_weights
+from wind_diffusion.registry import describe_model, resolve_weights
+from wind_diffusion.transforms import wind_regime_slice
 from wind_diffusion.utils import set_seed as _wind_set_seed
+
+# Fallback if a preset's manifest entry has no recommended_generation for
+# some reason (shouldn't happen against the bundled manifest.json, but a
+# caller could point checkpoint=/norm_stats= at something manifest.json
+# knows nothing about). Deliberately the "safe against any checkpoint"
+# values (guidance_scale=1.0 disables guidance; eta=1.0/dynamic_threshold
+# have no training dependency), NOT any preset's specific recommended
+# recipe -- those differ per preset (see __init__'s docstring: eta=1.0 is
+# actually wrong for 2ch's own recommendation, eta=0.0) and this fallback
+# only runs when we have no manifest data to know which preset we'd even
+# be recommending for.
+_GENERATION_DEFAULTS_FALLBACK = {
+    "sampler": "ddim", "steps": 50, "eta": 1.0,
+    "guidance_scale": 1.0, "guidance_scope": "full",
+    "dynamic_threshold": True, "dynamic_threshold_percentile": 99.0,
+}
 
 from enerdatasynth.generators.base import BaseGenerator
 from enerdatasynth.utils.config import resolve_device
@@ -56,6 +73,10 @@ class WindDiffusionModel(BaseGenerator):
     ):
         self.preset = preset
         self.device = resolve_device(device)
+
+        self._recommended_generation = describe_model(preset).get("recommended_generation") or dict(
+            _GENERATION_DEFAULTS_FALLBACK
+        )
 
         ckpt_path, norm_path = resolve_weights(preset, checkpoint=checkpoint, norm_stats=norm_stats)
         self.model, self.config, self._checkpoint_dict = get_cached_model(
@@ -95,13 +116,13 @@ class WindDiffusionModel(BaseGenerator):
         self,
         z: np.ndarray,
         seed: int | None = None,
-        sampler: str = "ddim",
-        steps: int = 50,
-        eta: float = 1.0,
-        guidance_scale: float = 1.0,
-        guidance_slice=None,
-        dynamic_threshold: bool = True,
-        dynamic_threshold_percentile: float = 99.0,
+        sampler: str | None = None,
+        steps: int | None = None,
+        eta: float | None = None,
+        guidance_scale: float | None = None,
+        guidance_scope: str | None = None,
+        dynamic_threshold: bool | None = None,
+        dynamic_threshold_percentile: float | None = None,
     ) -> np.ndarray:
         """
         Generate one synthetic wind day per row of `z` -- a raw
@@ -117,15 +138,38 @@ class WindDiffusionModel(BaseGenerator):
         collapsing to windspeed-only would silently drop direction for
         `2ch`/`3ch`.
 
-        `sampler`/`steps`/`eta`/`dynamic_threshold`/`guidance_scale`
-        default to `wind_diffusion`'s own measured-best recipe (see
-        `MODEL_CARD.md`/`API_REVIEW.md` in the original repo), not the
-        library's own conservative "off" defaults -- deliberately, since
-        this Tier-2 entry point IS where research/development callers who
-        want that recipe land.
+        `sampler`/`steps`/`eta`/`guidance_scale`/`guidance_scope`/
+        `dynamic_threshold`/`dynamic_threshold_percentile`: `None`
+        (default, for any of these) resolves to *this preset's own*
+        `recommended_generation` from `wind_diffusion`'s bundled
+        `manifest.json` (fetched once in `__init__`), not one fixed set of
+        defaults shared across presets -- these genuinely differ per
+        preset. Concretely: `1ch`/`3ch` recommend `eta=1.0,
+        guidance_scale=40.0, guidance_scope="wind_regime"`; `2ch` requires
+        `eta=0.0, guidance_scale=1.0` instead (guidance measurably breaks
+        `2ch` even with dynamic thresholding on, and `eta=1.0` -- a clear
+        win for `1ch`/`3ch` -- was measured *mixed* for `2ch` and not
+        adopted as its default). Passing an explicit value for any of
+        these overrides that preset's recommendation, same as always.
         """
         if seed is not None:
             _wind_set_seed(seed)
+
+        rec = self._recommended_generation
+        sampler = rec["sampler"] if sampler is None else sampler
+        steps = rec["steps"] if steps is None else steps
+        eta = rec["eta"] if eta is None else eta
+        guidance_scale = rec["guidance_scale"] if guidance_scale is None else guidance_scale
+        guidance_scope = rec["guidance_scope"] if guidance_scope is None else guidance_scope
+        dynamic_threshold = rec["dynamic_threshold"] if dynamic_threshold is None else dynamic_threshold
+        dynamic_threshold_percentile = (
+            rec["dynamic_threshold_percentile"] if dynamic_threshold_percentile is None
+            else dynamic_threshold_percentile
+        )
+        guidance_slice = (
+            wind_regime_slice(self.config.condition_on, wind_regime_encoding=self.config.wind_regime_encoding)
+            if guidance_scope == "wind_regime" else None
+        )
 
         z = np.asarray(z, dtype=np.float32)
         if z.ndim == 1:

@@ -24,6 +24,8 @@ genuinely different conditioning shape can provide instead of
 
 from __future__ import annotations
 
+import os
+
 import numpy as np
 
 from wind_diffusion.data import NormStats
@@ -113,16 +115,23 @@ def wind_construct(zone: str) -> dict:
     reusing the existing zone-selection mechanism avoids inventing a
     second construction-time-selector parameter just for wind.
 
+    Bundled checkpoints (`data/checkpoints/wind/<preset>/`) are used only
+    when `WIND_DIFFUSION_CHECKPOINTS` is NOT set -- an explicit env-dir
+    override always wins, same precedence a caller would expect from
+    `wind_diffusion.registry.resolve_weights` itself (explicit > env dir >
+    manifest download). Without this, someone who deliberately points
+    `WIND_DIFFUSION_CHECKPOINTS` at their own checkpoint would have it
+    silently ignored in favor of this repo's bundled one.
+
     Raises `wind_diffusion.exceptions.CheckpointNotFoundError` if no
-    trained checkpoint has been published for the requested preset yet
-    (expected for "2ch"/"3ch" today -- see `_WIND_CHECKPOINT_ROOT`'s note;
-    "1ch" resolves to the bundled checkpoint below without needing any
-    env var or explicit path).
+    checkpoint is available anywhere for the requested preset (bundled,
+    env dir, or manifest download).
     """
     bundled_dir = _WIND_CHECKPOINT_ROOT / zone
     bundled_checkpoint = bundled_dir / "model_checkpoint.pt"
     bundled_norm_stats = bundled_dir / "norm_stats.json"
-    if bundled_checkpoint.exists() and bundled_norm_stats.exists():
+    env_override_set = bool(os.environ.get("WIND_DIFFUSION_CHECKPOINTS"))
+    if not env_override_set and bundled_checkpoint.exists() and bundled_norm_stats.exists():
         generator = WindDiffusionModel(preset=zone, checkpoint=bundled_checkpoint, norm_stats=bundled_norm_stats)
     else:
         generator = WindDiffusionModel(preset=zone)  # falls through to wind_diffusion's own resolution chain
