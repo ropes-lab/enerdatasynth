@@ -2,12 +2,14 @@
 src/enerdatasynth/generators
 ==============================
 The SDK layer: `BaseGenerator` is the common interface every
-resource-type generator implements; `LoadDiffusionModel` is the one
-concrete implementation that exists today (electric load). See
-`base.py` for why a wind counterpart isn't stubbed out here.
+resource-type generator implements. `LoadDiffusionModel` (electric load)
+and `WindDiffusionModel` (wind, wrapping the vendored `wind_diffusion`
+package -- structural skeleton only, no published weights yet) are the
+two concrete implementations.
 """
 
 from enerdatasynth.generators.base import BaseGenerator
 from enerdatasynth.generators.load import LoadDiffusionModel
+from enerdatasynth.generators.wind import WindDiffusionModel
 
-__all__ = ["BaseGenerator", "LoadDiffusionModel"]
+__all__ = ["BaseGenerator", "LoadDiffusionModel", "WindDiffusionModel"]

@@ -27,7 +27,7 @@ classifiers = [
 dependencies = [
     "numpy",
     "pandas",
-    "torch",
+    "torch>=2.11.0,<2.12.0",
     "scikit-learn",
     "statsmodels",
     "holidays",
@@ -36,9 +36,25 @@ dependencies = [
     "tqdm",
     "pyarrow",
     "pyyaml",
+    # Below: wind_diffusion's own dependencies (src/wind_diffusion/, vendored
+    # from Data-For-Good) that weren't already covered above. torch's pin
+    # is likewise wind_diffusion's -- see the comment in the original repo's
+    # pyproject.toml: torch==2.12.0+cpu segfaults during the autograd-tracked
+    # forward pass through nn.TransformerEncoder on at least one real CPU;
+    # inference is unaffected, only training crashes. Reproduced directly,
+    # confirmed fixed on 2.11.0. This is now the whole package's pin, not
+    # just wind's, since there's one shared torch install either way.
+    "h5py",
+    "h5pyd",
+    "scipy",
+    "seaborn",
+    "python-dotenv",
 ]
 
 [project.optional-dependencies]
+# seaborn is now also a core dependency (wind_diffusion.evaluate imports it
+# unconditionally) -- this extra is redundant but kept so the documented
+# `pip install -e ".[viz]"` (docs/installation.md, README.md) doesn't break.
 viz = [
     "seaborn>=0.13",
 ]
@@ -64,10 +80,14 @@ where = ["src"]
 # PEP 561 marker (src/enerdatasynth/py.typed) -- without an explicit
 # package-data entry, setuptools' default wheel builder only picks up
 # *.py files under packages.find and silently drops non-.py data files
-# from the built wheel (the same gotcha wind_diffusion's manifest.json
-# has a comment about). Ships it so downstream mypy/IDE users actually
+# from the built wheel. Ships it so downstream mypy/IDE users actually
 # get type-checking signal from an installed (non-editable) copy.
 enerdatasynth = ["py.typed"]
+# wind_diffusion/manifest.json (bundled weights index, loaded at runtime
+# via importlib.resources -- see wind_diffusion/registry.py) is the same
+# kind of non-.py data file; carried over from the original repo's own
+# pyproject.toml comment about this exact gotcha.
+wind_diffusion = ["manifest.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

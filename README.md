@@ -7,7 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
-[![Tests: 59 passing](https://img.shields.io/badge/tests-59%20passing-brightgreen.svg)](tests/)
+[![Tests: 228 passing](https://img.shields.io/badge/tests-228%20passing-brightgreen.svg)](tests/)
 [![Packaging: verified](https://img.shields.io/badge/packaging-pip%20install%20verified-blue.svg)](MIGRATION.md)
 
 **Generate realistic synthetic electric-load profiles from a fitted diffusion model — no ML expertise required.**
@@ -51,15 +51,17 @@ Utilities, grid operators, and energy researchers frequently need realistic synt
 - **A validated transformer architecture** — selected via a controlled 4-way architecture comparison (MLP/CNN/attention/transformer), not the first thing that was tried. See [Research Summary](#-research-summary).
 - **A corrected diffusion sampler** — an earlier DDIM-style sampler was found to silently corrupt every result it touched; the fix is the only sampler shipped today.
 - **Automatic bias calibration** — a systematic energy-error offset, diagnosed and corrected, applied automatically at generation time.
-- **A common generator interface** (`BaseGenerator`) designed so a future resource type (e.g. wind) can be added through the same SDK contract — see [Extending](docs/extending.md).
+- **A second resource type, wind** — `enerdatasynth.model("wind", zone="1ch")`, wrapping a vendored diffusion pipeline (`wind_diffusion`, from a separate Data-For-Good project) through the exact same `BaseGenerator`/`ResourceModel` contract as load. All three channel presets (`1ch`/`2ch`/`3ch`) ship with real trained checkpoints bundled in this repo. See [Supported Generators](#-supported-generators) and [Extending](docs/extending.md).
 - **Config-driven, YAML-first** hyperparameters (`data/configs/`), a real test suite (`tests/`, ~2–20s), and a full audit trail of every design decision ([MIGRATION.md](MIGRATION.md)) — nothing here is asserted without a file backing it.
 
 ## 🔌 Supported Generators
 
-| Resource | Status | Zones | Entry point |
+| Resource | Status | Zones / presets | Entry point |
 |---|---|---|---|
 | Electric load | ✅ Available | `PS` (PJM/PSE&G, NJ) | `enerdatasynth.model("pjm_load", zone="PS")` |
-| Wind | 🧩 Interface-ready, not implemented | — | See [`docs/extending.md`](docs/extending.md) — no wind data, model, or results exist in this project |
+| Wind | ✅ Available | `1ch` / `2ch` / `3ch` — all bundled checkpoints | `enerdatasynth.model("wind", zone="1ch")` |
+
+Wind wraps a separately-developed diffusion pipeline (`wind_diffusion`, vendored from a Data-For-Good research project) behind the same `.set()`/`.sample()` contract load uses — see [`docs/api_reference.md`](docs/api_reference.md) for its full parameter reference and [`docs/extending.md`](docs/extending.md) for how it's wired in (useful if you're adding a third resource type). Each preset uses its own measured-best generation recipe automatically (`2ch` specifically requires different settings than `1ch`/`3ch` — see `docs/api_reference.md`); `units="m/s"` is the only unit wind supports today, for every preset.
 
 ## 📦 Installation
 
@@ -85,6 +87,14 @@ import enerdatasynth
 load = enerdatasynth.model("pjm_load", zone="PS")
 load.set(month=7, Tmax=86, Tmin=70, weekday=True, holiday=False)
 samples = load.sample(n=100, seed=0)   # (100, 24) ndarray, MW
+```
+
+Wind (any of `1ch`/`2ch`/`3ch` — all bundled, no extra setup needed):
+
+```python
+wind = enerdatasynth.model("wind", zone="1ch")
+wind.set(wind_regime="mid", month=7, temp_min=10, temp_max=22)
+samples = wind.sample(n=100, seed=0)   # (100, 288, 2) ndarray, m/s + degrees
 ```
 
 That's the whole interface for generation. Training a new model, if you want to reproduce or extend the results below:
@@ -188,7 +198,9 @@ No accompanying paper has been published yet. If you use this software, please c
 - [ ] Re-validate the transformer/calibration pipeline under the package's current one-hot conditioning (see the caveat in [`docs/architecture.md`](docs/architecture.md))
 - [ ] Multi-zone support (17 zones explored in `data/research_history/scripts/zone_expansion.py`, not yet promoted)
 - [ ] A friendlier `set()` for `spread` (currently defaults to the training-set mean; see [`docs/api_reference.md`](docs/api_reference.md))
-- [ ] Wind generation, once real data/research exists to back it (see [`docs/extending.md`](docs/extending.md))
+- [x] Wind generation for `1ch`/`2ch`/`3ch` (`enerdatasynth.model("wind", zone=...)`, all three bundled with real checkpoints)
+- [ ] `units="normalized"` for wind (only `"m/s"` is supported today — `generate_multiple_for_condition` bakes denormalization into its output rather than exposing a raw option; a real gap, not prioritized)
+- [ ] A proper weights-distribution mechanism for wind (`wind_diffusion.manifest.json`'s download-with-sha256-verification path, vs. today's ad hoc `data/checkpoints/wind/` bundling directly into git)
 - [ ] Re-sweep hyperparameters for the transformer architecture specifically (the current defaults are inherited from `data/research_history/`, never re-swept against this package's own pipeline)
 
 Tracked in detail in [`data/reports/future_experiments.md`](data/reports/future_experiments.md) and [`MIGRATION.md`](MIGRATION.md).

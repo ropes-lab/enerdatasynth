@@ -51,6 +51,48 @@ def test_set_is_chainable_and_incremental():
     assert load._conditions == {"month": 7, "Tmax": 86, "Tmin": 70}
 
 
+def test_reset_clears_accumulated_conditions():
+    import enerdatasynth
+    load = enerdatasynth.model("pjm_load")
+    load.set(month=7, Tmax=86, Tmin=70)
+    result = load.reset()
+    assert result is load
+    assert load._conditions == {}
+    with pytest.raises(ValueError, match="month"):
+        load.sample(n=1)
+
+
+def test_last_metadata_none_before_first_sample():
+    import enerdatasynth
+    load = enerdatasynth.model("pjm_load")
+    assert load.last_metadata() is None
+
+
+def test_sample_with_metadata_returns_tuple_and_matches_last_metadata():
+    import enerdatasynth
+    load = enerdatasynth.model("pjm_load")
+    load.set(month=7, Tmax=86, Tmin=70)
+    samples, meta = load.sample(n=3, seed=0, with_metadata=True)
+    assert samples.shape == (3, 24)
+    assert meta["name"] == "pjm_load"
+    assert meta["n"] == 3
+    assert meta["seed"] == 0
+    assert meta["units"] == "MW"
+    assert meta["conditions"] == {"month": 7, "Tmax": 86, "Tmin": 70}
+    assert load.last_metadata() == meta
+
+
+def test_sample_without_with_metadata_still_updates_last_metadata():
+    import enerdatasynth
+    load = enerdatasynth.model("pjm_load")
+    load.set(month=7, Tmax=86, Tmin=70)
+    samples = load.sample(n=2, seed=0)
+    assert isinstance(samples, np.ndarray)  # bare array, not a tuple
+    meta = load.last_metadata()
+    assert meta is not None
+    assert meta["n"] == 2
+
+
 def test_sample_returns_mw_scale_by_default():
     import enerdatasynth
     load = enerdatasynth.model("pjm_load")
@@ -112,8 +154,12 @@ def test_list_resources_reports_pjm_load():
     assert "pjm_load" in info
     assert info["pjm_load"]["zones"] == ["PS"]
     assert info["pjm_load"]["domain"] == "load"
+    # Includes "weekday" alongside the ConditionField-modeled names --
+    # condition_fields reflects everything .set() actually accepts
+    # (condition_spec fields + extra_set_keys), not just the spec-modeled
+    # subset (a gap found while wiring up wind's own extra_set_keys).
     assert set(info["pjm_load"]["condition_fields"]) == {
-        "month", "day_of_week", "holiday", "Tmax", "Tmin", "spread",
+        "month", "day_of_week", "holiday", "Tmax", "Tmin", "spread", "weekday",
     }
     assert info["pjm_load"]["checkpoint_available"] is True
     assert info["pjm_load"]["best_run_id"]
