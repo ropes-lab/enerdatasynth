@@ -1,0 +1,160 @@
+{
+  "zone": "PS",
+  "description": "All scalers fitted on 2016-2023 training data only",
+  "load_scaler": {
+    "type": "MinMaxScaler [0,1] per-hour",
+    "fitted_on": "Z5 training days 2016-2023",
+    "n_hours": 24,
+    "data_min_": [
+      3445.697,
+      3323.809,
+      3252.439,
+      3224.502,
+      3223.426,
+      3183.696,
+      3157.944,
+      3176.017,
+      3080.994,
+      3016.775,
+      2990.205,
+      2901.807,
+      2832.305,
+      2804.069,
+      2821.087,
+      2909.17,
+      3102.045,
+      3390.555,
+      3717.733,
+      3923.733,
+      4083.141,
+      4030.313,
+      3851.563,
+      3629.158
+    ],
+    "data_max_": [
+      7462.337,
+      7109.255,
+      6831.413,
+      6658.589,
+      6624.967,
+      6676.862,
+      6840.842,
+      7163.98,
+      7569.179,
+      7987.09,
+      8440.919,
+      8830.266,
+      9276.84,
+      9613.985,
+      9826.578,
+      10023.84,
+      10147.018,
+      10103.937,
+      9980.147,
+      9789.097,
+      9455.609,
+      8997.661,
+      8429.203,
+      7930.579
+    ],
+    "h23_min": 3629.158,
+    "h23_max": 7930.579,
+    "invert": "MW = x_norm * (data_max_[h] - data_min_[h]) + data_min_[h]"
+  },
+  "temp_scaler": {
+    "type": "StandardScaler (Z-score)",
+    "fitted_on": "Z5 training days 2016-2023",
+    "columns": [
+      "Tmax",
+      "Tmin"
+    ],
+    "mean_": [
+      64.64663554757631,
+      49.430140035906646
+    ],
+    "std_": [
+      18.3836860604393,
+      17.0877673806672
+    ],
+    "invert": "T_F = z * std + mean",
+    "station": "EWR (Newark Liberty Airport) via pjm_hourly_temps.py"
+  },
+  "spread_scaler": {
+    "type": "MinMaxScaler [0,1]",
+    "fitted_on": "Z5 training days 2016-2023",
+    "definition": "spread = max(load) - min(load) per day  (PI confirmed)",
+    "data_min_": 523.799,
+    "data_max_": 4598.107999999999,
+    "invert": "spread_MW = s_norm * (data_max - data_min) + data_min"
+  },
+  "Z5": {
+    "description": "PI baseline conditioning vector  (from PI email)",
+    "columns": [
+      "month",
+      "dow",
+      "is_holiday",
+      "Tmax_z",
+      "Tmin_z",
+      "spread_norm"
+    ],
+    "n_dims": 6,
+    "train_shape": [
+      2785,
+      6
+    ],
+    "val_shape": [
+      600,
+      6
+    ],
+    "notes": {
+      "month": "integer 1\u201312, NOT scaled",
+      "dow": "integer 0\u20136 (0=Mon 6=Sun), NOT scaled",
+      "is_holiday": "binary 0/1 \u2014 US federal holidays via holidays.US()",
+      "Tmax_z": "Z-scored using temp_scaler",
+      "Tmin_z": "Z-scored using temp_scaler",
+      "spread_norm": "MinMax [0,1] using spread_scaler"
+    }
+  },
+  "Z9": {
+    "description": "Experimental extension  (not the PI baseline)",
+    "columns": [
+      "M_sin",
+      "M_cos",
+      "W_sin",
+      "W_cos",
+      "is_weekend",
+      "is_holiday",
+      "Tmax_z",
+      "Tmin_z",
+      "MW_anchor"
+    ],
+    "n_dims": 9,
+    "train_shape": [
+      2784,
+      9
+    ],
+    "val_shape": [
+      600,
+      9
+    ],
+    "MW_anchor": {
+      "source": "h23 (11 PM) load from the PREVIOUS calendar day",
+      "formula": "(h23_prev - h23_min) / (h23_max - h23_min)",
+      "h23_min": 3629.158,
+      "h23_max": 7930.579,
+      "purpose": "Multi-day continuity: reduces midnight jump when stitching generated days"
+    }
+  },
+  "day_counts": {
+    "total_raw": 3653,
+    "dst_removed": 20,
+    "load_removed": 10,
+    "weather_removed": 128,
+    "covid_removed": 122,
+    "anchor_removed_z9_only": 1,
+    "z5_clean": 3385,
+    "z9_clean": 3384,
+    "z5_train": 2785,
+    "z5_val": 600
+  }
+}

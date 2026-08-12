@@ -1,0 +1,40 @@
+# FAQ
+
+**Do I need to know anything about diffusion models to use this?**
+No. `enerdatasynth.model(...).set(...).sample(...)` never exposes tensors, architecture classes, or checkpoint paths. See the [README Quick Start](../README.md#-quick-start).
+
+**Why does `enerdatasynth.model("pjm_load")` sometimes use the MLP instead of the transformer, if the transformer is supposed to be better?**
+The SDK auto-discovers the best *available* checkpoint, preferring transformer runs. If no transformer checkpoint has been trained yet against this package's current preprocessing pipeline, it falls back to the best MLP run rather than failing. Train one (`enerdatasynth train`) to make it the new default automatically — see [`docs/api_reference.md`](api_reference.md)'s `_discover_best_checkpoint` note and [MIGRATION.md](../MIGRATION.md) §5 for why no transformer checkpoint exists under the current pipeline yet.
+
+**What temperature units does `.set(Tmax=, Tmin=)` expect?**
+Degrees Fahrenheit — matching the training data. Not silently converted from Celsius. See [`docs/api_reference.md`](api_reference.md).
+
+**Can I generate load for a zone other than PS?**
+Not currently — `PS` (PSE&G, New Jersey) is the only zone the shipped pipeline has data/checkpoints for. See [MODEL_CARD.md](../MODEL_CARD.md#supported-zones) and the README Roadmap.
+
+**Can I generate wind data?**
+Not yet — there's no wind data, model, or validated research anywhere in this project. The SDK's interface (`BaseGenerator`) is designed so wind *could* be added without changing how callers use the SDK, but nothing wind-specific is implemented. See [`docs/extending.md`](extending.md).
+
+**Why does `spread` default to the mean instead of being computed from `Tmax`/`Tmin`?**
+`spread` is a property of the load profile being generated, not something derivable from weather alone with any validated method here. See the "Why does `spread` default to the mean?" section in [`docs/api_reference.md`](api_reference.md).
+
+**Is the output real PJM data?**
+No — always synthetic. Output should never be presented as real, historical, or utility-reported data. See [MODEL_CARD.md](../MODEL_CARD.md#out-of-scope-uses).
+
+**Does this package provide privacy/anonymization guarantees?**
+No formal guarantee was evaluated. See [MODEL_CARD.md](../MODEL_CARD.md#out-of-scope-uses).
+
+**Why MIT and not Apache-2.0?**
+A deliberate, low-risk default for open-source research tooling — see [MIGRATION.md](../MIGRATION.md) for when/how this was decided.
+
+**`pip install .` / `pip install dist/*.whl` fails to find my data — why?**
+`PROJECT_ROOT` (where `data/`, `data/checkpoints/`, etc. are expected) comes from the current working directory or `$ENERDATASYNTH_PROJECT_ROOT`, not from where pip installed the code. Run `enerdatasynth ...` / import the package from inside your project directory, or set the environment variable explicitly. See [`docs/packaging.md`](packaging.md).
+
+**Why does the README cite different benchmark numbers than `data/research_history/reports/week7/`?**
+Because they're two different (real) things: the `data/research_history/` numbers were validated under a different conditioning encoding never ported into this package; the README's numbers are a real run against the currently-shipped pipeline. Both are accurate for what they measure — see the caveat in [`docs/architecture.md`](architecture.md).
+
+**How do I reproduce the exact results in this repo?**
+`pip install -r requirements.txt` (pinned to the exact versions used) instead of `pyproject.toml`'s looser ranges — see [`docs/installation.md`](installation.md).
+
+**Where do I report a bug or propose a change?**
+See [`docs/developer_guide.md`](developer_guide.md) — known gaps are already tracked in [MIGRATION.md](../MIGRATION.md) and the README Roadmap; check there before opening something new.

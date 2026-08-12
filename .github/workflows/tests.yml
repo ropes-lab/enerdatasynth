@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    # Standard GitHub-hosted runner -- no GPU available here, so this also
+    # verifies every code path degrades correctly to CPU (utils.config.
+    # resolve_device()/DEVICE fall back to "cpu" when torch.cuda.is_available()
+    # is False, which is always true on this runner).
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install torch (CPU-only wheel, pinned to match requirements.txt)
+        # Plain `pip install torch` pulls the much larger CUDA-enabled wheel
+        # by default, irrelevant here since there's no GPU on this runner.
+        # Pinned to requirements.txt's exact version (not pyproject.toml's
+        # looser range) because tests/test_public_api.py and friends load
+        # real checkpoint state_dicts committed under data/checkpoints/ --
+        # those need the same torch version that produced them, not just
+        # "a compatible one."
+        run: pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install package + test dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -e . --no-deps
+          pip install pytest pyyaml
+
+      - name: Run test suite
+        run: pytest tests/ -v
