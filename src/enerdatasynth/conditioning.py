@@ -14,11 +14,12 @@ generically and was never actually consulted by that code (only used to
 get logged into `metadata.json` during preprocessing).
 
 This module makes a spec load-bearing: a resource type declares a list of
-`ConditionField` entries (see `generators/load.py`'s `LOAD_CONDITION_SPEC`
-for the reference implementation) and `ResourceModel` builds the vector
-generically from whichever spec `_REGISTRY[name]["condition_spec"]`
-provides. This is the concrete prerequisite for a second resource type
-(e.g. wind) to share `ResourceModel` instead of forking it.
+`ConditionField` entries (see `generators/load_conditioning.py`'s
+`LOAD_CONDITION_SPEC` for the reference implementation) and
+`ResourceModel` builds the vector generically from whichever spec that
+resource's `registry.ResourceEntry` provides. This is the concrete
+prerequisite for a second resource type (e.g. wind) to share
+`ResourceModel` instead of forking it.
 """
 
 from __future__ import annotations

@@ -130,41 +130,57 @@ physical units) and its `valid_units` is `("m/s",)` only; see
 
 ## Wiring into `enerdatasynth.model(...)`
 
-Registering a resource is additive — a new `_REGISTRY` entry in
-`src/enerdatasynth/sdk.py`:
+Registering a resource is additive and self-contained — a resource
+module calls `registry.register_resource(...)` on itself at import time;
+`src/enerdatasynth/sdk.py` never needs editing to add one. Load's and
+wind's registrations (in `generators/load_conditioning.py` and
+`generators/wind_conditioning.py` respectively) are the two reference
+implementations:
 
 ```python
-_REGISTRY = {
-    "pjm_load": {
-        "generator_cls": LoadDiffusionModel, "zones": ["PS"],
-        "condition_spec": LOAD_CONDITION_SPEC, "extra_set_keys": LOAD_EXTRA_SET_KEYS,
-        "construct": _load_construct, "checkpoint_status": _load_checkpoint_status,
-    },
-    "wind": {
-        "generator_cls": WindDiffusionModel, "zones": ["1ch", "2ch", "3ch"],
-        "condition_spec": [], "extra_set_keys": WIND_EXTRA_SET_KEYS,
-        "construct": wind_construct, "checkpoint_status": wind_checkpoint_status,
-    },
-}
+# bottom of generators/wind_conditioning.py
+register_resource(ResourceEntry(
+    name="wind", generator_cls=WindDiffusionModel, zones=["1ch", "2ch", "3ch"],
+    condition_spec=[], extra_set_keys=WIND_EXTRA_SET_KEYS,
+    construct=wind_construct, checkpoint_status=wind_checkpoint_status,
+))
 ```
 
-`construct(zone) -> dict` is the one thing that genuinely varies enough
-between resources that `ResourceModel` can't build it generically — where
-checkpoints/metadata live and how they're resolved. Load's
-(`_load_construct`, in `sdk.py`) reads `PROCESSED_DIR/metadata.json` and
-scans `CHECKPOINT_DIR` for `result.json` files. Wind's (`wind_construct`,
-in `generators/wind_conditioning.py`) checks a bundled
+`ResourceEntry`/`ConstructResult` (`src/enerdatasynth/registry.py`) are
+frozen dataclasses, not raw dicts — a missing/misspelled field is a
+`TypeError` at the registration call site, not a silent `None` three
+calls later. `register_resource` also rejects a duplicate `name` unless
+you pass `replace=True`, so a copy-pasted resource module that forgot to
+rename itself fails loudly at import time.
+
+`construct(zone) -> ConstructResult` is the one thing that genuinely
+varies enough between resources that `ResourceModel` can't build it
+generically — where checkpoints/metadata live and how they're resolved.
+Load's (`_load_construct`, in `generators/load_conditioning.py`) reads
+`PROCESSED_DIR/metadata.json` and scans `CHECKPOINT_DIR` for
+`result.json` files. Wind's (`wind_construct`, in
+`generators/wind_conditioning.py`) checks a bundled
 `data/checkpoints/wind/<preset>/` first, then falls through to
 `wind_diffusion.registry.resolve_weights`'s own chain (explicit path →
 env dir → manifest download → error) — an entirely different mechanism,
 already better than load's (sha256-verified, supports remote download)
-before any of this wind work started. `construct()`'s return dict
+before any of this wind work started. `ConstructResult`'s fields
 (`generator`, `metadata`, `condition_spec`, `extra_set_keys`,
-`condition_builder`, `valid_units`, `postprocess`) is everything
+`condition_builder`, `valid_units`, `postprocess`) are everything
 `ResourceModel` needs; `describe_resource(name)`'s `checkpoint_status()`
 hook is the same idea for cheap introspection without constructing a full
 `ResourceModel` (wind's delegates to `wind_diffusion.list_models()`
 rather than load's irrelevant `CHECKPOINT_DIR` scan).
+
+**Adding a third resource, concretely**: a new `generators/<name>.py`
+(a `BaseGenerator` subclass — you get `count_parameters()` and the
+`sample()`-array-normalization helper `_ensure_batch()` for free as long
+as you store your model at `self.model`) and a new
+`generators/<name>_conditioning.py` (a `condition_spec` or
+`condition_builder`, a `construct()`/`checkpoint_status()` pair, and the
+`register_resource(...)` call), plus one import line in
+`generators/__init__.py` so that registration side effect actually runs.
+Nothing in `sdk.py` changes.
 
 **One more thing that needed to be per-resource, discovered only once
 multiple wind presets were actually exercised together**: generation-time

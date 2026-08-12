@@ -3,7 +3,11 @@ src/enerdatasynth/generators/wind_conditioning.py
 =====================================================
 Wind's `.set()`-accepted keys and the custom raw-conditioning-vector
 builder `wind_diffusion` needs, plus the `model("wind", zone=...)`
-construction hook (`wind_construct`).
+construction hook (`wind_construct`) and its `register_resource(...)`
+call (bottom of this file) that adds `"wind"` to `registry.py`'s shared
+registry at import time -- see `generators/load_conditioning.py` for
+the load-side equivalent; together they're the two reference
+implementations for adding a resource type.
 
 Unlike load's fixed 6-field schema (`load_conditioning.py`'s
 `LOAD_CONDITION_SPEC`, built from `conditioning.ConditionField`), wind's
@@ -32,6 +36,7 @@ from wind_diffusion.data import NormStats
 from wind_diffusion.evaluate import build_condition_vector as _wind_build_condition_vector
 
 from enerdatasynth.generators.wind import WindDiffusionModel
+from enerdatasynth.registry import ConstructResult, ResourceEntry, register_resource
 from enerdatasynth.utils.config import CHECKPOINT_DIR
 
 # enerdatasynth's own convention for a locally-bundled wind checkpoint --
@@ -107,7 +112,7 @@ def wind_postprocess(samples: np.ndarray, units: str) -> np.ndarray:
     return samples
 
 
-def wind_construct(zone: str) -> dict:
+def wind_construct(zone: str) -> ConstructResult:
     """`model("wind", zone=...)`'s construction hook (see `sdk.py`).
 
     `zone` is repurposed as the channel preset (`"1ch"`/`"2ch"`/`"3ch"`)
@@ -135,18 +140,18 @@ def wind_construct(zone: str) -> dict:
         generator = WindDiffusionModel(preset=zone, checkpoint=bundled_checkpoint, norm_stats=bundled_norm_stats)
     else:
         generator = WindDiffusionModel(preset=zone)  # falls through to wind_diffusion's own resolution chain
-    return {
-        "generator": generator,
-        "metadata": {
+    return ConstructResult(
+        generator=generator,
+        metadata={
             "norm_stats": generator.norm_stats.to_dict(),
             "condition_on": generator.config.condition_on,
         },
-        "condition_spec": [],
-        "extra_set_keys": WIND_EXTRA_SET_KEYS,
-        "condition_builder": wind_condition_builder,
-        "valid_units": ("m/s",),
-        "postprocess": wind_postprocess,
-    }
+        condition_spec=[],
+        extra_set_keys=WIND_EXTRA_SET_KEYS,
+        condition_builder=wind_condition_builder,
+        valid_units=("m/s",),
+        postprocess=wind_postprocess,
+    )
 
 
 def wind_checkpoint_status() -> dict:
@@ -158,3 +163,14 @@ def wind_checkpoint_status() -> dict:
     """
     from wind_diffusion import list_models
     return {"per_preset": list_models()}
+
+
+register_resource(ResourceEntry(
+    name="wind",
+    generator_cls=WindDiffusionModel,
+    zones=["1ch", "2ch", "3ch"],
+    condition_spec=[],
+    extra_set_keys=WIND_EXTRA_SET_KEYS,
+    construct=wind_construct,
+    checkpoint_status=wind_checkpoint_status,
+))

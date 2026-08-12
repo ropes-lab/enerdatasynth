@@ -147,9 +147,7 @@ class LoadDiffusionModel(BaseGenerator):
         if seed is not None:
             set_seed(seed)
 
-        z = np.asarray(z, dtype=np.float32)
-        if z.ndim == 1:
-            z = z[None, :]
+        z = self._ensure_batch(z)
         z_t = torch.tensor(z, device=self.device)
 
         with torch.no_grad():
@@ -161,6 +159,3 @@ class LoadDiffusionModel(BaseGenerator):
             mode = self.calibration.get("mode_recommended", "scalar")
             generated_np = _apply_calibration_correction(generated_np, self.calibration, mode=mode)
         return generated_np
-
-    def count_parameters(self) -> int:
-        return sum(p.numel() for p in self.model.parameters())
