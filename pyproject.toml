@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "enerdatasynth"
 dynamic = ["version"]
-description = "A research SDK for synthetic PJM energy resource profiles (electric load today; a common interface for future resource types)"
+description = "A research SDK for synthetic energy resource profiles (PJM electric load and wind, behind one common interface)"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
