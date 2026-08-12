@@ -61,9 +61,28 @@ REPORTS_DIR      = DATA_ROOT / "reports"
 FIGURES_DIR      = REPORTS_DIR / "figures"
 RESEARCH_HISTORY_DIR = DATA_ROOT / "research_history"
 
-for d in [RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, CHECKPOINT_DIR,
-          GENERATED_DIR, LOGS_DIR, REPORTS_DIR, FIGURES_DIR]:
-    d.mkdir(parents=True, exist_ok=True)
+_ALL_DATA_DIRS = [RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, CHECKPOINT_DIR,
+                   GENERATED_DIR, LOGS_DIR, REPORTS_DIR, FIGURES_DIR]
+
+
+def ensure_dirs() -> None:
+    """Create the data/ directory scaffold. Previously ran unconditionally
+    at *module import time*, which meant a plain `import enerdatasynth`
+    from inside any unrelated project silently created data/raw/,
+    data/processed/, etc. in that project's cwd (PROJECT_ROOT defaults to
+    Path.cwd() when $ENERDATASYNTH_PROJECT_ROOT isn't set) -- a library
+    shouldn't mutate the filesystem just from being imported. Now called
+    explicitly, at call time, by every function that actually writes into
+    this tree (run_preprocessing, train_one_config, run_sweep,
+    generate_for_run, calibrate_checkpoint, run_all_validation_plots,
+    write_failure_analysis_md, generate_results_summary -- the same set
+    re-exported as this package's public API), so the directories still
+    appear exactly when needed, not merely from importing the module.
+    Idempotent (`exist_ok=True`), safe to call redundantly.
+    """
+    for d in _ALL_DATA_DIRS:
+        d.mkdir(parents=True, exist_ok=True)
+
 
 ZONE = "PS"   # PSE&G / New Jersey
 
@@ -129,7 +148,26 @@ BATCH_SIZE      = 64
 LEARNING_RATE   = 3e-4
 MAX_EPOCHS      = 400        # matches the transformer convergence run (week7.py --epochs 400)
 EARLY_STOP_PATIENCE = 40     # matches week7.py --patience 40; set to None to disable
+# NOTE: kept for informational/backward-compat use (e.g. displaying "what
+# would resolve_device() pick right now"), but NOT used as a function
+# parameter default anywhere -- `device: str = DEVICE` bakes this value in
+# at *function-definition* (import) time, since Python evaluates defaults
+# once. If CUDA becomes available later in the same process (common in
+# notebooks, or workers that attach a GPU after start), every call would
+# silently keep using the stale default. Use `resolve_device(device)`
+# instead, called at call time, with `device: str | None = None`.
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def resolve_device(device: str | None = None) -> str:
+    """`device` if given, else "cuda"/"cpu" resolved fresh, at call time.
+
+    Use as `device = resolve_device(device)` inside a function whose own
+    parameter defaults to `None` -- NOT as `device: str = resolve_device()`
+    in a signature, which would just reintroduce the same frozen-at-import
+    problem this exists to fix.
+    """
+    return device if device is not None else ("cuda" if torch.cuda.is_available() else "cpu")
 
 
 @dataclass

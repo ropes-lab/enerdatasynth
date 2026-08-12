@@ -35,9 +35,9 @@ import numpy as np
 import torch
 
 from enerdatasynth.utils.config import (
-    CHECKPOINT_DIR, DEVICE, X_DIM, COND_DIM,
+    CHECKPOINT_DIR, X_DIM, COND_DIM,
     DEFAULT_ARCHITECTURE, DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_N_HEADS,
-    set_seed,
+    set_seed, resolve_device,
 )
 from enerdatasynth.models import build_denoiser
 from enerdatasynth.diffusion.ddpm import DDPM
@@ -62,7 +62,8 @@ class LoadDiffusionModel(BaseGenerator):
                  n_heads: int = DEFAULT_N_HEADS,
                  calibration_path: str | Path | None = None,
                  use_calibration: bool = True,
-                 device: str = DEVICE):
+                 device: str | None = None):
+        device = resolve_device(device)
         self.device = device
         self.x_dim = x_dim
         self.cond_dim = cond_dim
@@ -84,7 +85,7 @@ class LoadDiffusionModel(BaseGenerator):
 
     @classmethod
     def from_run_id(cls, run_id: str, checkpoint_root: str | Path = CHECKPOINT_DIR,
-                     device: str = DEVICE, use_calibration: bool = True) -> "LoadDiffusionModel":
+                     device: str | None = None, use_calibration: bool = True) -> "LoadDiffusionModel":
         """
         Construct from a run_id produced by `enerdatasynth train` /
         `enerdatasynth sweep`. Reads architecture and hyperparameters

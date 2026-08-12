@@ -60,5 +60,14 @@ version = { attr = "enerdatasynth.__version__" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+# PEP 561 marker (src/enerdatasynth/py.typed) -- without an explicit
+# package-data entry, setuptools' default wheel builder only picks up
+# *.py files under packages.find and silently drops non-.py data files
+# from the built wheel (the same gotcha wind_diffusion's manifest.json
+# has a comment about). Ships it so downstream mypy/IDE users actually
+# get type-checking signal from an installed (non-editable) copy.
+enerdatasynth = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

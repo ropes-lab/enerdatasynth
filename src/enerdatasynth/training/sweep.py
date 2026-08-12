@@ -40,6 +40,7 @@ from enerdatasynth.utils.config import (
     RunConfig, PROCESSED_DIR, REPORTS_DIR,
     SWEEP_DIFFUSION_STEPS, SWEEP_HIDDEN_DIM, SWEEP_N_LAYERS,
     DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_T,
+    ensure_dirs,
 )
 from enerdatasynth.training.train import train_one_config
 
@@ -62,6 +63,7 @@ def run_sweep(max_epochs: int = 60, full_grid: bool = False) -> pd.DataFrame:
                  while still answering "what matters most" for each
                  axis independently.
     """
+    ensure_dirs()
     X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
     Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
     X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")

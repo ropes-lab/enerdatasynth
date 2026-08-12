@@ -46,6 +46,7 @@ from pathlib import Path
 from enerdatasynth.utils.config import (
     RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, ZONE,
     N_MONTHS, N_DOW, COND_DIM, X_DIM, CONDITION_SPEC, EXCLUDED_BY_DESIGN,
+    ensure_dirs,
 )
 
 LOAD_COLS = [f"h{i:02d}" for i in range(24)]
@@ -235,6 +236,7 @@ def run_preprocessing(raw_dir: Path = RAW_DIR,
                        processed_dir: Path = PROCESSED_DIR,
                        backup_dir: Path = PROCESSED_BACKUP,
                        zone: str = ZONE) -> dict:
+    ensure_dirs()
     print("=" * 70)
     print(f" PREPROCESSING PIPELINE  —  {zone} zone")
     print("=" * 70)

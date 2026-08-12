@@ -193,8 +193,9 @@ def plot_loss_curve(history: dict, run_id: str, best_epoch: int,
 # ═════════════════════════════════════════════════════════════════════════════
 
 def run_all_validation_plots(run_id: str) -> dict:
-    from enerdatasynth.utils.config import PROCESSED_DIR, GENERATED_DIR
+    from enerdatasynth.utils.config import PROCESSED_DIR, GENERATED_DIR, ensure_dirs
 
+    ensure_dirs()
     X_real = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
     X_gen  = np.load(GENERATED_DIR / f"X_generated_{run_id}.npy")
 

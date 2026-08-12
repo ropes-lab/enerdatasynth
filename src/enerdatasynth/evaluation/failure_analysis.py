@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from enerdatasynth.utils.config import PROCESSED_DIR, GENERATED_DIR, REPORTS_DIR, N_MONTHS, N_DOW
+from enerdatasynth.utils.config import PROCESSED_DIR, GENERATED_DIR, REPORTS_DIR, N_MONTHS, N_DOW, ensure_dirs
 
 
 # Thresholds for flagging an issue — simple, documented, adjustable.
@@ -156,6 +156,7 @@ def analyze(run_id: str) -> dict:
 
 
 def write_failure_analysis_md(result: dict) -> Path:
+    ensure_dirs()
     lines = [
         "# Failure Analysis",
         "",

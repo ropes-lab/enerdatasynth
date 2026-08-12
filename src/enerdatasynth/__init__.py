@@ -19,6 +19,9 @@ generation:
 classes, checkpoint paths, or the fact that a DDPM/transformer is
 involved at all. See `docs/api_reference.md` for the full contract.
 
+To discover what's registered without reading source:
+`enerdatasynth.list_resources()` / `describe_resource(name)`.
+
 For research/development use — training new checkpoints, computing
 evaluation metrics, running calibration — this top-level namespace
 also re-exports the lower-level building blocks:
@@ -37,7 +40,7 @@ Production code in this package never imports from `research_history/`
 not installed as part of the package.
 """
 
-from enerdatasynth.sdk import model, ResourceModel
+from enerdatasynth.sdk import model, ResourceModel, list_resources, describe_resource
 from enerdatasynth.utils.config import RunConfig, set_seed, DEFAULT_ARCHITECTURE
 from enerdatasynth.models import build_denoiser, TransformerDenoiser, SimpleMLPDenoiser
 from enerdatasynth.diffusion.ddpm import DDPM
@@ -54,6 +57,8 @@ __all__ = [
     "__version__",
     "model",
     "ResourceModel",
+    "list_resources",
+    "describe_resource",
     "BaseGenerator",
     "LoadDiffusionModel",
     "RunConfig",
