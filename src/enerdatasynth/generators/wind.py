@@ -6,13 +6,16 @@ wrapping the vendored `wind_diffusion` package (`src/wind_diffusion/`,
 copied from Data-For-Good) rather than reimplementing diffusion sampling
 here. The wind counterpart to `generators/load.py`'s `LoadDiffusionModel`.
 
-Structural/API skeleton only: no trained wind checkpoint has been
-published yet (`wind_diffusion/manifest.json`'s presets are all
-`"pending"`), so constructing this against the bundled manifest raises
-`wind_diffusion`'s own `CheckpointNotFoundError` until one exists --
-expected, not a wiring bug. Pass an explicit `checkpoint=`/`norm_stats=`
-pair (e.g. from a local `wind_diffusion` training run) to exercise this
-against real weights today.
+Real trained checkpoints (1ch/2ch/3ch) are bundled under
+`data/checkpoints/wind/<preset>/` and used automatically -- see
+`generators/wind_conditioning.py`'s `wind_construct`, which is what
+`enerdatasynth.model("wind", ...)` actually calls. Constructing
+`WindDiffusionModel` directly (bypassing that) falls through to
+`wind_diffusion.registry.resolve_weights`'s own chain (explicit path ->
+`WIND_DIFFUSION_CHECKPOINTS` env dir -> manifest download), which *does*
+raise `CheckpointNotFoundError` for a preset with no local checkpoint
+and no manifest-published weights -- not a wiring bug, just a different,
+lower-level entry point than the SDK's.
 """
 
 from __future__ import annotations
@@ -66,7 +69,12 @@ class WindDiffusionModel(BaseGenerator):
 
     def __init__(
         self,
-        preset: PresetName = "3ch",
+        # "1ch" to match enerdatasynth.model("wind")'s own default (the
+        # first entry in sdk.py's _REGISTRY["wind"]["zones"]) -- these two
+        # entry points previously disagreed (this defaulted to "3ch"),
+        # so the same "give me wind, no preference" request resolved to
+        # a different preset depending on which one you called.
+        preset: PresetName = "1ch",
         checkpoint: str | Path | None = None,
         norm_stats: str | Path | None = None,
         device: str | None = None,
