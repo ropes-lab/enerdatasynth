@@ -4,7 +4,7 @@ src/enerdatasynth/generators
 The SDK layer: `BaseGenerator` is the common interface every
 resource-type generator implements. `LoadDiffusionModel` (electric load)
 and `WindDiffusionModel` (wind, wrapping the vendored `wind_diffusion`
-package -- structural skeleton only, no published weights yet) are the
+package, checkpoints bundled under `data/checkpoints/wind/`) are the
 two concrete implementations.
 """
 
