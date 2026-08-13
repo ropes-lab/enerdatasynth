@@ -70,10 +70,10 @@ class WindDiffusionModel(BaseGenerator):
     def __init__(
         self,
         # "1ch" to match enerdatasynth.model("wind")'s own default (the
-        # first entry in sdk.py's _REGISTRY["wind"]["zones"]) -- these two
-        # entry points previously disagreed (this defaulted to "3ch"),
-        # so the same "give me wind, no preference" request resolved to
-        # a different preset depending on which one you called.
+        # first entry in wind_conditioning.py's registered zones list) --
+        # these two entry points previously disagreed (this defaulted to
+        # "3ch"), so the same "give me wind, no preference" request
+        # resolved to a different preset depending on which one you called.
         preset: PresetName = "1ch",
         checkpoint: str | Path | None = None,
         norm_stats: str | Path | None = None,
@@ -179,9 +179,7 @@ class WindDiffusionModel(BaseGenerator):
             if guidance_scope == "wind_regime" else None
         )
 
-        z = np.asarray(z, dtype=np.float32)
-        if z.ndim == 1:
-            z = z[None, :]
+        z = self._ensure_batch(z)
         n = z.shape[0]
 
         df_gen = generate_multiple_for_condition(
@@ -197,5 +195,3 @@ class WindDiffusionModel(BaseGenerator):
         direction = df_gen["winddirection_100m"].to_numpy().reshape(n, self.config.seq_len)
         return np.stack([windspeed, direction], axis=-1)
 
-    def count_parameters(self) -> int:
-        return sum(p.numel() for p in self.model.parameters())

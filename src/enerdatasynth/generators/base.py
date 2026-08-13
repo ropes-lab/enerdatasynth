@@ -55,6 +55,26 @@ class BaseGenerator(ABC):
         """Generate one synthetic profile per row of `z`."""
         raise NotImplementedError
 
+    @staticmethod
+    def _ensure_batch(z: np.ndarray) -> np.ndarray:
+        """Normalize a conditioning array to `(N, cond_dim)` float32,
+        promoting a bare `(cond_dim,)` vector to a single-row batch. Both
+        `LoadDiffusionModel.sample()` and `WindDiffusionModel.sample()`
+        need exactly this as their first step -- call it as
+        `z = self._ensure_batch(z)`."""
+        z = np.asarray(z, dtype=np.float32)
+        if z.ndim == 1:
+            z = z[None, :]
+        return z
+
     def count_parameters(self) -> int:
-        """Optional: override if the underlying model exposes a parameter count."""
-        raise NotImplementedError(f"{type(self).__name__} does not implement count_parameters()")
+        """Total parameter count of the underlying `nn.Module`. Both
+        `LoadDiffusionModel` and `WindDiffusionModel` store their denoiser
+        at `self.model`, so this default works for both unchanged.
+        Override this (or don't set `self.model`) if a future resource's
+        underlying model lives elsewhere or parameter-counting doesn't
+        apply."""
+        model = getattr(self, "model", None)
+        if model is None:
+            raise NotImplementedError(f"{type(self).__name__} does not implement count_parameters()")
+        return sum(p.numel() for p in model.parameters())
