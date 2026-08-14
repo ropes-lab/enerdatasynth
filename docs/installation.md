@@ -20,7 +20,7 @@ the `enerdatasynth` console command.
 ## Optional extras
 
 ```bash
-pip install -e ".[viz]"   # seaborn, for data/research_history/eda_exploration.py
+pip install -e ".[viz]"   # seaborn, for data/research_history/pjm_load/eda_exploration.py
 pip install -e ".[dev]"   # pytest, pytest-cov, ruff, mypy, build, twine
 pip install -e ".[viz,dev]"
 ```
@@ -47,7 +47,7 @@ pip install -e . --no-deps
 
 ## Where does it look for data and checkpoints?
 
-Wherever you run it from: `data/`, `data/checkpoints/`, `data/outputs/`, `data/reports/`, and `data/configs/` are resolved relative to your current working directory (or `$ENERDATASYNTH_PROJECT_ROOT` if set) — **not** relative to wherever pip installed the code. Run `enerdatasynth ...` / `import enerdatasynth` from inside your project directory (e.g. this repo's root, which already has data and checkpoints committed), or set `ENERDATASYNTH_PROJECT_ROOT=/path/to/project` explicitly. See [`docs/packaging.md`](packaging.md) for why this matters for a real (non-editable) install specifically.
+Wherever you run it from: `data/`, `data/checkpoints/pjm_load/`, `data/outputs/pjm_load/`, `data/reports/pjm_load/`, and `data/configs/pjm_load/` are resolved relative to your current working directory (or `$ENERDATASYNTH_PROJECT_ROOT` if set) — **not** relative to wherever pip installed the code. Run `enerdatasynth ...` / `import enerdatasynth` from inside your project directory (e.g. this repo's root, which already has data and checkpoints committed), or set `ENERDATASYNTH_PROJECT_ROOT=/path/to/project` explicitly. See [`docs/packaging.md`](packaging.md) for why this matters for a real (non-editable) install specifically.
 
 ## GPU
 

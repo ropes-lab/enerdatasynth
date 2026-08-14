@@ -11,7 +11,7 @@ license = { text = "MIT" }
 authors = [
     { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy", "generative-model", "research-sdk"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -29,9 +29,7 @@ dependencies = [
     "pandas",
     "torch>=2.11.0,<2.12.0",
     "scikit-learn",
-    "statsmodels",
     "holidays",
-    "matplotlib",
     "requests",
     "tqdm",
     "pyarrow",
@@ -58,6 +56,15 @@ dependencies = [
 viz = [
     "seaborn>=0.13",
 ]
+# Needed only for `enerdatasynth evaluate`/`report`/`pipeline` (validation
+# plots + the classical AR/ARMA/ARIMA/SARIMA baseline comparison in
+# evaluation/baselines.py) -- not imported anywhere on the
+# `enerdatasynth.model(...).set(...).sample(...)` path, so end users who
+# only want to generate synthetic profiles don't need either package.
+research = [
+    "statsmodels",
+    "matplotlib",
+]
 dev = [
     "pytest",
     "pytest-cov",
@@ -83,11 +90,15 @@ where = ["src"]
 # from the built wheel. Ships it so downstream mypy/IDE users actually
 # get type-checking signal from an installed (non-editable) copy.
 enerdatasynth = ["py.typed"]
-# wind_diffusion/manifest.json (bundled weights index, loaded at runtime
-# via importlib.resources -- see wind_diffusion/registry.py) is the same
+# resources/wind/manifest.json (bundled weights index, loaded at runtime
+# via importlib.resources -- see resources/wind/registry.py) is the same
 # kind of non-.py data file; carried over from the original repo's own
 # pyproject.toml comment about this exact gotcha.
-wind_diffusion = ["manifest.json"]
+"enerdatasynth.resources.wind" = ["manifest.json"]
+# resources/pjm_load/manifest.json -- added for parity with wind's, same
+# non-.py-data-file gotcha applies. Loaded via importlib.resources in
+# resources/pjm_load/api.py, same mechanism as wind's registry.py.
+"enerdatasynth.resources.pjm_load" = ["manifest.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

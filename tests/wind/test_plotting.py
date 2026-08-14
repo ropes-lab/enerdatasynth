@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from wind_diffusion.plotting import (
+from enerdatasynth.resources.wind.visualization.plotting import (
     compare_to_real,
     plot_acf,
     plot_distributions,

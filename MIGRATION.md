@@ -8,6 +8,17 @@ every claim below is a specific file under `research_history/reports/`
 or `research_history/scripts/` — nothing here is inferred from
 filenames or chronology alone.
 
+**Addendum (later pass, package v0.6.0):** every `src/enerdatasynth/<module>/` path
+below (`models/`, `diffusion/`, `training/`, `sampling/`, `evaluation/`, `data/`,
+`visualization/`) was subsequently moved to
+`src/enerdatasynth/resources/pjm_load/<module>/`, and the vendored wind pipeline moved
+from a separate top-level `src/wind_diffusion/` package to
+`src/enerdatasynth/resources/wind/` — both nested under a shared `resources/<name>/`
+taxonomy so a third resource can be added the same way. Paths in the sections below are
+historical (accurate as of the migration described here, not the current tree); see
+[`docs/architecture.md`](docs/architecture.md) for the current layout and why it's
+structured this way.
+
 ## 1. Production modules changed
 
 | Module | Change |
@@ -43,7 +54,7 @@ filenames or chronology alone.
 
 ## 5. Where the final implementation could not be determined with certainty
 
-**This is the most important item in this report.** Every validated result cited above (architecture comparison, noise-schedule test, transformer promotion, calibration, 17-zone replication) was produced using the research lineage's **6-dimensional raw "Z5" conditioning vector** (month and day-of-week as plain integers, not one-hot). The package's own preprocessing, `enerdatasynth.data.preprocess.build_conditioning_vector`, produces a **23-dimensional one-hot conditioning vector** instead — a different, deliberate, documented encoding, but one that was never itself run through the architecture/schedule/calibration experiments.
+**This is the most important item in this report.** Every validated result cited above (architecture comparison, noise-schedule test, transformer promotion, calibration, 17-zone replication) was produced using the research lineage's **6-dimensional raw "Z5" conditioning vector** (month and day-of-week as plain integers, not one-hot). The package's own preprocessing, `enerdatasynth.resources.pjm_load.data.preprocess.build_conditioning_vector`, produces a **23-dimensional one-hot conditioning vector** instead — a different, deliberate, documented encoding, but one that was never itself run through the architecture/schedule/calibration experiments.
 
 I did not have evidence to determine which conditioning scheme is actually "final":
 - The one-hot encoding is a defensible, arguably more principled choice for categorical variables (no false ordinal distance between e.g. December and January), and was clearly a deliberate design decision (documented in `config.py`, described as the package's baseline).
@@ -238,11 +249,11 @@ locations are:
 
 | Then (described above) | Now |
 |---|---|
-| `checkpoints/` | `data/checkpoints/` |
-| `outputs/` | `data/outputs/` |
-| `reports/` | `data/reports/` |
-| `configs/` | `data/configs/` |
-| `research_history/` | `data/research_history/` |
+| `checkpoints/` | `data/checkpoints/pjm_load/` |
+| `outputs/` | `data/outputs/pjm_load/` |
+| `reports/` | `data/reports/pjm_load/` |
+| `configs/` | `data/configs/pjm_load/` |
+| `research_history/` | `data/research_history/pjm_load/` |
 | `scripts/run_all.py` | `examples/run_all.py` |
 | `benchmarks/run_benchmark.py` | `examples/run_benchmark.py` |
 

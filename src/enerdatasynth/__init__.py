@@ -29,10 +29,10 @@ also re-exports the lower-level building blocks:
     from enerdatasynth import RunConfig, train_one_config, LoadDiffusionModel
 
 For anything not re-exported here, import directly from the relevant
-submodule (`enerdatasynth.data`, `enerdatasynth.models`,
-`enerdatasynth.diffusion`, `enerdatasynth.training`,
-`enerdatasynth.sampling`, `enerdatasynth.evaluation`,
-`enerdatasynth.visualization`, `enerdatasynth.generators`,
+submodule (`enerdatasynth.resources.pjm_load.data`, `enerdatasynth.resources.pjm_load.models`,
+`enerdatasynth.resources.pjm_load.diffusion`, `enerdatasynth.resources.pjm_load.training`,
+`enerdatasynth.resources.pjm_load.sampling`, `enerdatasynth.resources.pjm_load.evaluation`,
+`enerdatasynth.resources.pjm_load.visualization`, `enerdatasynth.generators`,
 `enerdatasynth.utils`).
 
 Production code in this package never imports from `research_history/`
@@ -42,16 +42,16 @@ not installed as part of the package.
 
 from enerdatasynth.sdk import model, ResourceModel, list_resources, describe_resource
 from enerdatasynth.utils.config import RunConfig, set_seed, DEFAULT_ARCHITECTURE
-from enerdatasynth.models import build_denoiser, TransformerDenoiser, SimpleMLPDenoiser
-from enerdatasynth.diffusion.ddpm import DDPM
-from enerdatasynth.data.preprocess import run_preprocessing
-from enerdatasynth.training.train import train_one_config
-from enerdatasynth.sampling.generate import generate_for_run
-from enerdatasynth.evaluation.metrics import compute_metrics
-from enerdatasynth.evaluation.calibration import calibrate_checkpoint
+from enerdatasynth.resources.pjm_load.models import build_denoiser, TransformerDenoiser, SimpleMLPDenoiser
+from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
+from enerdatasynth.resources.pjm_load.data.preprocess import run_preprocessing
+from enerdatasynth.resources.pjm_load.training.train import train_one_config
+from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
+from enerdatasynth.resources.pjm_load.evaluation.metrics import compute_metrics
+from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_checkpoint
 from enerdatasynth.generators import BaseGenerator, LoadDiffusionModel
 
-__version__ = "0.5.0"
+__version__ = "0.7.0"
 
 __all__ = [
     "__version__",

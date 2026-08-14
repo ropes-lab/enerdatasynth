@@ -8,14 +8,14 @@ This card describes the model behind `enerdatasynth.model("pjm_load", zone="PS")
 
 - **Task**: Conditional generation of synthetic 24-hour electric load profiles.
 - **Architecture**: Conditional DDPM (Denoising Diffusion Probabilistic Model) with a transformer denoiser (2 encoder layers, 4 attention heads, model dimension 64; 110,401 parameters) — see [`docs/architecture.md`](docs/architecture.md). A simpler MLP denoiser is also available (`architecture="mlp"`) as a legacy baseline.
-- **Sampler**: Ancestral DDPM reverse sampling, 1000 steps. An earlier DDIM-style sampler was found to silently corrupt results and is not used — see `data/research_history/scripts/sampler_bugfix.py`.
+- **Sampler**: Ancestral DDPM reverse sampling, 1000 steps. An earlier DDIM-style sampler was found to silently corrupt results and is not used — see `data/research_history/pjm_load/scripts/sampler_bugfix.py`.
 - **Post-processing**: A scalar per-hour bias correction ("calibration"), fit on training data, applied automatically at generation time when available.
 - **Output**: One 24-value hourly load profile per input condition, in MW by default (`ResourceModel.sample(..., units="MW")`) or normalized `[0,1]` (`units="normalized"`).
 - **License**: MIT.
 
 ## Training Data
 
-- **Source**: PJM Interconnection hourly metered load data (`hrl_load_metered_*.csv`, 2016–2025) and NOAA ISD hourly temperature observations, weighted to zone-level via `src/enerdatasynth/data/temperature.py`.
+- **Source**: PJM Interconnection hourly metered load data (`hrl_load_metered_*.csv`, 2016–2025) and NOAA ISD hourly temperature observations, weighted to zone-level via `src/enerdatasynth/resources/pjm_load/data/temperature.py`.
 - **Zone**: `PS` (PJM zone code for PSE&G, New Jersey) only. See "Supported Zones" below.
 - **Date range**: 2016–2025 raw; **3,653** raw calendar days before cleaning.
 - **Exclusions applied** (in order):
@@ -31,7 +31,7 @@ This card describes the model behind `enerdatasynth.model("pjm_load", zone="PS")
 - **Train/validation split**: Chronological, not random — **2,785 days (2016–2023)** train, **600 days (2024–2025)** validation. This is a development split, not a forecasting evaluation; the task is unconditional-on-time generation given calendar/weather conditions, not forecasting future load from past load.
 - **Normalization**: Load values scaled per-hour with `MinMaxScaler`, fit on training data only. Temperature and load-spread conditioning scaled with `StandardScaler`, also fit on training data only.
 
-Regenerate this exact dataset with `enerdatasynth preprocess`; regenerating will refresh `data/processed/metadata.json`, which is the authoritative source for the exact numbers above (pulled directly from that file, generated 2026-06-22).
+Regenerate this exact dataset with `enerdatasynth preprocess`; regenerating will refresh `data/processed/pjm_load/metadata.json`, which is the authoritative source for the exact numbers above (pulled directly from that file, generated 2026-06-22).
 
 ## Conditioning Variables
 
@@ -48,24 +48,24 @@ The model generates conditioned on a 23-dimensional vector:
 
 `enerdatasynth.model(...).set(...)` accepts human-readable versions of the first five (`month`, `Tmax`, `Tmin`, `weekday`/`day_of_week`, `holiday`); `spread` is optional and defaults to the training-set mean (see [`docs/api_reference.md`](docs/api_reference.md) for exactly why — it's a property of the load curve being generated, not something a caller predicting from weather alone would know in advance).
 
-**Important caveat, not silently resolved**: the transformer architecture and calibration procedure described in "Evaluation" below were *validated* using a different, 6-dimensional raw conditioning encoding (month/day-of-week as plain integers, from `data/research_history/`), not the 23-dimensional one-hot encoding this package's preprocessing actually produces. See [`docs/architecture.md`](docs/architecture.md) for the full reasoning. This means: the architecture choice (transformer over MLP/CNN/attention) is a reasonable, well-evidenced choice under either encoding, but the *exact validated numbers* are not guaranteed to reproduce identically under the current one-hot pipeline.
+**Important caveat, not silently resolved**: the transformer architecture and calibration procedure described in "Evaluation" below were *validated* using a different, 6-dimensional raw conditioning encoding (month/day-of-week as plain integers, from `data/research_history/pjm_load/`), not the 23-dimensional one-hot encoding this package's preprocessing actually produces. See [`docs/architecture.md`](docs/architecture.md) for the full reasoning. This means: the architecture choice (transformer over MLP/CNN/attention) is a reasonable, well-evidenced choice under either encoding, but the *exact validated numbers* are not guaranteed to reproduce identically under the current one-hot pipeline.
 
 ## Supported Zones
 
-Only **PS** (PSE&G, New Jersey). Requesting any other zone via `enerdatasynth.model("pjm_load", zone=...)` raises a clear error rather than silently returning wrong results. `data/research_history/scripts/zone_expansion.py` explored 17 PJM zones (best: AP, RMSE 0.0086; worst: DOM, RMSE 0.1998, cause undiagnosed) but that work was never promoted into this package's production pipeline — see [`docs/research_notes.md`](docs/research_notes.md) and [`MIGRATION.md`](MIGRATION.md) §4.
+Only **PS** (PSE&G, New Jersey). Requesting any other zone via `enerdatasynth.model("pjm_load", zone=...)` raises a clear error rather than silently returning wrong results. `data/research_history/pjm_load/scripts/zone_expansion.py` explored 17 PJM zones (best: AP, RMSE 0.0086; worst: DOM, RMSE 0.1998, cause undiagnosed) but that work was never promoted into this package's production pipeline — see [`docs/research_notes.md`](docs/research_notes.md) and [`MIGRATION.md`](MIGRATION.md) §4.
 
 ## Evaluation
 
 7-metric suite (`Hourly`, `FirstDiff`, `ACF`, `RMSE`, `Peak`, `Energy`, `Ramp`; see [`docs/evaluation.md`](docs/evaluation.md) for exact definitions), computed identically throughout this project's history for direct comparability.
 
-- **Architecture selection**: controlled 4-way comparison (MLP/CNN/attention/transformer), identical data/conditioning/schedule/seed. Transformer had the best generated-profile RMSE (0.0215) despite CNN having the lowest training validation loss (0.01022) — `data/research_history/reports/week6/arch/summary_report.md`.
-- **Head-to-head vs. classical baselines** (under the research-validated 6-dim conditioning): beats AR/ARMA/ARIMA/SARIMA on 7 of 7 metrics; beats the old MLP baseline on 6 of 7 at ~6x fewer parameters — `data/research_history/reports/week7/summary_report.md`.
-- **Under this package's own current pipeline** (23-dim one-hot conditioning, the model actually shipped today): beats every classical baseline outright on 5 of 7 metrics; ARMA edges it out on ACF, ARIMA on Ramp. See the README's [Benchmark Results](README.md#-benchmark-results) for the full table, from a real run against the full 600-day validation set.
+- **Architecture selection**: controlled 4-way comparison (MLP/CNN/attention/transformer), identical data/conditioning/schedule/seed. Transformer had the best generated-profile RMSE (0.0215) despite CNN having the lowest training validation loss (0.01022) — `data/research_history/pjm_load/reports/week6/arch/summary_report.md`.
+- **Head-to-head vs. classical baselines** (under the research-validated 6-dim conditioning): beats AR/ARMA/ARIMA/SARIMA on 7 of 7 metrics; beats the old MLP baseline on 6 of 7 at ~6x fewer parameters — `data/research_history/pjm_load/reports/week7/summary_report.md`.
+- **Under this package's own current pipeline** (23-dim one-hot conditioning, the model actually shipped today): beats every classical baseline outright on 5 of 7 metrics; ARMA edges it out on ACF, ARIMA on Ramp. See [`docs/results.md`](docs/results.md) and [`docs/models/pjm_load.md`](docs/models/pjm_load.md#8-quantitative-results) for the full table, from a real run against the full 600-day validation set.
 - **Consistency across conditions**: RMSE 0.0195–0.0306 across temperature/calendar/season slices under the research-validated conditioning; hardest slice is Holiday (n=17, the smallest slice — sparse-data effect, not necessarily a real generalization failure).
 
 ## Calibration
 
-The denoiser reproduces daily *shape* accurately but carries a small systematic per-hour level offset that compounds into a large daily-energy error when summed over 24 hours. A scalar correction — one number added to every hour, fit on the training set only — reduces energy error by ~66% at zero cost to shape metrics (a constant shift cannot change first-difference, ramp, or autocorrelation). A more elaborate per-hour correction was tested and found *worse* on ACF and RMSE than no calibration at all; this package deliberately ships the simpler, better-performing scalar correction (`data/research_history/reports/week7/calibration_report.md`; the original script's own output recorded `"mode_recommended": "scalar"`). Applied automatically by `ResourceModel.sample()` and `LoadDiffusionModel.sample()` whenever `calibration.json` exists next to a checkpoint.
+The denoiser reproduces daily *shape* accurately but carries a small systematic per-hour level offset that compounds into a large daily-energy error when summed over 24 hours. A scalar correction — one number added to every hour, fit on the training set only — reduces energy error by ~66% at zero cost to shape metrics (a constant shift cannot change first-difference, ramp, or autocorrelation). A more elaborate per-hour correction was tested and found *worse* on ACF and RMSE than no calibration at all; this package deliberately ships the simpler, better-performing scalar correction (`data/research_history/pjm_load/reports/week7/calibration_report.md`; the original script's own output recorded `"mode_recommended": "scalar"`). Applied automatically by `ResourceModel.sample()` and `LoadDiffusionModel.sample()` whenever `calibration.json` exists next to a checkpoint.
 
 ## Known Limitations
 
@@ -95,7 +95,7 @@ The denoiser reproduces daily *shape* accurately but carries a small systematic 
 
 ## Wind (`enerdatasynth.model("wind", ...)`)
 
-A separate model from a separate project (`wind_diffusion`, vendored from a Data-For-Good research repository — see `src/wind_diffusion/`), reachable through the same `BaseGenerator`/`ResourceModel` interface load uses. This section summarizes what's bundled and measured; **the full evidence trail (training data, architecture rationale, every ablation) lives in the source project's own `MODEL_CARD.md`/`API.md`, not here** — this card doesn't re-derive or re-validate any of it, only reports it.
+A separate model from a separate project (`wind_diffusion`, vendored from a Data-For-Good research repository — see `src/enerdatasynth/resources/wind/`), reachable through the same `BaseGenerator`/`ResourceModel` interface load uses. This section summarizes what's bundled and measured; **the full evidence trail (training data, architecture rationale, every ablation) lives in the source project's own `MODEL_CARD.md`/`API.md`, not here** — this card doesn't re-derive or re-validate any of it, only reports it.
 
 ### Model Details
 

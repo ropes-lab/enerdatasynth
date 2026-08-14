@@ -1,7 +1,0 @@
-Place these files in this folder before running the pipeline:
-
-  hrl_load_metered_2016.csv  through  hrl_load_metered_2025.csv
-  pjm_hourly_temps_wide.csv   (output of pjm_hourly_temps.py)
-
-These are the same raw files used in Week 2/3. The pipeline reads
-directly from this folder — see src/utils/config.py RAW_DIR.

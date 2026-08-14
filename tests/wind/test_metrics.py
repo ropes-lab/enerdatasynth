@@ -1,4 +1,4 @@
-"""Sanity tests for wind_diffusion.metrics (the B5 fidelity gates).
+"""Sanity tests for enerdatasynth.resources.wind.evaluation.metrics (the B5 fidelity gates).
 
 For each gate: comparing a distribution against itself (or a matching
 distribution drawn with the same generator) should give a near-zero
@@ -12,7 +12,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from wind_diffusion.metrics import (
+from enerdatasynth.resources.wind.evaluation.metrics import (
     acf_rmse,
     compute_all_gates,
     diurnal_rmse,

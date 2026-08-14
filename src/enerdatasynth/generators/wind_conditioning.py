@@ -32,22 +32,27 @@ import os
 
 import numpy as np
 
-from wind_diffusion.data import NormStats
-from wind_diffusion.evaluate import build_condition_vector as _wind_build_condition_vector
+from enerdatasynth.resources.wind.data.data import NormStats
+from enerdatasynth.resources.wind.evaluation.evaluate import build_condition_vector as _wind_build_condition_vector
 
 from enerdatasynth.generators.wind import WindDiffusionModel
 from enerdatasynth.registry import ConstructResult, ResourceEntry, register_resource
-from enerdatasynth.utils.config import CHECKPOINT_DIR
+from enerdatasynth.utils.config import DATA_ROOT
 
 # enerdatasynth's own convention for a locally-bundled wind checkpoint --
 # checked before falling back to wind_diffusion's own resolution chain
 # (explicit path > WIND_DIFFUSION_CHECKPOINTS env dir > manifest-declared
 # download > CheckpointNotFoundError). Mirrors this repo's existing
 # practice of committing load's checkpoints directly under
-# data/checkpoints/ (unlike the source wind_diffusion project, which
-# gitignores its own outputs/ and has never published weights anywhere).
-# Currently populated for "1ch" only -- see README.md/docs/api_reference.md.
-_WIND_CHECKPOINT_ROOT = CHECKPOINT_DIR / "wind"
+# data/checkpoints/pjm_load/ (unlike the source wind_diffusion project,
+# which gitignores its own outputs/ and has never published weights
+# anywhere). Populated for all three presets (1ch/2ch/3ch).
+#
+# Computed from DATA_ROOT directly, not `CHECKPOINT_DIR / "wind"` --
+# `CHECKPOINT_DIR` is PJM load's own resource-nested checkpoint path
+# (data/checkpoints/pjm_load/) since the data/ layout is resource-nested
+# throughout; wind's checkpoint root is a sibling of that, not a child.
+_WIND_CHECKPOINT_ROOT = DATA_ROOT / "checkpoints" / "wind"
 
 # .set()-accepted keys, mirroring generate_wind_profile's human-facing
 # conditioning args (see the original repo's API_REVIEW.md "core" group)
@@ -75,7 +80,7 @@ def wind_condition_builder(conditions: dict, metadata: dict, n: int, rng: np.ran
     0.0) rather than `generate_wind_profile`'s fancier per-realization
     sampling from the regime-matched empirical distribution
     (`NormStats.persistence_by_regime`) -- that logic lives in
-    `wind_diffusion.api._build_cond_matrix_for_batch`, one layer above
+    `enerdatasynth.resources.wind.api._build_cond_matrix_for_batch`, one layer above
     `build_condition_vector`, and isn't replicated here. Worth revisiting
     if wind persistence conditioning becomes the shipped default recipe.
     """
@@ -123,12 +128,12 @@ def wind_construct(zone: str) -> ConstructResult:
     Bundled checkpoints (`data/checkpoints/wind/<preset>/`) are used only
     when `WIND_DIFFUSION_CHECKPOINTS` is NOT set -- an explicit env-dir
     override always wins, same precedence a caller would expect from
-    `wind_diffusion.registry.resolve_weights` itself (explicit > env dir >
+    `enerdatasynth.resources.wind.registry.resolve_weights` itself (explicit > env dir >
     manifest download). Without this, someone who deliberately points
     `WIND_DIFFUSION_CHECKPOINTS` at their own checkpoint would have it
     silently ignored in favor of this repo's bundled one.
 
-    Raises `wind_diffusion.exceptions.CheckpointNotFoundError` if no
+    Raises `enerdatasynth.resources.wind.exceptions.CheckpointNotFoundError` if no
     checkpoint is available anywhere for the requested preset (bundled,
     env dir, or manifest download).
     """
@@ -161,7 +166,7 @@ def wind_checkpoint_status() -> dict:
     `CHECKPOINT_DIR`-scanning `_discover_best_checkpoint`, which knows
     nothing about wind's manifest-based resolution.
     """
-    from wind_diffusion import list_models
+    from enerdatasynth.resources.wind import list_models
     return {"per_preset": list_models()}
 
 

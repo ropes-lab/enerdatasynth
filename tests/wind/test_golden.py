@@ -13,10 +13,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from wind_diffusion.config import get_config
-from wind_diffusion.data import prepare_datasets
-from wind_diffusion.transforms import destandardize_windows, standardize_windows
-from wind_diffusion.utils import set_seed
+from enerdatasynth.resources.wind.config import get_config
+from enerdatasynth.resources.wind.data.data import prepare_datasets
+from enerdatasynth.resources.wind.data.transforms import destandardize_windows, standardize_windows
+from enerdatasynth.resources.wind.utils import set_seed
 
 SEQ_LEN = 288  # 24h @ 5min
 

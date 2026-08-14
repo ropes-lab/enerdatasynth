@@ -48,18 +48,28 @@ PROJECT_ROOT     = Path(os.environ.get("ENERDATASYNTH_PROJECT_ROOT", Path.cwd())
 # Everything below lives under data/ — the repo root is kept to 5
 # top-level folders (src/, tests/, docs/, examples/, data/) so a first
 # look at the project isn't cluttered with a dozen artifact folders.
+#
+# Every category folder is resource-nested (data/<category>/<resource>/)
+# so a third resource (e.g. water) mirrors this exactly by adding one
+# same-named subfolder per category, not a parallel top-level tree. The
+# constants below are PJM load's paths specifically -- wind's equivalent
+# paths are computed independently where needed (see
+# generators/wind_conditioning.py), since wind has no from-scratch
+# pipeline in this package to mirror most of these (no RAW_DIR,
+# PROCESSED_DIR, etc. equivalent -- it ships pre-trained; see
+# docs/models/wind.md).
 DATA_ROOT        = PROJECT_ROOT / "data"
-CONFIGS_DIR      = DATA_ROOT / "configs"
-RAW_DIR          = DATA_ROOT / "raw"
-PROCESSED_DIR    = DATA_ROOT / "processed"
-PROCESSED_BACKUP = DATA_ROOT / "processed_backup"
-CHECKPOINT_DIR   = DATA_ROOT / "checkpoints"
-OUTPUTS_DIR      = DATA_ROOT / "outputs"
+CONFIGS_DIR      = DATA_ROOT / "configs" / "pjm_load"
+RAW_DIR          = DATA_ROOT / "raw" / "pjm_load"
+PROCESSED_DIR    = DATA_ROOT / "processed" / "pjm_load"
+PROCESSED_BACKUP = DATA_ROOT / "processed" / "pjm_load_backup"
+CHECKPOINT_DIR   = DATA_ROOT / "checkpoints" / "pjm_load"
+OUTPUTS_DIR      = DATA_ROOT / "outputs" / "pjm_load"
 GENERATED_DIR    = OUTPUTS_DIR / "generated"
 LOGS_DIR         = OUTPUTS_DIR / "logs"
-REPORTS_DIR      = DATA_ROOT / "reports"
+REPORTS_DIR      = DATA_ROOT / "reports" / "pjm_load"
 FIGURES_DIR      = REPORTS_DIR / "figures"
-RESEARCH_HISTORY_DIR = DATA_ROOT / "research_history"
+RESEARCH_HISTORY_DIR = DATA_ROOT / "research_history" / "pjm_load"
 
 _ALL_DATA_DIRS = [RAW_DIR, PROCESSED_DIR, PROCESSED_BACKUP, CHECKPOINT_DIR,
                    GENERATED_DIR, LOGS_DIR, REPORTS_DIR, FIGURES_DIR]

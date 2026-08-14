@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from wind_diffusion.transforms import (
+from enerdatasynth.resources.wind.data.transforms import (
     DAYS_OF_WEEK,
     MONTHS,
     ORDINAL_WIND_BUCKET_VALUES,
@@ -37,8 +37,8 @@ def test_wind_regime_slice_matches_build_condition_vector_layout():
     """The slice must land exactly on the one-hot block build_condition_vector
     actually produces for wind_regime -- verified end-to-end rather than just
     re-deriving the same offset arithmetic."""
-    from wind_diffusion.data import NormStats
-    from wind_diffusion.evaluate import build_condition_vector
+    from enerdatasynth.resources.wind.data.data import NormStats
+    from enerdatasynth.resources.wind.evaluation.evaluate import build_condition_vector
 
     norm_stats = NormStats(
         target_mean=np.zeros(1),
@@ -132,7 +132,7 @@ def test_build_condition_matrix_rejects_unknown_encoding():
 
 
 def test_norm_stats_round_trips_wind_regime_encoding():
-    from wind_diffusion.data import NormStats
+    from enerdatasynth.resources.wind.data.data import NormStats
 
     norm_stats = NormStats(
         target_mean=np.zeros(1),
@@ -151,7 +151,7 @@ def test_norm_stats_wind_regime_encoding_defaults_to_onehot_for_old_checkpoints(
     """A norm_stats.json saved before this field existed has no
     wind_regime_encoding key at all -- must default to "onehot" (the only
     encoding that existed then), not error or silently pick "ordinal"."""
-    from wind_diffusion.data import NormStats
+    from enerdatasynth.resources.wind.data.data import NormStats
 
     legacy_dict = {
         "target_mean": [0.0],
@@ -166,8 +166,8 @@ def test_norm_stats_wind_regime_encoding_defaults_to_onehot_for_old_checkpoints(
 
 
 def test_build_condition_vector_ordinal_matches_norm_stats_encoding():
-    from wind_diffusion.data import NormStats
-    from wind_diffusion.evaluate import build_condition_vector
+    from enerdatasynth.resources.wind.data.data import NormStats
+    from enerdatasynth.resources.wind.evaluation.evaluate import build_condition_vector
 
     norm_stats = NormStats(
         target_mean=np.zeros(1),
@@ -191,7 +191,7 @@ def test_build_condition_vector_ordinal_matches_norm_stats_encoding():
 
 
 def test_wind_persistence_slice_is_last_and_one_dim():
-    from wind_diffusion.transforms import wind_persistence_slice
+    from enerdatasynth.resources.wind.data.transforms import wind_persistence_slice
 
     condition_on = {
         "month": True,
@@ -216,7 +216,7 @@ def test_wind_persistence_slice_does_not_disturb_wind_regime_slice():
 
 
 def test_wind_persistence_slice_raises_when_not_enabled():
-    from wind_diffusion.transforms import wind_persistence_slice
+    from enerdatasynth.resources.wind.data.transforms import wind_persistence_slice
 
     condition_on = {"month": True, "wind_regime_bucket": True}
     with pytest.raises(ValueError):
@@ -243,8 +243,8 @@ def test_build_condition_matrix_wind_persistence_requires_stats():
 def test_build_condition_vector_wind_persistence_defaults_to_neutral_zero():
     """No previous_day_windspeed given -> standardizes to exactly 0.0 (the
     same 'no info' convention used by training-time dropout)."""
-    from wind_diffusion.data import NormStats
-    from wind_diffusion.evaluate import build_condition_vector
+    from enerdatasynth.resources.wind.data.data import NormStats
+    from enerdatasynth.resources.wind.evaluation.evaluate import build_condition_vector
 
     norm_stats = NormStats(
         target_mean=np.zeros(1), target_std=np.ones(1),
@@ -258,8 +258,8 @@ def test_build_condition_vector_wind_persistence_defaults_to_neutral_zero():
 
 
 def test_build_condition_vector_wind_persistence_standardizes_given_value():
-    from wind_diffusion.data import NormStats
-    from wind_diffusion.evaluate import build_condition_vector
+    from enerdatasynth.resources.wind.data.data import NormStats
+    from enerdatasynth.resources.wind.evaluation.evaluate import build_condition_vector
 
     norm_stats = NormStats(
         target_mean=np.zeros(1), target_std=np.ones(1),
@@ -273,7 +273,7 @@ def test_build_condition_vector_wind_persistence_standardizes_given_value():
 
 
 def test_norm_stats_round_trips_wind_persistence_fields():
-    from wind_diffusion.data import NormStats
+    from enerdatasynth.resources.wind.data.data import NormStats
 
     norm_stats = NormStats(
         target_mean=np.zeros(1), target_std=np.ones(1),
@@ -291,7 +291,7 @@ def test_norm_stats_round_trips_wind_persistence_fields():
 def test_norm_stats_wind_persistence_defaults_for_old_checkpoints():
     """A norm_stats.json saved before this feature existed has none of these
     keys -- must default to neutral values, not error."""
-    from wind_diffusion.data import NormStats
+    from enerdatasynth.resources.wind.data.data import NormStats
 
     legacy_dict = {
         "target_mean": [0.0], "target_std": [1.0],
@@ -306,7 +306,7 @@ def test_norm_stats_wind_persistence_defaults_for_old_checkpoints():
 
 
 def test_norm_stats_round_trips_diurnal_profile_by_regime():
-    from wind_diffusion.data import NormStats
+    from enerdatasynth.resources.wind.data.data import NormStats
 
     norm_stats = NormStats(
         target_mean=np.zeros(1), target_std=np.ones(1),

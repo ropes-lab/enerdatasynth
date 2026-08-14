@@ -32,6 +32,7 @@ import numpy as np
 from enerdatasynth.conditioning import ConditionField, condition_dim
 from enerdatasynth.generators.load import LoadDiffusionModel
 from enerdatasynth.registry import ConstructResult, ResourceEntry, register_resource
+from enerdatasynth.resources.pjm_load.exceptions import CheckpointNotFoundError, InvalidConditionError
 from enerdatasynth.utils.config import N_DOW, N_MONTHS, COND_DIM, CHECKPOINT_DIR, PROCESSED_DIR
 
 _DOW_NAMES = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
@@ -47,10 +48,10 @@ def _parse_day_of_week(value: Union[int, str]) -> int:
         abbrevs = {n[:3]: i for i, n in enumerate(_DOW_NAMES)}
         if key in abbrevs:
             return abbrevs[key]
-        raise ValueError(f"Unrecognized day_of_week: {value!r}")
+        raise InvalidConditionError(f"Unrecognized day_of_week: {value!r}")
     if isinstance(value, int) and 0 <= value <= 6:
         return value
-    raise ValueError(f"day_of_week must be 0-6 or a day name, got {value!r}")
+    raise InvalidConditionError(f"day_of_week must be 0-6 or a day name, got {value!r}")
 
 
 def _resolve_dow(conditions: dict, n: int, rng: np.random.Generator) -> np.ndarray:
@@ -104,7 +105,7 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     Load-specific: scans CHECKPOINT_DIR for result.json files, a
     convention only enerdatasynth's own training pipeline produces. Wind's
     equivalent (`generators/wind_conditioning.py`'s `wind_construct`)
-    resolves checkpoints through `wind_diffusion.registry` instead --
+    resolves checkpoints through `enerdatasynth.resources.wind.registry` instead --
     a different mechanism entirely, not something this function generalizes.
     """
     checkpoint_root = Path(checkpoint_root)
@@ -118,7 +119,7 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
                 candidates.append(json.load(f))
 
     if not candidates:
-        raise FileNotFoundError(
+        raise CheckpointNotFoundError(
             f"No trained checkpoints found under {checkpoint_root}. "
             f"Run `enerdatasynth train` first (see docs/quickstart.md)."
         )
@@ -136,7 +137,7 @@ def _load_construct(zone: str) -> ConstructResult:
     needs no per-resource edit; mirrors `wind_conditioning.wind_construct`."""
     metadata_path = PROCESSED_DIR / "metadata.json"
     if not metadata_path.exists():
-        raise FileNotFoundError(
+        raise CheckpointNotFoundError(
             f"No processed dataset found at {metadata_path}. "
             f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
         )

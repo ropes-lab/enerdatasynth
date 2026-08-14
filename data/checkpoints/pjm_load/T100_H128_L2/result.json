@@ -1,0 +1,18 @@
+{
+  "run_id": "T100_H128_L2",
+  "diffusion_steps": 100,
+  "hidden_dim": 128,
+  "n_layers": 2,
+  "n_params": 29848,
+  "epochs_trained": 41,
+  "best_epoch": 31,
+  "best_val_loss": 0.12487375736236572,
+  "final_train_loss": 0.1400848691200101,
+  "final_val_loss": 0.14017237722873688,
+  "training_time_sec": 1.9776198863983154,
+  "generation_time_sec_per_64": 0.02007293701171875,
+  "checkpoint_best": "best.pt",
+  "checkpoint_latest": "latest.pt",
+  "loss_curve_path": "loss_curve.png",
+  "training_log_path": "outputs/logs/T100_H128_L2_training_log.csv"
+}

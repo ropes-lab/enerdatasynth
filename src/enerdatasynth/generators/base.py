@@ -1,25 +1,27 @@
 """
 src/enerdatasynth/generators/base.py
 ======================================
-Common interface for every domain-specific synthetic-generation model
+Common interface for every resource-specific synthetic-generation model
 in this package: electric load (`LoadDiffusionModel`) and wind
-(`WindDiffusionModel`, wrapping the vendored `wind_diffusion` package).
+(`WindDiffusionModel`, wrapping the vendored wind pipeline under
+`enerdatasynth.resources.wind`).
 
-The package's ultimate goal is a unified SDK across multiple PJM
-resource types that downstream tooling — CLIs, dashboards, benchmarking
+The package's goal is a unified SDK across multiple energy resource
+types that downstream tooling — CLIs, dashboards, benchmarking
 harnesses — can drive without a domain-specific branch:
 
     samples = generator.sample(z, seed=0)
 
 `WindDiffusionModel` wraps real, previously-published wind research
-(`wind_diffusion`, vendored from a separate Data-For-Good project).
-Real trained checkpoints (1ch/2ch/3ch) are bundled under
-`data/checkpoints/wind/<preset>/` and resolved automatically -- see
-`generators/wind_conditioning.py`'s `wind_construct`. (The vendored
-`wind_diffusion/manifest.json`'s own presets still read `"pending"` --
-that describes only its own external-download mechanism, which this
-package's bundled-checkpoint convention takes precedence over; it does
-not mean wind is unavailable here.)
+(`enerdatasynth.resources.wind`, vendored from a separate Data-For-Good
+project as `wind_diffusion`). Real trained checkpoints (1ch/2ch/3ch)
+are bundled under `data/checkpoints/wind/<preset>/` and resolved
+automatically -- see `generators/wind_conditioning.py`'s
+`wind_construct`. (The vendored `resources/wind/manifest.json`'s own
+presets still read `"pending"` -- that describes only its own
+external-download mechanism, which this package's bundled-checkpoint
+convention takes precedence over; it does not mean wind is unavailable
+here.)
 """
 
 from __future__ import annotations

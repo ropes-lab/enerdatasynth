@@ -54,7 +54,7 @@ def tiny_trained_checkpoint(synthetic_profiles):
     Cleans up the checkpoint dir and log file it creates afterward.
     """
     from enerdatasynth.utils.config import RunConfig
-    from enerdatasynth.training.train import train_one_config
+    from enerdatasynth.resources.pjm_load.training.train import train_one_config
 
     X, Z = synthetic_profiles
     cfg = RunConfig(
