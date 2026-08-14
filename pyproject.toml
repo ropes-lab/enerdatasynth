@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "enerdatasynth"
+dynamic = ["version"]
+description = "A research SDK for synthetic energy resource profiles (PJM electric load and wind, behind one common interface)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
+]
+requires-python = ">=3.10"
+keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy", "generative-model", "research-sdk"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "torch>=2.11.0,<2.12.0",
+    "scikit-learn",
+    "holidays",
+    "requests",
+    "tqdm",
+    "pyarrow",
+    "pyyaml",
+    # Below: wind_diffusion's own dependencies (src/wind_diffusion/, vendored
+    # from Data-For-Good) that weren't already covered above. torch's pin
+    # is likewise wind_diffusion's -- see the comment in the original repo's
+    # pyproject.toml: torch==2.12.0+cpu segfaults during the autograd-tracked
+    # forward pass through nn.TransformerEncoder on at least one real CPU;
+    # inference is unaffected, only training crashes. Reproduced directly,
+    # confirmed fixed on 2.11.0. This is now the whole package's pin, not
+    # just wind's, since there's one shared torch install either way.
+    "h5py",
+    "h5pyd",
+    "scipy",
+    "seaborn",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+# seaborn is now also a core dependency (wind_diffusion.evaluate imports it
+# unconditionally) -- this extra is redundant but kept so the documented
+# `pip install -e ".[viz]"` (docs/installation.md, README.md) doesn't break.
+viz = [
+    "seaborn>=0.13",
+]
+# Needed only for `enerdatasynth evaluate`/`report`/`pipeline` (validation
+# plots + the classical AR/ARMA/ARIMA/SARIMA baseline comparison in
+# evaluation/baselines.py) -- not imported anywhere on the
+# `enerdatasynth.model(...).set(...).sample(...)` path, so end users who
+# only want to generate synthetic profiles don't need either package.
+research = [
+    "statsmodels",
+    "matplotlib",
+]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "build",
+    "twine",
+]
+
+[project.scripts]
+enerdatasynth = "enerdatasynth.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "enerdatasynth.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+# PEP 561 marker (src/enerdatasynth/py.typed) -- without an explicit
+# package-data entry, setuptools' default wheel builder only picks up
+# *.py files under packages.find and silently drops non-.py data files
+# from the built wheel. Ships it so downstream mypy/IDE users actually
+# get type-checking signal from an installed (non-editable) copy.
+enerdatasynth = ["py.typed"]
+# wind_diffusion/manifest.json (bundled weights index, loaded at runtime
+# via importlib.resources -- see wind_diffusion/registry.py) is the same
+# kind of non-.py data file; carried over from the original repo's own
+# pyproject.toml comment about this exact gotcha.
+wind_diffusion = ["manifest.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,53 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  pytest:
+    # Standard GitHub-hosted runner -- no GPU available here, so this also
+    # verifies every code path degrades correctly to CPU (utils.config.
+    # resolve_device()/DEVICE fall back to "cpu" when torch.cuda.is_available()
+    # is False, which is always true on this runner).
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install torch (CPU-only wheel, pinned to match requirements.txt)
+        # Plain `pip install torch` pulls the much larger CUDA-enabled wheel
+        # by default, irrelevant here since there's no GPU on this runner.
+        # Pinned to requirements.txt's exact version (not just pyproject.toml's
+        # looser range) because tests/test_public_api.py and friends load
+        # real checkpoint state_dicts committed under data/checkpoints/ --
+        # those need the same torch version that produced them, not just
+        # "a compatible one." `pip install -e .` below is satisfied by this
+        # already-installed version (its own constraint, torch>=2.11.0,<2.12.0,
+        # matches) and won't touch it.
+        run: pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install package + test dependencies
+        # Deliberately NOT `pip install -r requirements.txt`: that file is
+        # pinned to the exact environment that produced the checkpoints/
+        # results committed to this repo (see its own header comment,
+        # "for normal development, prefer pip install -e ."), not a
+        # constraint the test suite itself needs -- e.g. its numpy==2.4.4
+        # pin requires Python>=3.11 and breaks this matrix's 3.10 job for
+        # a reason with nothing to do with whether the package actually
+        # works on 3.10. `pip install -e .` resolves pyproject.toml's own
+        # (unpinned-except-torch) dependency ranges per Python version
+        # instead, which is what CI should actually be verifying.
+        run: |
+          pip install -e .
+          pip install pytest pyyaml
+
+      - name: Run test suite
+        run: pytest tests/ -v

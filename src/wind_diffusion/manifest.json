@@ -1,0 +1,185 @@
+{
+  "1ch": {
+    "status": "pending",
+    "version": null,
+    "checkpoint_url": null,
+    "checkpoint_sha256": null,
+    "norm_stats_url": null,
+    "norm_stats_sha256": null,
+    "seq_len": 288,
+    "freq": "5min",
+    "feature_cols": [
+      "windspeed_100m"
+    ],
+    "channel_description": "windspeed only",
+    "recommended_generation": {
+      "sampler": "ddim",
+      "steps": 50,
+      "eta": 1.0,
+      "guidance_scale": 40.0,
+      "guidance_scope": "wind_regime",
+      "dynamic_threshold": true,
+      "dynamic_threshold_percentile": 99.0,
+      "note": "eta=1.0 (DDPM-style stochastic DDIM, not the library default of 0.0/fully-deterministic) measured as a large further win on top of dynamic_threshold -- see known_limitation. guidance_scale/guidance_scope are only meaningful for a checkpoint trained with cond_dropout_prob>0, cond_dropout_scope='wind_regime' (the config.py default as of this measurement). dynamic_threshold and eta have no training dependency -- both are generation-time-only and safe to enable against ANY checkpoint, including ones trained before they existed. guidance_scale=1.0 disables guidance and is safe against any checkpoint, including older ones trained before cond_dropout existed."
+    },
+    "metrics": {
+      "measured_at": "2026-07-21",
+      "measurement_type": "local_baseline",
+      "training_recipe": "Post-LN (norm_first=False), hidden_dim=128, warmup_epochs=8, 60 epochs, cond_dropout_prob=0.3, cond_dropout_scope=wind_regime",
+      "generation_settings": "sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0, guidance_scope=wind_regime, dynamic_threshold=true, dynamic_threshold_percentile=99.0",
+      "n_realizations_per_regime": 100,
+      "real_val_regime_counts": {
+        "low": 156,
+        "mid": 300,
+        "high": 147
+      },
+      "gates_by_regime": {
+        "low": {
+          "marginal_wasserstein": 2.246563859367133,
+          "acf_rmse": 0.06027251796308201,
+          "spectral_low_band": 0.37230852246284485,
+          "spectral_high_band": 0.3452037274837494,
+          "ramp_wasserstein": 0.016582167918609954,
+          "diurnal_rmse": 0.4711119532585144,
+          "regime_accuracy": 0.69,
+          "regime_confusion": { "low": 0.69, "mid": 0.22, "high": 0.09 },
+          "n_real_days": 156,
+          "n_synth_days": 100,
+          "small_n_warning": false
+        },
+        "mid": {
+          "marginal_wasserstein": 1.9985352271740076,
+          "acf_rmse": 0.10827372218111085,
+          "spectral_low_band": 0.3715148866176605,
+          "spectral_high_band": 0.5047855973243713,
+          "ramp_wasserstein": 0.029184928898473517,
+          "diurnal_rmse": 1.515811562538147,
+          "regime_accuracy": 0.41,
+          "regime_confusion": { "low": 0.42, "mid": 0.41, "high": 0.17 },
+          "n_real_days": 300,
+          "n_synth_days": 100,
+          "small_n_warning": false
+        },
+        "high": {
+          "marginal_wasserstein": 2.10947240477325,
+          "acf_rmse": 0.10052527349082005,
+          "spectral_low_band": 0.5270938873291016,
+          "spectral_high_band": 0.5153874754905701,
+          "ramp_wasserstein": 0.06570160038481568,
+          "diurnal_rmse": 2.2944881916046143,
+          "regime_accuracy": 0.55,
+          "regime_confusion": { "low": 0.09, "mid": 0.36, "high": 0.55 },
+          "n_real_days": 147,
+          "n_synth_days": 100,
+          "small_n_warning": false
+        }
+      },
+      "known_limitation": "Superseded 2026-07-21 by adding eta=1.0 on top of dynamic_threshold -- the eta=0.0 (deterministic DDIM) + dynamic_threshold measurement is preserved in reports/BASELINE_1CH_DYNTHRESH_GS40.md for comparison. Root cause: DDIM's default eta=0.0 makes the reverse process fully deterministic given its starting noise -- no per-step stochastic injection at all. This measurably suppresses the natural persistence/autocorrelation structure real turbulent wind data has; it is NOT fixed by more steps (tried steps=200, no change) or by dynamic_threshold alone. Setting eta=1.0 (matching ancestral DDPM's own stochasticity) fixed most of it: ACF RMSE 0.100/0.142/0.135 -> 0.060/0.108/0.101, and every other gate improved substantially alongside it (marginal_wasserstein 3.62/2.72/3.60 -> 2.25/2.00/2.11, low regime_accuracy jumped 0.58 -> 0.69). mid regime_accuracy stayed flat (0.43 -> 0.41) -- still the one open problem across every configuration tried this session. See presentation_plots/ for the mechanism trace behind this (DDIM steps=50/200/eta=0 vs eta=1 vs ancestral T=200 comparison)."
+    }
+  },
+  "2ch": {
+    "status": "pending",
+    "version": null,
+    "checkpoint_url": null,
+    "checkpoint_sha256": null,
+    "norm_stats_url": null,
+    "norm_stats_sha256": null,
+    "seq_len": 288,
+    "freq": "5min",
+    "feature_cols": [
+      "windspeed_100m",
+      "winddirection_100m"
+    ],
+    "channel_description": "windspeed decomposed into wind-vector U/V components",
+    "recommended_generation": {
+      "sampler": "ddim",
+      "steps": 50,
+      "eta": 0.0,
+      "guidance_scale": 1.0,
+      "guidance_scope": "full",
+      "dynamic_threshold": true,
+      "dynamic_threshold_percentile": 99.0,
+      "note": "guidance_scale MUST stay 1.0 (disabled) for this preset -- guidance measurably breaks it even with dynamic thresholding on (ramp_wasserstein explodes to 3.5/1.9 for low/mid; see known_limitation). eta=1.0 (which is a clear win for 1ch/3ch) was tested here too and is MIXED, not adopted as default -- see known_limitation. Also requires training with joint_consistency_channels=[0,1], joint_consistency_weight=1.0 (not the config.py default) -- this checkpoint (ddpm_transformer_2ch_jointloss_w1_e60_run) is not a default-recipe checkpoint."
+    },
+    "known_limitation": "Substantially improved 2026-07-21, but still not a fully solved preset -- do not treat as equivalent to 1ch/3ch. History: originally measured BROKEN (synthetic speed ~2.8x inflated vs real, 100% of days landing in the 'high' bucket regardless of request) and root-caused to a sampling-time clip-boundary instability specific to jointly modeling a 2D vector magnitude (U/V) -- see reports/2CH_CLAMP_INVESTIGATION.md. A training-time joint-consistency loss (joint_consistency_weight=1.0) gave a partial fix (2.8x -> 1.4x inflation, plateaued). Dynamic thresholding, layered on top of that same checkpoint, closes most of the remaining gap: marginal_wasserstein 8.0/4.2/3.2 (joint-loss alone) -> 4.5/1.5/4.4 (+ dynamic thresholding), now in the same range as 1ch/3ch. Guidance still does not compose with this checkpoint even with dynamic thresholding on: at guidance_scale=40, ramp_wasserstein explodes (3.5/1.9/0.3) and 'mid' requests resolve to 'low' 83% of the time. Use this preset only without guidance. Separately, eta=1.0 (the stochasticity fix that broadly helped 1ch/3ch) was tested here and is MIXED: low/mid improved (marginal_wasserstein 4.5/1.5 -> 3.0/1.0, regime_accuracy 0.31/0.43 -> 0.35/0.56) but high got clearly WORSE (marginal_wasserstein 4.4 -> 5.9, regime_accuracy 0.32 -> 0.12, confusion shows 'high' requests increasingly resolving to 'mid'). Not adopted as this preset's default pending further investigation -- recommended_generation keeps eta=0.0 for 2ch. See reports/BASELINE_2CH_DYNTHRESH_JOINTLOSS_GS1.md vs reports/BASELINE_2CH_DYNTHRESH_JOINTLOSS_GS40.md (guidance comparison) and reports/BASELINE_2CH_DYNTHRESH_ETA1_GS1.md (eta comparison)."
+  },
+  "3ch": {
+    "status": "pending",
+    "version": null,
+    "checkpoint_url": null,
+    "checkpoint_sha256": null,
+    "norm_stats_url": null,
+    "norm_stats_sha256": null,
+    "seq_len": 288,
+    "freq": "5min",
+    "recommended_generation": {
+      "sampler": "ddim",
+      "steps": 50,
+      "eta": 1.0,
+      "guidance_scale": 40.0,
+      "guidance_scope": "wind_regime",
+      "dynamic_threshold": true,
+      "dynamic_threshold_percentile": 99.0,
+      "note": "eta=1.0 (DDPM-style stochastic DDIM, not the library default of 0.0/fully-deterministic) measured as a large further win on top of dynamic_threshold. guidance_scale/guidance_scope are only meaningful for a checkpoint trained with cond_dropout_prob>0, cond_dropout_scope='wind_regime' (the config.py default as of this measurement). dynamic_threshold and eta have no training dependency and are safe against any checkpoint."
+    },
+    "feature_cols": [
+      "windspeed_100m",
+      "winddirection_100m"
+    ],
+    "channel_description": "windspeed plus sin/cos direction encoding",
+    "metrics": {
+      "measured_at": "2026-07-21",
+      "measurement_type": "local_baseline",
+      "training_recipe": "Post-LN (norm_first=False), hidden_dim=128, warmup_epochs=8, 60 epochs, cond_dropout_prob=0.3, cond_dropout_scope=wind_regime (same recipe as 1ch)",
+      "generation_settings": "sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0, guidance_scope=wind_regime, dynamic_threshold=true, dynamic_threshold_percentile=99.0",
+      "n_realizations_per_regime": 100,
+      "real_val_regime_counts": {
+        "low": 156,
+        "mid": 300,
+        "high": 147
+      },
+      "gates_by_regime": {
+        "low": {
+          "marginal_wasserstein": 2.6650590388332525,
+          "acf_rmse": 0.07382660702294278,
+          "spectral_low_band": 0.8194542527198792,
+          "spectral_high_band": 0.8339611291885376,
+          "ramp_wasserstein": 0.07424390973263495,
+          "diurnal_rmse": 2.490246295928955,
+          "regime_accuracy": 0.41,
+          "regime_confusion": { "low": 0.41, "mid": 0.5, "high": 0.09 },
+          "n_real_days": 156,
+          "n_synth_days": 100,
+          "small_n_warning": false
+        },
+        "mid": {
+          "marginal_wasserstein": 2.212964881923466,
+          "acf_rmse": 0.1093522815159464,
+          "spectral_low_band": 0.2782226502895355,
+          "spectral_high_band": 0.519961953163147,
+          "ramp_wasserstein": 0.16102245924503267,
+          "diurnal_rmse": 0.8358428478240967,
+          "regime_accuracy": 0.43,
+          "regime_confusion": { "low": 0.31, "mid": 0.43, "high": 0.26 },
+          "n_real_days": 300,
+          "n_synth_days": 100,
+          "small_n_warning": false
+        },
+        "high": {
+          "marginal_wasserstein": 1.158410305721871,
+          "acf_rmse": 0.11844935944302543,
+          "spectral_low_band": 0.24483077228069305,
+          "spectral_high_band": 0.17756041884422302,
+          "ramp_wasserstein": 0.10956338803826764,
+          "diurnal_rmse": 0.9448627233505249,
+          "regime_accuracy": 0.82,
+          "regime_confusion": { "low": 0.01, "mid": 0.17, "high": 0.82 },
+          "n_real_days": 147,
+          "n_synth_days": 100,
+          "small_n_warning": false
+        }
+      },
+      "known_limitation": "Superseded 2026-07-21 by adding eta=1.0 on top of dynamic_threshold -- see 1ch's known_limitation for the shared root cause (DDIM eta=0.0 is fully deterministic, suppressing real data's natural persistence structure; fixed by reintroducing DDPM-style stochasticity). Every gate improved substantially: marginal_wasserstein 3.31/3.49/3.52 -> 2.67/2.21/1.16, ACF RMSE 0.107/0.146/0.146 -> 0.074/0.109/0.118, high regime_accuracy jumped 0.51 -> 0.82. mid regime_accuracy stayed flat (0.44 -> 0.43) -- still the one open problem across every configuration tried this session."
+    }
+  }
+}

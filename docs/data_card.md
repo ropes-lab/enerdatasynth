@@ -1,0 +1,177 @@
+# Dataset Card
+
+## Dataset Summary
+
+Hourly electric load and temperature data for PJM Interconnection load zones, used to
+train and evaluate conditional diffusion models that generate synthetic 24-hour daily
+load profiles. This is not a load dataset released as a standalone product — it is the
+input pipeline for the generative modeling work in this repository.
+
+## Motivation
+
+Collected to answer one research question (see `docs/research_status.md` §A): can a
+conditional generative model reproduce the statistical, temporal, and operational
+characteristics of real PJM daily load profiles, conditioned on calendar and weather
+context?
+
+## Composition
+
+| Artifact | Location | Contents |
+|---|---|---|
+| Raw load CSVs | `data/raw_data/pjm_load_data/hrl_load_metered_{2016..2025}.csv` | 10 annual files of hourly metered load |
+| Raw temperature CSVs | `data/raw_data/pjm_load_data/station_hourly_temps.csv`, `pjm_hourly_temps_wide.csv` | Per-station and zone-pivoted hourly temperature |
+| Temperature cache | `data/cache/{station}_{year}.parquet` (32 station codes × 2016–2025) + `isd-history.csv`, `resolved_ids.json` | Per-station-year NOAA downloads, cached so preprocessing re-runs don't re-fetch |
+| Processed tensors (current package) | `data/processed/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet`, `metadata.json` | Zone `PS` only, 23-dim conditioning, ready for `enerdatasynth train` |
+| Processed tensors (research history) | `data/research_history/outputs/week3_outputs/*.npy` (Z5/Z9 conditioning), `zone_outputs/<ZONE>/` (16 additional zones) | 6-dim/9-dim conditioning, the representation the reported Transformer results actually used |
+| Wind raw data | `data/raw_data/wind_data/` | **Empty — placeholder file only (`add_raw_data_here.txt`).** No wind dataset exists in this repository. |
+
+## Source
+
+- **Load data:** PJM Interconnection hourly metered load (`hrl_load_metered`), the
+  standard PJM operational dataset format. Exact acquisition method (manual download vs.
+  API) is **not documented in this repository as of this audit.**
+- **Temperature data:** NOAA Integrated Surface Database (ISD), fetched per airport
+  weather station and cached locally (`src/enerdatasynth/data/temperature.py`).
+
+## Time Coverage
+
+2016–2025 (10 years), per the raw CSV filenames and `data/cache/` station-year files.
+
+## Geographic Coverage
+
+- **Researched (Phase 2):** 17 PJM zones — AP, DAY, PL, DEOK, CE, PN, DPL, BC, PS, RECO,
+  JC, ME, DUQ, PE, AE, EKPC, DOM.
+- **Packaged (installed SDK today):** zone `PS` only.
+
+## Temporal Resolution
+
+Hourly source data, pivoted to fixed 24-column daily profiles (one row per calendar day).
+
+## Variables
+
+- Hourly metered load (MW, later normalized)
+- Hourly temperature per zone (equal-weighted average of that zone's constituent
+  stations — see `ZONE_STATIONS` in `src/enerdatasynth/data/temperature.py`)
+- Derived: daily `Tmax`, `Tmin`, `spread = Tmax − Tmin`
+- Calendar: month, day-of-week, US federal holiday flag (via the `holidays` package,
+  inferred from `pyproject.toml` dependencies — exact holiday calendar/region not
+  independently re-verified in this audit)
+
+## PJM Zones
+
+See "Geographic Coverage" above. Zone-to-station weather mapping is defined in
+`ZONE_STATIONS` (`src/enerdatasynth/data/temperature.py`); an `"RTO"` catch-all entry
+(equal weight across every known station) also exists there.
+
+## Temperature Data
+
+NOAA ISD, resolved by USAF-WBAN station ID with automatic re-resolution across years
+(stations get renumbered). On a 404 for a given station-year, the code falls back to
+alternate USAF-WBAN combinations for that station code. See
+`src/enerdatasynth/data/temperature.py`'s module docstring for the full mechanism.
+
+## Temperature-to-Zone Mapping
+
+Equal-weighted average across each zone's constituent stations (`ZONE_STATIONS` dict in
+`temperature.py`). Not distance-weighted, population-weighted, or otherwise adjusted.
+
+## Preprocessing
+
+Implemented in `src/enerdatasynth/data/preprocess.py`:
+1. Sort by timestamp, pivot to one row per day / 24 hour-columns.
+2. Detect and flag DST days (23 or 25 hourly rows for that date).
+3. Merge zone temperature, flag missing `Tmax`/`Tmin`.
+4. Flag a COVID period (`is_covid`) — exact date range **not documented in this repository
+   as of this audit.**
+5. Remove any day flagged DST, missing-load, missing-weather, or COVID.
+6. Normalize: load per-hour to `[0,1]` (MinMax), temperature via z-score, spread via
+   MinMax (based on `week3.py`'s Step 7 description — **not independently re-verified
+   against the current `preprocess.py` in this audit pass; treat as the historical
+   procedure unless confirmed identical**).
+
+## Daylight Saving Time Handling
+
+Days with a non-24 hourly row count (23 or 25) are detected pre-pivot
+(`detect_dst_days`) and excluded — a fixed 24-column daily representation cannot
+represent them. See `docs/research_status.md` §B.
+
+## Missing Data
+
+- **Missing load:** any NaN among the 24 hourly load columns for a day (excluding days
+  already flagged DST, to avoid double-counting) → excluded.
+- **Missing weather:** NaN `Tmax` or `Tmin` after the zone temperature merge → excluded.
+- No imputation is performed for either case — affected days are dropped, not filled.
+
+## Weather Availability
+
+Per-station-year caching (`data/cache/`) means weather availability is bounded by NOAA
+ISD's own station coverage and uptime; a station with sparse ISD history will produce
+sparser cached years. Not independently audited per-zone in this pass.
+
+## Conditioning Variables
+
+See `docs/research_status.md` §C for the full table and the critical distinction between
+the research-history conditioning (5 conceptual fields / 6 raw columns, "Z5") and the
+current package's 23-dimensional one-hot representation.
+
+## Train/Validation Split
+
+Chronological: **2016–2023 train / 2024–2025 validation** (`week3.py`, Step 6) — not a
+random split. The current package's bundled `PS`-zone processed dataset (2,785
+train / 600 validation days) is consistent with this chronological convention but was
+not independently re-derived in this audit.
+
+## Known Limitations
+
+- Single-station-equal-weight temperature mapping may not reflect each zone's true load-
+  weighted climate exposure.
+- COVID-period exclusion removes a real, historically significant demand anomaly rather
+  than modeling it — appropriate for this project's stated goal (typical-day generation)
+  but worth knowing if using this data for anything COVID-adjacent.
+- DST-day exclusion means the model has never seen (and cannot generate) the two
+  irregular-length calendar days per year.
+- No imputation — missing-data days are simply absent, not a statistically neutral gap.
+
+## Intended Uses
+
+Training and evaluating conditional generative models of PJM daily load shape, as
+implemented in this repository.
+
+## Out-of-Scope Uses
+
+- Forecasting actual future load (see `docs/research_status.md` §A — this is explicitly
+  not a forecasting dataset/model pairing).
+- Any operational grid-planning, dispatch, or control decision.
+- Zones or time periods outside 2016–2025 / the 17 researched zones.
+
+## Data Quality
+
+Not independently re-scored in this audit beyond the cleaning steps already described
+(DST/missing-load/missing-weather/COVID exclusion). No outlier-detection pass beyond
+that was found in the current package code.
+
+## Reproducibility
+
+`enerdatasynth preprocess` reproduces the current package's `PS`-zone processed dataset
+from the raw CSVs under `data/raw_data/pjm_load_data/`, given those files are present
+(see `docs/packaging.md` — `pip install enerdatasynth` does not ship raw data or trained
+checkpoints, by design).
+
+## Licensing / Redistribution — Flagged, Not Resolved
+
+**This audit did not verify redistribution rights for the raw PJM load CSVs or the NOAA
+ISD-derived temperature cache, and does not assume they are clear to redistribute.**
+Both raw and cached data currently exist inside this repository
+(`data/raw_data/pjm_load_data/`, `data/cache/`). Before any public GitHub push:
+
+- Confirm PJM's terms of use for `hrl_load_metered` data permit redistribution in a
+  public repository, or exclude these files from what gets pushed.
+- NOAA ISD data is commonly treated as U.S. public-domain government data, but this was
+  **not independently confirmed** for this specific dataset/derivative (the cached
+  per-station-year Parquet files) during this audit — verify before relying on that
+  assumption.
+- The software license (`LICENSE`, MIT) covers the code in this repository only. It does
+  not and cannot grant redistribution rights to third-party datasets.
+
+**This is classified as a BLOCKING item in `docs/release_audit.md` for public
+GitHub/PyPI release if the raw data directories are included in what gets pushed.**

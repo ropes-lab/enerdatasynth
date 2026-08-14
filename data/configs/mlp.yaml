@@ -1,0 +1,19 @@
+# Legacy MLP baseline configuration — the hyperparameters used by the
+# original hyperparameter sweep (research_history/, and this package's
+# earlier default before the transformer was promoted; see
+# MIGRATION.md section 2). Kept for reproducibility and as a research
+# comparison point, not because it's recommended for new work.
+#
+# Usage:
+#   from enerdatasynth.utils.config import RunConfig
+#   cfg = RunConfig.from_yaml("configs/mlp.yaml")
+architecture: mlp
+diffusion_steps: 100
+hidden_dim: 128     # MLP hidden width
+n_layers: 4         # MLP residual blocks
+n_heads: 4          # unused by the MLP; kept for schema consistency with transformer.yaml
+batch_size: 64
+lr: 0.0003
+max_epochs: 200
+patience: 10
+seed: 42

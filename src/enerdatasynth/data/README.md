@@ -1,0 +1,43 @@
+# `enerdatasynth.data`
+
+Raw CSVs → cleaned, normalized daily tensors ready for training.
+
+## Files
+
+- **`preprocess.py`** — `run_preprocessing()`: the full pipeline (pivot to daily rows,
+  detect/remove DST days, remove missing-load/missing-weather/COVID days, normalize,
+  save `X_daily_profiles.npy` / `Z_conditions.npy` / `metadata.json` / train-val parquet
+  files to `data/processed/`). See `docs/data_card.md` for the exact rules.
+- **`temperature.py`** — NOAA ISD fetch, per-station-year Parquet caching
+  (`data/cache/`), and zone-level equal-weighted averaging across each zone's
+  constituent stations (`ZONE_STATIONS`).
+
+## Public API vs. internal
+
+`run_preprocessing` is re-exported at the top-level package (`enerdatasynth.run_preprocessing`).
+Everything else here (`detect_dst_days`, the temperature-fetch internals) is
+implementation detail, reached via `enerdatasynth.data.preprocess`/`.temperature` if
+needed directly.
+
+## How to run it
+
+```bash
+enerdatasynth preprocess
+```
+
+Requires raw CSVs already present under `data/raw_data/pjm_load_data/` (see
+`docs/data_card.md` — `pip install enerdatasynth` does not ship them).
+
+## Assumptions this makes
+
+- A fixed 24-hour daily profile — DST days are excluded rather than handled, because a
+  23- or 25-hour day can't be represented in a fixed-width array.
+- No imputation for missing load or weather — affected days are dropped, not filled.
+- Zone temperature is an equal-weighted station average, not load- or population-
+  weighted.
+
+## What should not be changed casually
+
+Changing the cleaning rules (DST/missing/COVID exclusion) changes what every downstream
+checkpoint was actually trained on. If you change this, existing checkpoints' reported
+metrics no longer describe the same dataset.
