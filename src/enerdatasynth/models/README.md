@@ -1,6 +1,11 @@
 # `enerdatasynth.models`
 
-Denoiser architectures for the DDPM. Selected by name via `build_denoiser(architecture, ...)`
+**PJM load's denoiser architectures specifically** — wind's denoiser is independent
+code in [`src/wind_diffusion/models.py`](../../wind_diffusion/README.md), not this
+subpackage. The two are deliberately separate implementations behind one shared
+interface; see [`docs/architecture.md`](../../../docs/architecture.md) for why.
+
+Selected by name via `build_denoiser(architecture, ...)`
 rather than importing a specific class, so training/sampling/the public API never
 special-case a constructor signature.
 

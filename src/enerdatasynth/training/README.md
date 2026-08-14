@@ -1,5 +1,12 @@
 # `enerdatasynth.training` and `enerdatasynth.sampling`
 
+**PJM load's from-scratch training/generation workflow specifically.** Wind ships
+pre-trained, bundled checkpoints and has no training code in this package at all — its
+original training code lives in the upstream `wind_diffusion` project, not here (see
+[`docs/models/wind.md`](../../../docs/models/wind.md) §6/§14). Both resources
+*generate* the same way regardless (`enerdatasynth.model(...).sample(...)`) — only
+training is load-specific.
+
 Grouped together here because they're used together: train a checkpoint, then generate
 from it.
 

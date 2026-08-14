@@ -1,5 +1,13 @@
 # `enerdatasynth.data`
 
+**PJM load's raw-data pipeline specifically** — despite the generic name, this
+subpackage only ever handles PJM/NOAA data. Wind has no equivalent preprocessing
+pipeline in this package at all (it ships pre-trained; see
+[`docs/models/wind.md`](../../../docs/models/wind.md) §2 for why there's nothing to
+mirror here). This is one of the clearest examples of why the two resources'
+subpackages aren't symmetric — see [`docs/architecture.md`](../../../docs/architecture.md)
+for the full explanation.
+
 Raw CSVs → cleaned, normalized daily tensors ready for training.
 
 ## Files

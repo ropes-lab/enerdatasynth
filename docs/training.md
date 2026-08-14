@@ -1,6 +1,10 @@
 # Training
 
-This page covers training new checkpoints — for generating samples from an already-trained model, see [`docs/quickstart.md`](quickstart.md) and [`docs/api_reference.md`](api_reference.md) instead.
+**This page covers training new PJM load checkpoints specifically** — wind ships
+pre-trained, bundled checkpoints and has no from-scratch training workflow in this
+package (see [`docs/models/wind.md`](models/wind.md) §6/§14). For generating samples
+from an already-trained model (either resource), see [`docs/quickstart.md`](quickstart.md)
+and [`docs/api_reference.md`](api_reference.md) instead.
 
 ## Prerequisites
 

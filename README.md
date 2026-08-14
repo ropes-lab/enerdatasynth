@@ -16,6 +16,9 @@ profile.
 
 ## Generators
 
+Two resources, one interface: `enerdatasynth.model(<name>, zone=...)` works the same
+way for both, regardless of what's running underneath.
+
 ### PJM Electric Load
 Conditional diffusion model for 24-hour PJM load profiles (zone `PS`), conditioned on
 month, day-of-week, holiday, and temperature.
@@ -60,10 +63,13 @@ data → conditioning → generative model → synthetic profile → evaluation
 ```
 
 Raw data is cleaned and reduced to a conditioning vector (calendar + weather). A
-conditional diffusion model, trained per resource, denoises pure noise into a
-profile matching that conditioning. Generated profiles are compared against real ones
-using a fixed metric suite, and — for load — a small post-hoc bias correction. Full
-technical detail (architectures, sampling, conditioning schemas) lives in the
+conditional diffusion model — a separate, independently-implemented pipeline per
+resource, since load and wind differ too much scientifically to share one — denoises
+pure noise into a profile matching that conditioning. Generated profiles are compared
+against real ones using a metric suite (resource-specific — the two are not the same
+suite), and — for load — a small post-hoc bias correction. **The pipeline differs by
+resource; the interface you call does not.** Full technical detail (architectures,
+sampling, conditioning schemas, and exactly why the two pipelines differ) lives in the
 [architecture docs](docs/architecture.md) and the two model reports, not here.
 
 ## Model Reports
@@ -117,7 +123,7 @@ repository:
 ```bibtex
 @software{enerdatasynth,
   title  = {enerdatasynth: A Research SDK for Synthetic PJM Energy Resource Profiles},
-  author = {Sharma, Sonakshi}, {Tikkawar, Pranav}, {Mieth, Robert}
+  author = {Sharma, Sonakshi and Tikkawar, Pranav and Mieth, Robert},
   year   = {2026},
   note   = {Software}
 }

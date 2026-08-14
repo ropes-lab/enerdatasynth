@@ -1,7 +1,12 @@
 # `enerdatasynth.generators`
 
-The SDK layer: `BaseGenerator` is the common interface every resource-type generator
-implements, so `sdk.py`'s `ResourceModel` can drive any of them identically.
+**This is where PJM load and wind actually become one product.** Everywhere else in
+`src/enerdatasynth/` (`models/`, `diffusion/`, `training/`, `sampling/`, `evaluation/`,
+`data/`) is load-only, and wind's equivalent code lives entirely in the separate
+`src/wind_diffusion/` package — this subpackage is the shared layer that makes both
+resources drivable identically through one interface despite that split. `BaseGenerator`
+is the common contract every resource-type generator implements, so `sdk.py`'s
+`ResourceModel` can drive any of them the same way, regardless of what's underneath.
 
 ## Files
 

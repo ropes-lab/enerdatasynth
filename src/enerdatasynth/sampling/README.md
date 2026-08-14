@@ -1,8 +1,12 @@
 # `enerdatasynth.sampling`
 
-Batch generation against an already-trained checkpoint, decoupled from training itself.
-Closely related to [`../training/`](../training/README.md) — see that folder's README
-for the shared "train then generate" workflow.
+**PJM load's batch-generation tooling specifically** (wind generates through
+`enerdatasynth.model("wind", ...).sample(...)` directly, via
+`generators/wind.py` — it has no separate research-tooling equivalent of this
+subpackage, since it has no from-scratch training workflow to generate research
+datasets against). Decoupled from training itself; closely related to
+[`../training/`](../training/README.md) — see that folder's README for the shared
+"train then generate" workflow.
 
 ## Files
 

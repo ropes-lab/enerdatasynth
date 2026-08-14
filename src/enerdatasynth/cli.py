@@ -7,6 +7,15 @@ the existing pipeline functions — no new logic lives here, only
 argument parsing and dispatch, so behavior matches calling the
 underlying functions directly.
 
+Every subcommand below operates on the PJM load resource specifically
+(preprocessing raw CSVs, training/sweeping/calibrating a load
+checkpoint) — this is the CLI surface for load's from-scratch training
+workflow, not a generic "the product's CLI" covering every resource.
+Wind ships pre-trained checkpoints bundled with the package (see
+`docs/models/wind.md`), so it has no from-scratch training workflow to
+expose here; both resources generate the same way, through
+`enerdatasynth.model(...)`, which this CLI does not duplicate.
+
 Usage:
     enerdatasynth preprocess
     enerdatasynth train [--architecture transformer|mlp] [--diffusion-steps T] [--hidden-dim H] [--n-layers L] ...

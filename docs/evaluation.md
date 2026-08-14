@@ -1,5 +1,13 @@
 # Evaluation
 
+**This page covers PJM load's 7-metric evaluation suite specifically.** Wind uses a
+different metric suite entirely (fidelity gates: `marginal_wasserstein`, `acf_rmse`,
+`regime_accuracy`, and others) — see [`docs/models/wind.md`](models/wind.md) §7 for
+those. Both are documented in full, resource-specific detail in their respective model
+reports ([`docs/models/pjm_load.md`](models/pjm_load.md) §7,
+[`docs/models/wind.md`](models/wind.md) §7); this page is the deeper reference for
+load's suite specifically.
+
 ## The 7-metric suite
 
 `enerdatasynth.evaluation.metrics.compute_metrics(real, generated)`

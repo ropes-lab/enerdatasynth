@@ -1,6 +1,12 @@
 # `enerdatasynth.evaluation`
 
-Everything involved in scoring and correcting a trained checkpoint's generated output.
+**PJM load's scoring/calibration tooling specifically** — wind's fidelity-gate metrics
+(`marginal_wasserstein`, `acf_rmse`, `regime_accuracy`, ...) are independent code in
+[`src/wind_diffusion/metrics.py`](../../wind_diffusion/README.md), and wind has no
+calibration step at all (see [`docs/models/wind.md`](../../../docs/models/wind.md) §7/§12
+for why both differ). Everything below is load-specific.
+
+Everything involved in scoring and correcting a trained load checkpoint's generated output.
 
 ## Files
 

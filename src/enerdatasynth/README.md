@@ -36,21 +36,29 @@ implementation details or CLI-only tooling, not part of the everyday contract.
 
 ## Subpackage map
 
-| Subpackage | What it does | README |
-|---|---|---|
-| `data/` | Raw CSV → cleaned daily tensors; NOAA temperature fetch/cache | [data/README.md](data/README.md) |
-| `models/` | Denoiser architectures (Transformer, MLP) | [models/README.md](models/README.md) |
-| `diffusion/` | DDPM forward/reverse process, beta schedules | [diffusion/README.md](diffusion/README.md) |
-| `training/` | Training loop + hyperparameter sweep | [training/README.md](training/README.md) |
-| `sampling/` | Batch generation against a trained checkpoint | (see `training/README.md`, closely related) |
-| `evaluation/` | 7-metric suite, calibration, classical baselines, failure analysis | [evaluation/README.md](evaluation/README.md) |
-| `generators/` | `BaseGenerator` contract + the two concrete resources (load, wind) | [generators/README.md](generators/README.md) |
-| `visualization/` | Validation plots (matplotlib/seaborn — optional `[research]` extra) | — |
-| `utils/` | Config, paths, seeding, device resolution | — |
-| `conditioning.py` | Generic `ConditionField` → raw vector machinery, resource-agnostic | — |
-| `registry.py` | How a resource type registers itself with `sdk.py` | — |
-| `sdk.py` | The public fluent API | — |
-| `cli.py` | `enerdatasynth` console script (thin argparse wrapper, no new logic) | — |
+**Scope matters here:** `generators/`, `registry.py`, `conditioning.py`, and `sdk.py`
+are the shared layer both resources go through. Everything else in this table —
+`data/`, `models/`, `diffusion/`, `training/`, `sampling/`, `evaluation/`,
+`visualization/`, `cli.py` — belongs to **PJM load specifically**, despite the
+generic-sounding names; wind's equivalents are independent code in
+[`src/wind_diffusion/`](../wind_diffusion/README.md), not anywhere in this package.
+See [`docs/architecture.md`](../../docs/architecture.md) for why this split exists.
+
+| Subpackage | Scope | What it does | README |
+|---|---|---|---|
+| `generators/` | **Shared** | `BaseGenerator` contract + the two concrete resources (load, wind) | [generators/README.md](generators/README.md) |
+| `registry.py` | **Shared** | How a resource type registers itself with `sdk.py` | — |
+| `conditioning.py` | **Shared** | Generic `ConditionField` → raw vector machinery, resource-agnostic | — |
+| `sdk.py` | **Shared** | The public fluent API | — |
+| `data/` | PJM load only | Raw CSV → cleaned daily tensors; NOAA temperature fetch/cache | [data/README.md](data/README.md) |
+| `models/` | PJM load only | Denoiser architectures (Transformer, MLP) | [models/README.md](models/README.md) |
+| `diffusion/` | PJM load only | DDPM forward/reverse process, beta schedules | [diffusion/README.md](diffusion/README.md) |
+| `training/` | PJM load only | Training loop + hyperparameter sweep | [training/README.md](training/README.md) |
+| `sampling/` | PJM load only | Batch generation against a trained checkpoint | [sampling/README.md](sampling/README.md) |
+| `evaluation/` | PJM load only | 7-metric suite, calibration, classical baselines, failure analysis | [evaluation/README.md](evaluation/README.md) |
+| `visualization/` | PJM load only | Validation plots (matplotlib/seaborn — optional `[research]` extra) | [visualization/README.md](visualization/README.md) |
+| `utils/` | Shared (config/paths), used mostly by load code | Config, paths, seeding, device resolution | [utils/README.md](utils/README.md) |
+| `cli.py` | PJM load only | `enerdatasynth` console script (thin argparse wrapper, no new logic) | — |
 
 ## What should not be changed casually
 

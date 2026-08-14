@@ -1,7 +1,14 @@
 # `enerdatasynth.diffusion`
 
-The DDPM forward/reverse process. Standard DDPM only — no custom losses, no Fourier/
-spectral terms, no moment-matching terms, by design.
+**PJM load's diffusion process specifically** — wind's forward/reverse process and
+sampler are independent code in
+[`src/wind_diffusion/diffusion.py`](../../wind_diffusion/README.md) /
+`samplers.py` (DDIM with guidance, a different choice for a different pipeline — see
+[`docs/architecture.md`](../../../docs/architecture.md) for the comparison and why
+they're separate).
+
+The DDPM forward/reverse process here. Standard DDPM only — no custom losses, no
+Fourier/spectral terms, no moment-matching terms, by design.
 
 ## Files
 

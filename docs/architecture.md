@@ -1,6 +1,47 @@
 # Architecture
 
-## Overview
+## Unified interface, resource-specific implementations
+
+Both resources — PJM load and wind — are conditional diffusion models exposed through
+the same interface: `enerdatasynth.generators.BaseGenerator` (`domain` attribute +
+`.sample()`), wrapped by the fluent public API
+(`enerdatasynth.model()`/`.set()`/`.sample()`, `src/enerdatasynth/sdk.py`). A resource
+registers itself with `enerdatasynth.registry.register_resource(...)` at import time
+(`generators/load_conditioning.py`, `generators/wind_conditioning.py`) — `sdk.py` never
+hardcodes a per-resource dispatch table, it only reads from `registry.get_registry()`.
+This is the layer that makes the product genuinely one thing: adding a third resource
+means registering it the same way, not forking the SDK.
+
+**Below that shared interface, the two resources are implemented completely
+independently, on purpose:**
+
+| | PJM load | Wind |
+|---|---|---|
+| Implementation | Built for this project (`src/enerdatasynth/{models,diffusion,training,sampling,evaluation,data}/`) | Vendored from a separate, previously-published Data-For-Good research project (`src/wind_diffusion/`) |
+| Denoiser | Transformer / MLP, this project's own code | Its own Transformer-style denoiser, independent code |
+| Sampler | Corrected ancestral DDPM (this project's own fix — see below) | DDIM with classifier-free guidance, independent tuning |
+| Evaluation | This project's 7-metric suite | Its own fidelity-gate metric suite (`marginal_wasserstein`, `acf_rmse`, `regime_accuracy`, ...) |
+| CLI / from-scratch training | `enerdatasynth train`/`sweep`/`calibrate`, etc. | None — ships pre-trained, bundled checkpoints instead |
+
+**This is a deliberate design choice, not an accidental seam.** Wind is a real,
+independently-developed pipeline this project integrates rather than reimplements —
+forcing it to share load's DDPM/Transformer/metrics code would mean rewriting a working
+pipeline for no scientific benefit. The product-level contract
+(`model()`/`.set()`/`.sample()`, `BaseGenerator`) is what's unified; the two model
+report cards ([`docs/models/pjm_load.md`](models/pjm_load.md),
+[`docs/models/wind.md`](models/wind.md)) document each implementation on its own terms.
+See [`docs/extending.md`](extending.md) for what registering a *third* resource would
+involve, and `src/README.md` / `src/wind_diffusion/README.md` for the code-level split.
+
+**The rest of this page documents PJM load's implementation specifically** — the
+`enerdatasynth.models`/`diffusion`/`training`/`sampling`/`evaluation`/`data`
+subpackages named below all belong to load, not to the product generally. For wind's
+architecture (a genuinely different pipeline), see
+[`docs/models/wind.md`](models/wind.md) §5–§7 instead of looking for it here.
+
+---
+
+## PJM load: overview
 
 A conditional DDPM (Denoising Diffusion Probabilistic Model) generates
 a 24-hour normalized load profile `x` conditioned on a vector `z`
@@ -9,7 +50,7 @@ spread). Forward and reverse processes live in
 `enerdatasynth.diffusion.ddpm.DDPM`; the denoiser network is selected
 by `enerdatasynth.models.build_denoiser(architecture, ...)`.
 
-## Denoiser: transformer (default)
+## PJM load: denoiser — transformer (default)
 
 `enerdatasynth.models.transformer.TransformerDenoiser` treats each of
 the 24 hours as one token:
@@ -30,15 +71,17 @@ controlled comparison) and
 `data/research_history/reports/week7/summary_report.md` (beats the MLP
 baseline on 6/7 metrics at ~6x fewer parameters: 110,401 vs 688,408).
 
-## Denoiser: MLP (legacy baseline)
+## PJM load: denoiser — MLP (legacy baseline)
 
 `enerdatasynth.models.denoiser.SimpleMLPDenoiser` concatenates the
 noisy profile, a sinusoidal timestep embedding, and the conditioning
 vector, and passes the result through `n_layers` fully-connected SiLU
 layers. No residual connections, no attention. Available via
 `architecture="mlp"` for comparison; not recommended for new work.
+**This is also what the package currently loads by default** for
+`pjm_load` — see [`docs/models/pjm_load.md`](models/pjm_load.md) §5 for why.
 
-## Diffusion process
+## PJM load: diffusion process
 
 `enerdatasynth.diffusion.ddpm.DDPM`: standard forward noising
 (`q_sample`), standard MSE training loss (`training_loss`), and
@@ -53,8 +96,10 @@ out-of-range as step count increased. See
 `data/research_history/scripts/sampler_bugfix.py` for the diagnosis and
 fix. The corrected ancestral sampler is the *only* sampler in the
 maintained package; the buggy DDIM path was never carried forward.
+(Wind's sampler is DDIM — a different, independently-tuned choice for
+a different pipeline; see the comparison table above.)
 
-## Beta schedule
+## PJM load: beta schedule
 
 Linear (`beta_start=1e-4`, `beta_end=0.02`) is the validated default.
 Cosine and quadratic alternatives are implemented in
@@ -63,16 +108,18 @@ recommended choice — a controlled noise-schedule experiment found
 linear had both the lowest validation loss and the best generated
 RMSE (`data/research_history/reports/week6/noise/summary_report.md`).
 
-## Post-processing: calibration
+## PJM load: post-processing — calibration
 
 The trained denoiser reproduces daily *shape* well but carries a
 small, systematic per-hour level offset that compounds into a large
 daily-energy error when summed over 24 hours. A scalar correction,
 fit on the training set only, removes ~66% of that error at zero cost
 to shape metrics. See `enerdatasynth.evaluation.calibration` and
-`docs/evaluation.md`.
+`docs/evaluation.md`. (Wind has no equivalent calibration step — its
+per-preset `recommended_generation` settings serve a similar tuning
+role in a different way; see `docs/models/wind.md` §12.)
 
-## Conditioning — an open question, not silently resolved
+## PJM load: conditioning — an open question, not silently resolved
 
 `enerdatasynth.data.preprocess.build_conditioning_vector` produces a
 23-dimensional one-hot conditioning vector (month one-hot ×12, day-of-
@@ -86,26 +133,3 @@ package deliberately keeps the one-hot encoding (a defensible,
 documented choice) without claiming the transformer/calibration
 numbers above are proven under it; no pretrained checkpoint compatible
 with the current preprocessing exists yet.
-
-## SDK / extension points
-
-`enerdatasynth.generators.BaseGenerator` is the common interface every
-domain-specific generator implements. Two resources are registered
-today: `LoadDiffusionModel` (electric load, this page) and
-`WindDiffusionModel` (wind — wraps the vendored `wind_diffusion`
-package under `src/wind_diffusion/`; a different generative pipeline
-behind the same interface, with its own bundled checkpoints for three
-channel presets — see [`docs/models/wind.md`](models/wind.md)).
-
-A resource registers itself with `enerdatasynth.registry.register_resource(...)`
-at import time (`generators/load_conditioning.py`,
-`generators/wind_conditioning.py`) rather than `sdk.py` hardcoding a
-per-resource dispatch table — `sdk.py` only ever reads from
-`registry.get_registry()`. The fluent public API
-(`enerdatasynth.model()`/`.set()`/`.sample()`, `src/enerdatasynth/sdk.py`)
-wraps whichever generator a resource registers behind human-readable
-conditioning and hides all of the above — architecture, sampler,
-schedule, calibration — entirely; see
-[`docs/api_reference.md`](api_reference.md) for that contract, and
-[`docs/extending.md`](extending.md) for what registering a *third*
-resource type would involve.
