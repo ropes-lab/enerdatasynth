@@ -98,7 +98,7 @@ implements.
 Standard ancestral DDPM reverse sampling (Ho et al., 2020), `T` steps (`DEFAULT_T=1000`),
 recomputing the noise prediction fresh at every reverse step — the corrected replacement
 for an earlier, buggy sampler that reused predictions across steps (see
-`docs/research_status.md` §E, and the regression test added in `tests/test_diffusion.py`
+`docs/research_status.md` §E, and the regression test added in `tests/pjm_load/test_diffusion.py`
 during this audit). Output is clamped to `[-3, 3]` and NaN/Inf-sanitized per step
 (`DDPM.sample`).
 

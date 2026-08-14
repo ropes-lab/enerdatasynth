@@ -78,7 +78,7 @@ today. Source files are under `data/research_history/pjm_load/` unless noted.
   `week5_metrics.json`.
 - **Part of the public package:** Yes — `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py` ships only
   the corrected sampler; a regression test was added during this audit
-  (`tests/test_diffusion.py`) to prevent silently reintroducing the bug.
+  (`tests/pjm_load/test_diffusion.py`) to prevent silently reintroducing the bug.
 - **Paper-worthy:** Yes, and should be reported honestly, including the bug — this is
   exactly the kind of finding a credible methods section should disclose.
 

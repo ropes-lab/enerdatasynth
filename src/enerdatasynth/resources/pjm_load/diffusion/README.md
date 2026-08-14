@@ -26,7 +26,7 @@ Fourier/spectral terms, no moment-matching terms, by design.
 step is the exact fix for a historical bug: an earlier sampler reused a noise prediction
 across steps and silently corrupted every generated profile for weeks before it was
 caught (`docs/research_status.md` §E; before/after numbers in `docs/results.md` §5's
-sibling section). `tests/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step`
+sibling section). `tests/pjm_load/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step`
 and `::test_sampler_noise_prediction_differs_across_steps` exist specifically to catch a
 reintroduction of this bug — run them (or trust CI to) before touching this file.
 

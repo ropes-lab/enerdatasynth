@@ -434,10 +434,10 @@ All scaler parameters are saved in `metadata.json` under `load_scaler`,
 ## Reproducing
 
 ```bash
-python -m enerdatasynth.resources.pjm_load.data.preprocess
+enerdatasynth preprocess
 ```
 
-A frozen backup of this entire directory is kept at `data/processed_backup/`
+A frozen backup of this entire directory is kept at `data/processed/pjm_load_backup/`
 immediately after generation, so that if a later step corrupts these files,
 the original is recoverable by copying the backup back over this folder.
 """

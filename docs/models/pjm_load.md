@@ -76,7 +76,7 @@ Sampling: standard **ancestral** DDPM reverse sampling, recomputing the noise
 prediction fresh at every one of `T` reverse steps — the corrected replacement for a
 historical sampler bug (an earlier implementation reused a prediction across steps; see
 [`docs/research_status.md`](../research_status.md) §E). A regression test
-(`tests/test_diffusion.py`) guards against reintroducing that bug.
+(`tests/pjm_load/test_diffusion.py`) guards against reintroducing that bug.
 
 **Which one does the package actually load?** `enerdatasynth.model("pjm_load", ...)`
 today resolves to the best available checkpoint by validation loss, preferring a

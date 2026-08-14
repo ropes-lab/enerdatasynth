@@ -173,7 +173,7 @@ Source: `data/research_history/pjm_load/reports/week5_comparison_table.csv` /
 
 **The corrected ancestral sampler in `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py` is
 load-bearing research infrastructure.** A regression test
-(`tests/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step` and
+(`tests/pjm_load/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step` and
 `::test_sampler_noise_prediction_differs_across_steps`, added during this audit) asserts
 the model is called fresh exactly once per reverse step, specifically to catch a
 reintroduction of this bug. **Every benchmark number in `docs/results.md` is a post-fix
