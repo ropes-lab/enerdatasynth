@@ -43,3 +43,9 @@ No checkpoint compatible with the package's current 23-dimensional conditioning 
 trained — see `docs/research_status.md` §D. The package (`src/enerdatasynth/`) is the
 maintained implementation; this directory is the evidence for why it's built this way,
 not a second copy of the product.
+
+## Wind
+
+[`wind/`](wind/README.md) is deliberately empty — wind's research history belongs to
+the separate upstream project this package vendors, not to this one. Exists purely so
+the "one folder per resource" pattern holds everywhere in `data/`, including here.

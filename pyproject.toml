@@ -95,6 +95,10 @@ enerdatasynth = ["py.typed"]
 # kind of non-.py data file; carried over from the original repo's own
 # pyproject.toml comment about this exact gotcha.
 "enerdatasynth.resources.wind" = ["manifest.json"]
+# resources/pjm_load/manifest.json -- added for parity with wind's, same
+# non-.py-data-file gotcha applies. Loaded via importlib.resources in
+# resources/pjm_load/api.py, same mechanism as wind's registry.py.
+"enerdatasynth.resources.pjm_load" = ["manifest.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

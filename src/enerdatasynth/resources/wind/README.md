@@ -13,10 +13,10 @@ parallel PJM-load structure this mirrors.
 ## Layout
 
 Same category taxonomy as `resources/pjm_load/` wherever a category genuinely applies
-(`data/`, `models/`, `diffusion/`, `training/`, `evaluation/`, `visualization/`), plus
-wind-only infrastructure at this package's root (`api.py`, `config.py`, `registry.py`,
-`exceptions.py`, `utils.py`, `manifest.json`) rather than forced into a fake shared
-folder.
+(`data/`, `models/`, `diffusion/`, `training/`, `evaluation/`, `sampling/`,
+`visualization/`), plus wind-only infrastructure at this package's root (`api.py`,
+`config.py`, `registry.py`, `exceptions.py`, `utils.py`, `manifest.json`) rather than
+forced into a fake shared folder.
 
 | File/folder | Purpose |
 |---|---|
@@ -29,6 +29,9 @@ folder.
 | `data/transforms.py` | Feature engineering (wind-regime bucketing, ordinal/onehot encoding) |
 | `evaluation/evaluate.py` | `generate_multiple_for_condition`, `build_condition_vector` — what the `enerdatasynth` bridge calls |
 | `evaluation/metrics.py` | Fidelity-gate metrics (`marginal_wasserstein`, `acf_rmse`, `regime_accuracy`, ...) — `docs/models/wind.md` §7 |
+| `evaluation/failure_analysis.py` | Flags weak spots (e.g. near-chance `mid`-regime accuracy) already present in `manifest.json`'s real, measured numbers — mirrors `resources/pjm_load/evaluation/failure_analysis.py`. Does not run a new comparison; there's no real data to compare against (`docs/models/wind.md` §2) |
+| `evaluation/results_report.py` | Regenerates `data/reports/wind/results_summary.md` across all three presets — mirrors `resources/pjm_load/evaluation/results_report.py` |
+| `sampling/generate.py` | `generate_for_regimes()` — thin wrapper generating one profile per regime (low/mid/high) in one call, for structural parity with `resources/pjm_load/sampling/generate.py` |
 | `registry.py` | `resolve_weights()` checkpoint resolution. **`data/checkpoints/wind/` is checked first** — see `generators/wind_conditioning.py` |
 | `manifest.json` | Preset metadata/metrics/recommended generation settings. Its `status: "pending"` describes only its own (unused here) download path |
 | `exceptions.py` | `CheckpointNotFoundError` and friends |

@@ -26,7 +26,7 @@ there for anything beyond basic usage.
 | [`data_card.md`](data_card.md) | Where the data comes from, cleaning, licensing status. |
 | [`model_card.md`](model_card.md) | Deeper model-card cross-check for `pjm_load` (the `models/` report is the primary read). |
 | [`experiments.md`](experiments.md) | Chronological map of the research program. |
-| [`model_report_card.md`](model_report_card.md) + [`report_cards/`](report_cards/) | Transformer vs. MLP architecture comparison. |
+| [`model_report_card.md`](model_report_card.md) + [`report_cards/`](report_cards/) | PJM load's Transformer vs. MLP architecture comparison, plus wind's 1ch/2ch/3ch preset comparison. |
 | [`installation.md`](installation.md) | All install paths (PyPI, editable, wheel). |
 | [`api_reference.md`](api_reference.md) | Full `model()`/`.set()`/`.sample()` contract. |
 | [`architecture.md`](architecture.md) | Why Transformer over MLP/CNN/attention, ancestral sampling over DDIM, scalar calibration — traced to source. |

@@ -104,9 +104,20 @@ def test_describe_model_passthrough():
 # ---------------------------------------------------------------------------
 
 
-def test_generate_wind_profile_no_checkpoint_raises_cleanly(monkeypatch):
+def test_generate_wind_profile_no_checkpoint_raises_cleanly(tmp_path, monkeypatch):
+    # As of this repository's own bundled-checkpoint convention (checked first
+    # by `api._resolve_weights_preferring_bundled`, mirroring
+    # `generators/wind_conditioning.py`'s `wind_construct`), all three presets
+    # DO have a real checkpoint under data/checkpoints/wind/ -- so this can no
+    # longer be tested by just clearing env vars and calling a real preset (that
+    # now succeeds, which is the whole point of the bundled-first fix). Instead,
+    # redirect DATA_ROOT to an empty tmp dir so the bundled lookup genuinely
+    # finds nothing and falls through to the manifest's own (pending) chain.
+    import enerdatasynth.utils.config as config_module
+
     monkeypatch.delenv("WIND_DIFFUSION_CHECKPOINTS", raising=False)
     monkeypatch.delenv("WIND_DIFFUSION_OFFLINE", raising=False)
+    monkeypatch.setattr(config_module, "DATA_ROOT", tmp_path)
 
     with pytest.raises(CheckpointNotFoundError):
         api.generate_wind_profile("2ch")

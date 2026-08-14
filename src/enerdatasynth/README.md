@@ -38,9 +38,9 @@ shared layer both resources go through.
 | `conditioning.py` | Shared | Generic `ConditionField` → raw vector machinery |
 | `sdk.py` | Shared | The public fluent API |
 | [`utils/`](utils/README.md) | Shared | Config, paths, seeding, device resolution |
-| `cli.py` | PJM load only | Load's from-scratch training workflow |
-| [`resources/pjm_load/`](resources/pjm_load/) | PJM load only | `data/`, `models/`, `diffusion/`, `training/`, `sampling/`, `evaluation/`, `visualization/` — each with its own README |
-| [`resources/wind/`](resources/wind/README.md) | Wind only | Vendored pipeline; own `data/models/diffusion/training/evaluation/visualization` plus `api/config/registry/exceptions` with no load equivalent |
+| `cli.py` | Mostly PJM load | `preprocess`/`train`/`sweep`/`calibrate`/`pipeline` are load's from-scratch training workflow (load-only — wind ships pre-trained checkpoints instead); `generate`/`evaluate`/`report` take a `--resource {pjm_load,wind}` flag and dispatch to either resource |
+| [`resources/pjm_load/`](resources/pjm_load/README.md) | PJM load only | `data/`, `models/`, `diffusion/`, `training/`, `sampling/`, `evaluation/`, `visualization/` plus `api/config/exceptions/manifest.json` at its root — each subfolder with its own README |
+| [`resources/wind/`](resources/wind/README.md) | Wind only | Vendored pipeline; own `data/models/diffusion/training/evaluation/sampling/visualization` plus `api/config/registry/exceptions/manifest.json` at its root — `registry.py` (external-download resolution) is wind's one piece with no load equivalent, since load has no external-download path to resolve |
 
 ## What should not be changed casually
 

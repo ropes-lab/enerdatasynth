@@ -20,3 +20,10 @@ each, so they're directly comparable at a glance.
 See `docs/research_status.md` and `docs/results.md` for the full evidence behind every
 number here — this page and the two linked cards are a summary view, not a new source of
 truth.
+
+## Wind
+
+Wind doesn't have two competing architectures the way load's Transformer/MLP
+comparison does (one vendored pipeline, shared across all three presets) — so there's
+no equivalent side-by-side table here. It does have three channel *presets*
+(`1ch`/`2ch`/`3ch`), compared in [`report_cards/wind_presets.md`](report_cards/wind_presets.md).

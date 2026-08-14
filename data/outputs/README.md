@@ -15,3 +15,5 @@ empty here is the normal starting state, not a missing-file problem.
 
 Anything you want to keep across a `preprocess`/`train`/`sweep` re-run without checking
 first — these folders are treated as regenerable working output, not permanent storage.
+
+Wind writes no equivalent output files — see [`wind/README.md`](wind/README.md) for why.

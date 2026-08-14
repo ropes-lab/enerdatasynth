@@ -20,11 +20,13 @@ checkpoint and applied by default) behind one object. It implements
 resource-type generator in this package (e.g. a future wind model)
 would also implement.
 
-Not yet built (candidate follow-up, not claimed as done here): a
-friendlier `generate(month=7, weekday=True, Tmax=32, ...)` convenience
-method that builds the conditioning vector `z` from human-readable
-arguments instead of requiring a caller to already have a `(N,
-cond_dim)` array. `sample()` below takes `z` directly.
+A friendlier `generate(month=7, weekday=True, Tmax=32, ...)` convenience
+that builds the conditioning vector `z` from human-readable arguments
+now exists at `resources.pjm_load.api.generate_load_profile` — added
+for parity with `resources.wind.api.generate_wind_profile`. `sample()`
+below still takes `z` directly (used internally by the fluent SDK,
+`resources.pjm_load.api`, and anyone with their own conditioning
+vectors already in hand).
 """
 
 from __future__ import annotations
@@ -42,6 +44,7 @@ from enerdatasynth.utils.config import (
 from enerdatasynth.resources.pjm_load.models import build_denoiser
 from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
 from enerdatasynth.resources.pjm_load.evaluation.calibration import load_calibration, apply_calibration as _apply_calibration_correction
+from enerdatasynth.resources.pjm_load.exceptions import CheckpointNotFoundError
 from enerdatasynth.generators.base import BaseGenerator
 
 
@@ -105,7 +108,7 @@ class LoadDiffusionModel(BaseGenerator):
         ckpt_dir = Path(checkpoint_root) / run_id
         result_path = ckpt_dir / "result.json"
         if not result_path.exists():
-            raise FileNotFoundError(
+            raise CheckpointNotFoundError(
                 f"No result.json found at {result_path}. Use the main "
                 f"constructor directly (with explicit architecture/"
                 f"dimensions/hyperparameters) if this checkpoint wasn't "

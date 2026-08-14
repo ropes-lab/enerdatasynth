@@ -34,10 +34,39 @@ from enerdatasynth.resources.wind.exceptions import InvalidConditionError
 from enerdatasynth.resources.wind.registry import describe_model as _registry_describe_model
 from enerdatasynth.resources.wind.registry import list_models as _registry_list_models
 from enerdatasynth.resources.wind.data.transforms import assign_wind_bucket, wind_persistence_slice, wind_regime_slice
-from enerdatasynth.resources.wind.registry import resolve_weights
+from enerdatasynth.resources.wind.registry import resolve_weights as _registry_resolve_weights
 from enerdatasynth.resources.wind.utils import resolve_device, set_seed
 
 _DEFAULT_WIND_REGIME_FALLBACK = "mid"
+
+
+def _resolve_weights_preferring_bundled(
+    preset: PresetName, checkpoint: str | Path | None, norm_stats: str | Path | None,
+) -> tuple[Path, Path]:
+    """Same bundled-checkpoint-first precedence `generators/wind_conditioning.py`'s
+    `wind_construct` already uses for the `enerdatasynth.model("wind", ...)` path,
+    applied here too so this standalone API works out of the box against this
+    repository's bundled checkpoints (`data/checkpoints/wind/<preset>/`) without
+    requiring `WIND_DIFFUSION_CHECKPOINTS` to be set manually.
+
+    Precedence: explicit `checkpoint=`/`norm_stats=` args (if both given) > bundled
+    repo checkpoint (if `WIND_DIFFUSION_CHECKPOINTS` is NOT set) >
+    `registry.resolve_weights`'s own chain (env dir > manifest download > error) --
+    identical precedence to `wind_construct`, so both entry points behave the same
+    way for the same environment.
+    """
+    if checkpoint is not None and norm_stats is not None:
+        return Path(checkpoint), Path(norm_stats)
+
+    if not os.environ.get("WIND_DIFFUSION_CHECKPOINTS"):
+        from enerdatasynth.utils.config import DATA_ROOT
+        bundled_dir = DATA_ROOT / "checkpoints" / "wind" / preset
+        bundled_checkpoint = bundled_dir / "model_checkpoint.pt"
+        bundled_norm_stats = bundled_dir / "norm_stats.json"
+        if bundled_checkpoint.exists() and bundled_norm_stats.exists():
+            return bundled_checkpoint, bundled_norm_stats
+
+    return _registry_resolve_weights(preset, checkpoint=checkpoint, norm_stats=norm_stats)
 
 
 # ---------------------------------------------------------------------------
@@ -410,7 +439,7 @@ def generate_wind_profile(
     """
     start = time.time()
 
-    ckpt_path, norm_path = resolve_weights(channel_method, checkpoint=checkpoint, norm_stats=norm_stats)
+    ckpt_path, norm_path = _resolve_weights_preferring_bundled(channel_method, checkpoint=checkpoint, norm_stats=norm_stats)
 
     with open(norm_path) as f:
         norm_stats_obj = NormStats.from_dict(json.load(f))
@@ -548,7 +577,7 @@ def preload(
     device: str = "auto",
 ) -> None:
     """Resolve weights for `preset` and warm the process-level model cache."""
-    ckpt_path, _norm_path = resolve_weights(preset, checkpoint=checkpoint, norm_stats=norm_stats)
+    ckpt_path, _norm_path = _resolve_weights_preferring_bundled(preset, checkpoint=checkpoint, norm_stats=norm_stats)
     _evaluate_preload(str(ckpt_path), device=device, preset=preset)
 
 

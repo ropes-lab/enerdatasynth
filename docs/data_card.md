@@ -23,7 +23,7 @@ context?
 | Temperature cache | `data/cache/pjm_load/` | **Not bundled** (empty; `README.md` there explains it's a regenerable NOAA fetch cache, not source data). |
 | Processed tensors (current package) | `data/processed/pjm_load/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet`, `metadata.json` | **Bundled** — zone `PS` only, 23-dim conditioning, small (~1.3MB), required for `enerdatasynth.model("pjm_load", ...)` to construct at all |
 | Processed tensors (research history) | `data/research_history/pjm_load/outputs/week3_outputs/*.npy` (Z5/Z9 conditioning), `zone_outputs/<ZONE>/` (16 additional zones) | Bundled — 6-dim/9-dim conditioning, the representation the reported Transformer results actually used; frozen provenance, not the package |
-| Wind raw data | `data/raw_data/wind_data/` | **Empty — placeholder file only (`add_raw_data_here.txt`).** No wind dataset exists in this repository. |
+| Wind raw data | `data/raw/wind/` | **Empty — placeholder README only.** No wind dataset exists in this repository. See "Wind Data" below. |
 
 ## Source
 
@@ -149,6 +149,30 @@ implemented in this repository.
 Not independently re-scored in this audit beyond the cleaning steps already described
 (DST/missing-load/missing-weather/COVID exclusion). No outlier-detection pass beyond
 that was found in the current package code.
+
+## Wind Data
+
+Unlike everything above (all PJM load), the wind resource has **no raw dataset in this
+repository at all**, bundled or otherwise — this section documents that gap rather than
+describing a dataset, and is the wind-side parallel to the "Composition"/"Source"
+sections above. Full narrative: `docs/models/wind.md` §2.
+
+- **No raw wind training data exists in this repository or its dependencies.**
+  `data/raw/wind/` contains only a placeholder README.
+- **The bundled checkpoints were trained elsewhere.** `data/checkpoints/wind/{1ch,2ch,3ch}/`
+  ships real, working, pretrained weights — generation works today — but this
+  repository cannot reproduce the preprocessing or training that produced them, because
+  the source data was never vendored in.
+- **A likely original source is inferable but not confirmed.** `h5py`, `h5pyd`, and
+  `python-dotenv` are declared package dependencies (suggesting an HSDS/NREL WIND
+  Toolkit-style original data source) but have zero actual usage anywhere in
+  `src/enerdatasynth/resources/wind/` — the acquisition step itself was never vendored,
+  so this is a plausible provenance clue, not a documented source.
+- **What the trained checkpoints imply about the source data:** 5-minute-resolution
+  `windspeed_100m` (and, for `2ch`/`3ch`, `winddirection_100m`) sequences, windowed to
+  288 steps (24 hours) — see `docs/models/wind.md` §2–3 for the full representation.
+- **No real-vs-generated comparison is possible for wind** (`docs/models/wind.md` §9) —
+  there is nothing in this repository to validate a generated wind profile against.
 
 ## Reproducibility
 

@@ -20,8 +20,8 @@ forecaster.**
 
 ## 2. Input Data
 
-**No raw wind training data exists in this repository.** `data/raw_data/wind_data/`
-contains only a placeholder file. The bundled checkpoints (§5) were trained elsewhere,
+**No raw wind training data exists in this repository.** `data/raw/wind/`
+contains only a placeholder README. The bundled checkpoints (§5) were trained elsewhere,
 on data this repository does not include and cannot reproduce preprocessing for.
 `h5py`/`h5pyd`/`python-dotenv` are declared dependencies (suggesting an HSDS/NREL WIND
 Toolkit-style original data source) but have **zero actual usage** anywhere in

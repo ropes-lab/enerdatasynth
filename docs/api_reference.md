@@ -114,6 +114,24 @@ class BaseGenerator(ABC):
     def count_parameters(self) -> int: ...  # optional
 ```
 
+## Standalone resource APIs (no SDK bridge)
+
+Each resource also exposes its own library-usable entry point, independent of
+`enerdatasynth.model()`/`ResourceModel` entirely:
+
+```python
+from enerdatasynth.resources.pjm_load.api import generate_load_profile, list_models, describe_model
+from enerdatasynth.resources.wind.api import generate_wind_profile, list_models, describe_model
+```
+
+- `generate_load_profile(zone="PS", *, month, Tmax, Tmin, day_of_week=None, weekday=True, holiday=False, spread=None, n_realizations=100, run_id=None, seed=None, units="MW", apply_calibration=None, device=None) -> LoadProfile` — same underlying model as `.set()`/`.sample()`, but returns a `LoadProfile` dataclass (`.hours`, `.load`, `.condition`, `.metadata`, plus `.to_dataframe()`, `.mean()`, `.percentile_envelope(percentiles=(2.5, 97.5))`) instead of a bare array. Raises `enerdatasynth.resources.pjm_load.exceptions.CheckpointNotFoundError` if no processed dataset/checkpoint is available, or `InvalidConditionError` for a bad `day_of_week`.
+- `generate_wind_profile(channel_method, ...) -> WindProfile` — wind's equivalent, added first; `pjm_load`'s `api.py` mirrors it for parity. Same `enerdatasynth.resources.wind.exceptions.CheckpointNotFoundError`/`InvalidConditionError` hierarchy.
+- `list_models()` / `describe_model(run_id)` — read each resource's bundled `manifest.json` (real, aggregated per-checkpoint metadata: architecture, params, best validation loss, epochs trained, recommended generation settings) via `importlib.resources`, without constructing a model. `describe_model` raises `CheckpointNotFoundError` for an unrecognized `run_id`/preset. **The two `list_models()` return different shapes, not just different content** — wind's is a flat `{preset: metadata}` dict (`"1ch"`, `"2ch"`, `"3ch"` as keys); pjm_load's wraps its checkpoints under provenance fields instead (`{"checkpoints": {run_id: metadata}, "default_run_id": ..., "transformer_runs_available": [...], ...}`) since its manifest is auto-aggregated from `result.json` files rather than hand-curated. Index into `["checkpoints"]` for pjm_load; iterate the dict directly for wind.
+
+Both exception hierarchies subclass the builtin `FileNotFoundError`/`ValueError` respectively (`CheckpointNotFoundError(<ResourceError>, FileNotFoundError)`, `InvalidConditionError(<ResourceError>, ValueError)`), so existing `except FileNotFoundError`/`except ValueError` call sites keep working unchanged if you're catching broadly; catch the resource-specific class if you want to distinguish "bad checkpoint" from "bad condition" specifically.
+
+This is a separate surface from the CLI's `enerdatasynth generate --resource {pjm_load,wind}` (see `enerdatasynth.cli`'s own module docstring for the full command reference) — the CLI is a thin wrapper for scripting/terminal use; `generate_load_profile`/`generate_wind_profile` are for calling from Python directly when you want the richer `LoadProfile`/`WindProfile` return type instead of `ResourceModel.sample()`'s bare array.
+
 ## Lower-level API (research/development use)
 
 For training new checkpoints, computing raw evaluation metrics, or working directly with conditioning vectors instead of `.set()`'s human-readable interface, the top-level package also re-exports:

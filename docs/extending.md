@@ -213,8 +213,20 @@ For example: a hypothetical `water` resource generating synthetic reservoir
 or usage profiles would get `generators/water.py` +
 `generators/water_conditioning.py` (the bridge) and
 `resources/water/{data,models,...}/` (the implementation) — nothing about
-`sdk.py`, the CLI, or any other resource's code would need to change for
-either piece to exist.
+`sdk.py` or any other resource's code would need to change for either
+piece to exist, and `enerdatasynth.model("water", ...).set(...).sample(...)`
+would work immediately once `register_resource(...)` runs.
+
+**One real exception, added since the above was first written**: the CLI's
+`generate`/`evaluate`/`report` subcommands take an explicit
+`--resource {pjm_load,wind}` flag (`cli.py`'s `build_parser`) rather than
+reading the registry dynamically — a third resource needs its `choices=[...]`
+list extended to include `"water"` and a matching `if args.resource ==
+"water":` branch added to each of `cmd_generate`/`cmd_evaluate`/`cmd_report`
+before it's reachable from those three CLI subcommands. This is a small,
+disclosed limitation of the CLI *convenience* layer specifically, not the
+core registration mechanism — `enerdatasynth.model("water", ...)` from
+Python needs none of this.
 
 **One more thing that needed to be per-resource, discovered only once
 multiple wind presets were actually exercised together**: generation-time

@@ -1,0 +1,92 @@
+{
+  "_generated_from": "data/checkpoints/pjm_load/*/result.json (real values, not fabricated)",
+  "_note": "No 'transformer' architecture checkpoint exists yet -- every entry below predates the architecture field and is treated as 'mlp' by generators/load.py's from_run_id, same fallback logic used here. See docs/research_status.md \u00a7D.",
+  "default_run_id": "T100_H256_L4",
+  "transformer_runs_available": [],
+  "checkpoints": {
+    "T100_H128_L2": {
+      "architecture": "mlp",
+      "diffusion_steps": 100,
+      "hidden_dim": 128,
+      "n_layers": 2,
+      "n_heads": null,
+      "n_params": 29848,
+      "best_val_loss": 0.12487375736236572,
+      "epochs_trained": 41,
+      "training_time_sec": 1.9776198863983154,
+      "calibrated": false
+    },
+    "T100_H128_L4": {
+      "architecture": "mlp",
+      "diffusion_steps": 100,
+      "hidden_dim": 128,
+      "n_layers": 4,
+      "n_heads": null,
+      "n_params": 62872,
+      "best_val_loss": 0.10624083131551743,
+      "epochs_trained": 55,
+      "training_time_sec": 3.978217363357544,
+      "calibrated": false
+    },
+    "T100_H128_L6": {
+      "architecture": "mlp",
+      "diffusion_steps": 100,
+      "hidden_dim": 128,
+      "n_layers": 6,
+      "n_heads": null,
+      "n_params": 95896,
+      "best_val_loss": 0.38387566804885864,
+      "epochs_trained": 60,
+      "training_time_sec": 5.877168893814087,
+      "calibrated": false
+    },
+    "T100_H256_L4": {
+      "architecture": "mlp",
+      "diffusion_steps": 100,
+      "hidden_dim": 256,
+      "n_layers": 4,
+      "n_heads": null,
+      "n_params": 224024,
+      "best_val_loss": 0.08163998275995255,
+      "epochs_trained": 50,
+      "training_time_sec": 6.693902015686035,
+      "calibrated": false
+    },
+    "T100_H64_L4": {
+      "architecture": "mlp",
+      "diffusion_steps": 100,
+      "hidden_dim": 64,
+      "n_layers": 4,
+      "n_heads": null,
+      "n_params": 19160,
+      "best_val_loss": 0.19624227285385132,
+      "epochs_trained": 60,
+      "training_time_sec": 6.211540937423706,
+      "calibrated": false
+    },
+    "T200_H128_L4": {
+      "architecture": "mlp",
+      "diffusion_steps": 200,
+      "hidden_dim": 128,
+      "n_layers": 4,
+      "n_heads": null,
+      "n_params": 62872,
+      "best_val_loss": 0.09166891872882843,
+      "epochs_trained": 43,
+      "training_time_sec": 3.585569143295288,
+      "calibrated": false
+    },
+    "T50_H128_L4": {
+      "architecture": "mlp",
+      "diffusion_steps": 50,
+      "hidden_dim": 128,
+      "n_layers": 4,
+      "n_heads": null,
+      "n_params": 62872,
+      "best_val_loss": 0.13748063147068024,
+      "epochs_trained": 50,
+      "training_time_sec": 4.909621953964233,
+      "calibrated": false
+    }
+  }
+}

@@ -26,3 +26,5 @@ cfg = RunConfig.from_yaml("data/configs/pjm_load/transformer.yaml")
 ```
 
 or via the CLI: `enerdatasynth train --config data/configs/pjm_load/transformer.yaml`.
+
+Wind has no YAML configs of its own — see [`wind/README.md`](wind/README.md) for why.
