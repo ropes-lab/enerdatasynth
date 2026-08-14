@@ -13,3 +13,11 @@ build/
 # Editors
 .vscode/
 .idea/
+
+# Raw/cached source data -- not distributed with this repository, see
+# docs/data_card.md. Placeholder files (PUT_RAW_CSVS_HERE.txt, README.md)
+# are tracked; the real data they describe is not.
+data/raw_data/pjm_load_data/*.csv
+data/cache/*.parquet
+data/cache/isd-history.csv
+data/cache/resolved_ids.json

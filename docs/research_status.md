@@ -35,11 +35,11 @@ a point forecast, and not validated for any forecasting, dispatch, or control us
 
 | Item | Value | Source |
 |---|---|---|
-| Raw load data | `data/raw_data/pjm_load_data/hrl_load_metered_{2016..2025}.csv` — 10 annual files | directory listing |
-| Raw temperature data | `data/raw_data/pjm_load_data/station_hourly_temps.csv`, `pjm_hourly_temps_wide.csv` | directory listing |
+| Raw load data | `data/raw_data/pjm_load_data/hrl_load_metered_{2016..2025}.csv` — 10 annual files, originally sourced from PJM Data Miner 2. **Removed from this repository as of a later pass** (see `docs/data_card.md` "Licensing / Redistribution") — not bundled anymore; bring your own copy to reproduce preprocessing. | directory listing at time of original audit |
+| Raw temperature data | `data/raw_data/pjm_load_data/station_hourly_temps.csv`, `pjm_hourly_temps_wide.csv` — **also removed**, same pass. | directory listing at time of original audit |
 | Temperature source | NOAA Integrated Surface Database (ISD), one or more airport weather stations per PJM zone, resolved by USAF-WBAN station ID at runtime | `src/enerdatasynth/data/temperature.py` docstring + `STATION_ICAO`/`ZONE_STATIONS` tables |
 | Temperature mapping | Equal-weighted average across each zone's constituent stations (`ZONE_STATIONS` dict); handles station renumbering across years by re-resolving IDs from NOAA's inventory | `src/enerdatasynth/data/temperature.py` |
-| Temperature cache | Per-station-year Parquet cache at `data/cache/{station}_{year}.parquet`, so re-runs don't re-download | `data/cache/` (populated for 32 station codes, 2016–2025) |
+| Temperature cache | Per-station-year Parquet cache at `data/cache/{station}_{year}.parquet`, so re-runs don't re-download. **Emptied in the same later pass** — regenerates automatically given network access; nothing here is bundled source data. | `data/cache/README.md` |
 | Hourly resolution | 24 values/day, fixed-width | `src/enerdatasynth/data/preprocess.py` |
 | Zones with full Phase-2 research validation | 17 zones: AP, DAY, PL, DEOK, CE, PN, DPL, BC, PS, RECO, JC, ME, DUQ, PE, AE, EKPC, DOM | `data/research_history/reports/phase2/summary_report.md` |
 | Zones exposed by the installed package today | **`PS` only** | `src/enerdatasynth/generators/load_conditioning.py`: `register_resource(..., zones=["PS"], ...)` |

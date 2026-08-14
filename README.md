@@ -108,14 +108,21 @@ Full documentation map: [`docs/README.md`](docs/README.md).
 
 ## Data & Reproducibility
 
-Load data comes from PJM hourly metered load plus NOAA temperature; wind data comes
-from a separate, previously-published research project. **Raw training data is not
-distributed with this package** — it ships trained checkpoints and the generation
-interface, not the datasets behind them. PJM load's data sourcing, cleaning, and
-reproduction steps are documented in its [model report](docs/models/pjm_load.md) and
-[data card](docs/data_card.md); wind currently has **no raw data or reproduction path
-in this repository at all** (its report says so directly). There is no separate public
-data archive (e.g. Zenodo) for this project today.
+**No raw or source data is distributed with this package or repository** — it ships
+trained checkpoints and the generation interface, not the datasets behind them.
+
+| Resource | Source |
+|---|---|
+| PJM load | PJM hourly metered load (`hrl_load_metered`), via [PJM Data Miner 2](https://dataminer2.pjm.com/) |
+| Temperature (PJM load conditioning) | NOAA Integrated Surface Database (ISD), fetched per zone's constituent weather stations |
+| Wind | A separately-developed, previously-published research pipeline (`wind_diffusion`) — see its [model report](docs/models/wind.md) for what is and isn't known about its original data source |
+
+PJM load's cleaning, conditioning, and reproduction steps are fully documented in its
+[model report](docs/models/pjm_load.md) and [data card](docs/data_card.md); bring your
+own copy of the source data to `data/raw_data/pjm_load_data/` to reproduce preprocessing
+end-to-end (see the placeholder file there). Wind currently has **no raw data or
+reproduction path in this repository at all** — its report says so directly. There is
+no separate public data archive (e.g. Zenodo) for this project today.
 
 ## Citation
 
