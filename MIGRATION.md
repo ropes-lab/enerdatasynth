@@ -19,6 +19,24 @@ historical (accurate as of the migration described here, not the current tree); 
 [`docs/architecture.md`](docs/architecture.md) for the current layout and why it's
 structured this way.
 
+**Addendum (later pass, package v0.7.0):** `pjm_load` gained the parity pieces `wind`
+already had (`api.py`, `exceptions.py`, `manifest.json`, `config.py`); `wind` gained the
+parity pieces `pjm_load` already had (`sampling/generate.py`,
+`evaluation/failure_analysis.py`, `evaluation/results_report.py`); the CLI's
+`generate`/`evaluate`/`report` gained a `--resource {pjm_load,wind}` flag. See
+[`docs/api_reference.md`](docs/api_reference.md) and
+[`docs/report_cards/wind_presets.md`](docs/report_cards/wind_presets.md) for the detail.
+
+**One structural event worth recording here specifically**: this v0.7.0 work was
+developed in a separate local clone whose git history shares no common ancestor with
+`ropes-lab/enerdatasynth`'s `main` at the time. Rather than force-push (which would have
+made `main`'s prior commits unreachable), `main` was updated via a single merge commit
+whose tree was forced to exactly match the new work (`git read-tree --reset`) but whose
+two parents are old-`main`'s tip and the new work's tip — old history stays fully
+reachable and `git log`-able, not discarded. If you see a merge commit on `main` with a
+second parent that shares no history with the first, this is why. The pre-merge state of
+`main` is also preserved directly as the `main-before-restructure` branch.
+
 ## 1. Production modules changed
 
 | Module | Change |

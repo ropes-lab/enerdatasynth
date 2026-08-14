@@ -49,8 +49,10 @@ Installed via `[project.scripts] enerdatasynth = "enerdatasynth.cli:main"`. Subc
 
 ## Publishing
 
-Published on PyPI as `enerdatasynth`, first at 0.4.1 (load only), now at
-0.5.0 (adds the `wind` resource -- see MODEL_CARD.md).
+Published on PyPI as `enerdatasynth`, first at 0.4.1 (load only), then
+0.5.0/0.6.0 (adds the `wind` resource and the resources-nested restructure
+-- see MODEL_CARD.md), now at **0.7.0** (pjm_load/wind API parity, wind CLI
+support -- see `MIGRATION.md` for the full version history).
 
 Releases go out via `.github/workflows/publish.yml`, triggered by pushing
 a `vX.Y.Z` tag (matching `__version__`) or manually via the Actions tab.
@@ -59,9 +61,12 @@ Trusted Publishing (OIDC) -- no stored API token in this repo or its
 secrets. This requires a PyPI project owner to link the workflow once,
 under the project's **Publishing** settings on pypi.org (owner:
 `ropes-lab`, repo: `enerdatasynth`, workflow: `publish.yml`, environment:
-`pypi`); until that's done, the `publish` job will fail with an OIDC/
-trusted-publisher error, and the fallback is a manual `twine upload
-dist/*` from a machine that has a PyPI API token for this project.
+`pypi`) -- **done as of the 0.7.0 release**: the first tag push failed
+with exactly the OIDC/trusted-publisher error described below, the link
+was added, and re-running the same build published successfully. If this
+ever needs redoing (e.g. a renamed workflow file), the fallback is a
+manual `twine upload dist/*` from a machine that has a PyPI API token for
+this project.
 
 Note the gap this doesn't close: the wheel built here (see above) never
 includes `data/checkpoints/pjm_load/` or `data/processed/pjm_load/`. A bare `pip install
@@ -69,4 +74,4 @@ enerdatasynth` gets working code but no trained weights for either
 resource -- `enerdatasynth.model(...)` needs a git checkout of this repo
 (or `WIND_DIFFUSION_CHECKPOINTS`/an equivalent for load) to actually
 generate anything. True for `pjm_load` since 0.4.1, still true for `wind`
-at 0.5.0 -- not a regression, just not yet solved for either resource.
+at 0.7.0 -- not a regression, just not yet solved for either resource.

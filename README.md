@@ -53,8 +53,9 @@ samples = wind.sample(n=10, seed=0)      # (10, 288, 2) ndarray, m/s + degrees â
 checkpoints or data. The example above works as-is if you clone this repository and run
 from its root (checkpoints are bundled); see [`docs/installation.md`](docs/installation.md)
 for every install path and [`docs/quickstart.md`](docs/quickstart.md) for training your
-own checkpoint from scratch. **Note:** the version on PyPI today (`0.4.1`) predates this
-repository's wind support; install from source for wind.
+own checkpoint from scratch. PyPI is current as of `0.7.0`, which includes full wind
+support â€” `pip install enerdatasynth` alone is enough for both resources' code; you
+still need this repository's `data/checkpoints/` cloned locally to actually generate.
 
 ## How It Works
 
