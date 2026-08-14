@@ -14,18 +14,6 @@
 describe the conditions (season, temperature, calendar type); it returns a realistic
 profile. No ML expertise required to use it.
 
-## Real vs. Generated
-
-![PJM load: real vs. generated, six representative days](docs/assets/pjm_load_real_vs_generated.png)
-
-Six representative PJM-load validation days (cold, mild, and hot; weekday and weekend),
-each showing a **real** profile against a **generated** one sampled from the exact same
-conditions, produced live from the package's current default checkpoint. It tracks the
-real shape well in typical conditions and — honestly — struggles more at the hottest
-extreme; see the [PJM Load model report](docs/models/pjm_load.md#9-actual-vs-generated-examples)
-for the full picture. A matching wind visual will be added once real wind observations
-are available in this repository (see [Data & Reproducibility](#data--reproducibility)).
-
 ## Generators
 
 ### PJM Electric Load
