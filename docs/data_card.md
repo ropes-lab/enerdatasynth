@@ -18,8 +18,8 @@ context?
 
 | Artifact | Location | Contents |
 |---|---|---|
-| Raw load CSVs | `data/raw_data/pjm_load_data/` | **Not bundled.** Placeholder file (`PUT_RAW_CSVS_HERE.txt`) points to the source; bring your own copy to reproduce preprocessing (§ below, "Reproducibility"). |
-| Raw temperature CSVs | `data/raw_data/pjm_load_data/` | Same as above — not bundled. |
+| Raw load CSVs | `data/raw/` | **Not bundled.** `data/raw/README.md` names the exact files and source; bring your own copy to reproduce preprocessing (§ below, "Reproducibility"). |
+| Raw temperature CSVs | `data/raw/` | Same as above — not bundled. |
 | Temperature cache | `data/cache/` | **Not bundled** (empty; `README.md` there explains it's a regenerable NOAA fetch cache, not source data). |
 | Processed tensors (current package) | `data/processed/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet`, `metadata.json` | **Bundled** — zone `PS` only, 23-dim conditioning, small (~1.3MB), required for `enerdatasynth.model("pjm_load", ...)` to construct at all |
 | Processed tensors (research history) | `data/research_history/outputs/week3_outputs/*.npy` (Z5/Z9 conditioning), `zone_outputs/<ZONE>/` (16 additional zones) | Bundled — 6-dim/9-dim conditioning, the representation the reported Transformer results actually used; frozen provenance, not the package |
@@ -154,7 +154,7 @@ that was found in the current package code.
 
 `enerdatasynth preprocess` reproduces the current package's `PS`-zone processed dataset
 from raw CSVs, **which you must supply yourself** — see
-`data/raw_data/pjm_load_data/PUT_RAW_CSVS_HERE.txt` for exactly which files and where to
+`data/raw/README.md` for exactly which files and where to
 get them. `pip install enerdatasynth` does not ship raw data or trained checkpoints, by
 design (`docs/packaging.md`), and — as of this update — **this repository no longer
 bundles raw or cached source data either**, for the same reason.
@@ -163,7 +163,7 @@ bundles raw or cached source data either**, for the same reason.
 
 **No raw PJM load data or NOAA ISD-derived temperature cache is distributed in this
 repository.** Both were removed (previously bundled under
-`data/raw_data/pjm_load_data/` and `data/cache/`) specifically so this project isn't
+`data/raw/` and `data/cache/`) specifically so this project isn't
 redistributing third-party-sourced data whose terms of use were never independently
 verified. What remains:
 

@@ -161,7 +161,7 @@ the installed package** (`pjm_load` is packaged for zone `PS` only).
 ## Reproducibility
 
 `enerdatasynth preprocess` → `train` → `calibrate` → `evaluate` → `report`, or
-`enerdatasynth pipeline` end-to-end, given raw CSVs under `data/raw_data/pjm_load_data/`.
+`enerdatasynth pipeline` end-to-end, given raw CSVs under `data/raw/`.
 See `docs/quickstart.md`. Reproducing the exact Week 7 research numbers additionally
 requires the research-lineage 6-dim conditioning, not the current package preprocessing
 — not currently automated.

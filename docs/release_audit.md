@@ -4,7 +4,7 @@ Produced by a full repository audit and documentation/packaging pass. No model
 architecture, conditioning representation, diffusion process, or calibration logic was
 changed — this is a documentation, testing, and packaging-hygiene pass only.
 
-**Addendum:** raw PJM CSVs (`data/raw_data/pjm_load_data/`) and the cached NOAA
+**Addendum:** raw PJM CSVs (`data/raw/`) and the cached NOAA
 temperature data (`data/cache/`) were removed in a follow-up pass, per an explicit
 decision that this repository should not distribute raw source data at all. `data/processed/`
 (derived tensors + scaler metadata) and `data/checkpoints/` (trained models) were kept —

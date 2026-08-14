@@ -107,7 +107,7 @@ trained checkpoints and the generation interface, not the datasets behind them.
 
 PJM load's cleaning, conditioning, and reproduction steps are fully documented in its
 [model report](docs/models/pjm_load.md) and [data card](docs/data_card.md); bring your
-own copy of the source data to `data/raw_data/pjm_load_data/` to reproduce preprocessing
+own copy of the source data to `data/raw/` to reproduce preprocessing
 end-to-end (see the placeholder file there). Wind currently has **no raw data or
 reproduction path in this repository at all** — its report says so directly. There is
 no separate public data archive (e.g. Zenodo) for this project today.

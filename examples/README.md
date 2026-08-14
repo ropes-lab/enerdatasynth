@@ -26,5 +26,5 @@ to see the whole pipeline connect without waiting hours.
 
 ## Assumptions these make
 
-All of these assume raw data is already present (`data/raw_data/pjm_load_data/`) or that
+All of these assume raw data is already present (`data/raw/`) or that
 preprocessing has already been run — none of them ship or download data themselves.

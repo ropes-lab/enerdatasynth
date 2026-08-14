@@ -220,7 +220,7 @@ correction — one number added to every hour — fixes this:
 ## 14. Reproduction
 
 Raw source data is not bundled with this repository (§2) — supply your own copy of the
-PJM/NOAA files under `data/raw_data/pjm_load_data/` first (see the placeholder file
+PJM/NOAA files under `data/raw/` first (see the placeholder file
 there for exactly which files and where to get them). Generation itself (`.sample()`)
 does not need raw data at all — only retraining/re-preprocessing does:
 

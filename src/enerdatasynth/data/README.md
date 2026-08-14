@@ -25,7 +25,7 @@ needed directly.
 enerdatasynth preprocess
 ```
 
-Requires raw CSVs already present under `data/raw_data/pjm_load_data/` (see
+Requires raw CSVs already present under `data/raw/` (see
 `docs/data_card.md` — `pip install enerdatasynth` does not ship them).
 
 ## Assumptions this makes

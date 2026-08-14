@@ -20,7 +20,7 @@ This repository already has trained checkpoints and processed data committed, so
 
 Put PJM `hrl_load_metered_*.csv` files and `pjm_hourly_temps_wide.csv`
 in `data/raw/` (already populated in this repository; see
-`data/raw/PUT_RAW_CSVS_HERE.txt` for the expected filenames if starting
+`data/raw/README.md` for the expected filenames if starting
 from scratch, and `src/enerdatasynth/data/temperature.py` to rebuild
 the temperature file from NOAA).
 
