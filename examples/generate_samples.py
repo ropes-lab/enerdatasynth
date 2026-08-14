@@ -9,7 +9,7 @@ checkpoint) behind one object.
 
 Requires a trained checkpoint at checkpoints/<run_id>/best.pt with a
 result.json next to it, produced by `enerdatasynth train` /
-`enerdatasynth sweep` / `enerdatasynth.training.train.train_one_config`.
+`enerdatasynth sweep` / `enerdatasynth.resources.pjm_load.training.train.train_one_config`.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ if __name__ == "__main__":
     model = LoadDiffusionModel.from_run_id(cfg.run_id)
 
     # Use the validation set's real condition vectors as an example —
-    # any (N, cond_dim) array built by enerdatasynth.data.preprocess
+    # any (N, cond_dim) array built by enerdatasynth.resources.pjm_load.data.preprocess
     # works here.
     Z_val = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
     samples = model.sample(Z_val[:10], seed=0)
@@ -32,6 +32,6 @@ if __name__ == "__main__":
     # Equivalent lower-level call, if you don't want the checkpoint
     # metadata auto-discovery LoadDiffusionModel does:
     #
-    # from enerdatasynth.sampling.generate import generate_for_run
+    # from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
     # generate_for_run(cfg.run_id, cfg.diffusion_steps, cfg.hidden_dim,
     #                   cfg.n_layers, architecture=cfg.architecture, n_heads=cfg.n_heads)

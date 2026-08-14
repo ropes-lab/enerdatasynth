@@ -1,7 +1,7 @@
 # `data/reports/`
 
 Auto-generated reports from the **current package's** own hyperparameter sweep and
-evaluation tooling — distinct from `data/research_history/reports/`, which holds the
+evaluation tooling — distinct from `data/research_history/pjm_load/reports/`, which holds the
 historical Week 1–7/Phase 2 research reports.
 
 | File | Written by |

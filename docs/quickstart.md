@@ -19,9 +19,9 @@ This repository already has trained checkpoints and processed data committed, so
 ## 1. Get raw data in place
 
 Put PJM `hrl_load_metered_*.csv` files and `pjm_hourly_temps_wide.csv`
-in `data/raw/` (already populated in this repository; see
+in `data/raw/pjm_load/` (already populated in this repository; see
 `data/raw/README.md` for the expected filenames if starting
-from scratch, and `src/enerdatasynth/data/temperature.py` to rebuild
+from scratch, and `src/enerdatasynth/resources/pjm_load/data/temperature.py` to rebuild
 the temperature file from NOAA).
 
 ## 2. Preprocess
@@ -30,18 +30,18 @@ the temperature file from NOAA).
 enerdatasynth preprocess
 ```
 
-Builds `data/processed/{X_daily_profiles,Z_conditions}[_val].npy`,
+Builds `data/processed/pjm_load/{X_daily_profiles,Z_conditions}[_val].npy`,
 `metadata.json`, and a frozen backup at `data/processed_backup/`.
 
 ## 3. Train
 
 ```bash
 enerdatasynth train                             # transformer, validated defaults
-enerdatasynth train --config data/configs/mlp.yaml   # legacy MLP baseline instead
+enerdatasynth train --config data/configs/pjm_load/mlp.yaml   # legacy MLP baseline instead
 ```
 
-Writes `data/checkpoints/<run_id>/{best.pt,latest.pt,loss_curve.png,result.json}`
-and `data/outputs/logs/<run_id>_training_log.csv`. See [`docs/training.md`](training.md) for the full training workflow (sweeps, configs, reproducibility).
+Writes `data/checkpoints/pjm_load/<run_id>/{best.pt,latest.pt,loss_curve.png,result.json}`
+and `data/outputs/pjm_load/logs/<run_id>_training_log.csv`. See [`docs/training.md`](training.md) for the full training workflow (sweeps, configs, reproducibility).
 
 ## 4. Calibrate (recommended)
 
@@ -50,7 +50,7 @@ enerdatasynth calibrate --run-id transformer_T1000_H64_L2
 ```
 
 Fits the scalar bias correction (see [`docs/evaluation.md`](evaluation.md)) and saves
-`data/checkpoints/<run_id>/calibration.json`. Both `enerdatasynth.model(...)` and
+`data/checkpoints/pjm_load/<run_id>/calibration.json`. Both `enerdatasynth.model(...)` and
 `LoadDiffusionModel` apply it automatically once it exists.
 
 ## 5. Generate
@@ -65,7 +65,7 @@ model = LoadDiffusionModel.from_run_id("transformer_T1000_H64_L2")
 
 # z: (N, cond_dim) conditioning vectors — here, reusing the real
 # validation set's conditions as an example.
-z = np.load("data/processed/Z_conditions_val.npy")[:10]
+z = np.load("data/processed/pjm_load/Z_conditions_val.npy")[:10]
 samples = model.sample(z, seed=0)   # (10, 24), calibration applied automatically
 ```
 
@@ -76,8 +76,8 @@ enerdatasynth evaluate --run-id transformer_T1000_H64_L2
 enerdatasynth report
 ```
 
-Writes the three validation plots, `data/reports/failure_analysis.md`, and
-`data/reports/results_summary.md`.
+Writes the three validation plots, `data/reports/pjm_load/failure_analysis.md`, and
+`data/reports/pjm_load/results_summary.md`.
 
 ## All at once
 

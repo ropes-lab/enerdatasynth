@@ -20,8 +20,8 @@ import numpy as np
 
 from enerdatasynth.utils.config import PROCESSED_DIR, REPORTS_DIR
 from enerdatasynth.generators import LoadDiffusionModel
-from enerdatasynth.evaluation.baselines import generate_all_baselines
-from enerdatasynth.evaluation.metrics import compute_metrics, METRIC_KEYS
+from enerdatasynth.resources.pjm_load.evaluation.baselines import generate_all_baselines
+from enerdatasynth.resources.pjm_load.evaluation.metrics import compute_metrics, METRIC_KEYS
 
 
 def run_benchmark(run_id: str, n_days: int | None = None) -> dict:

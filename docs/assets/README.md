@@ -1,7 +1,7 @@
 # `docs/assets/`
 
-Polished, README/report-quality figures — distinct from `data/reports/figures/` and
-`data/research_history/reports/` (raw evaluation-run output, not curated for display).
+Polished, README/report-quality figures — distinct from `data/reports/pjm_load/figures/` and
+`data/research_history/pjm_load/reports/` (raw evaluation-run output, not curated for display).
 
 - **`pjm_load_real_vs_generated.png`** — six representative validation days, real vs.
   generated, used in the [root README](../../README.md) and

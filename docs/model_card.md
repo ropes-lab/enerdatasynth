@@ -42,15 +42,15 @@ profile consistent with given conditions, for research and data-augmentation pur
 ## Architecture
 
 Two denoiser architectures share the same DDPM training/sampling machinery
-(`src/enerdatasynth/diffusion/ddpm.py`):
+(`src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py`):
 
-**Transformer** (`src/enerdatasynth/models/transformer.py`, recommended/
+**Transformer** (`src/enerdatasynth/resources/pjm_load/models/transformer.py`, recommended/
 `DEFAULT_ARCHITECTURE`): per-hour tokenization, learned positional embedding, sinusoidal
 timestep embedding, conditioning injected via a 2-layer MLP added to every token,
 standard `nn.TransformerEncoder` (default `model_dim=64, num_heads=4, num_layers=2`).
 110,401 parameters in the Week 6 controlled comparison (6-dim conditioning).
 
-**MLP** (`src/enerdatasynth/models/denoiser.py`'s `SimpleMLPDenoiser`): the original
+**MLP** (`src/enerdatasynth/resources/pjm_load/models/denoiser.py`'s `SimpleMLPDenoiser`): the original
 baseline, 4 residual blocks, width 256, ~688,408 parameters (Week 6 comparison
 configuration) / 224,024 parameters in the specific bundled checkpoint (`T100_H256_L4`,
 23-dim conditioning — different config, not directly comparable parameter counts).
@@ -79,7 +79,7 @@ or rescaled to MW (`units="MW"`) via `enerdatasynth.model(...).sample(..., units
 
 Standard DDPM training: sample a random timestep per batch item, add noise via the
 forward process, train the denoiser to predict that noise with plain MSE loss
-(`DDPM.training_loss`, `src/enerdatasynth/diffusion/ddpm.py`). Optimizer, learning rate,
+(`DDPM.training_loss`, `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py`). Optimizer, learning rate,
 batch size, and epoch count are configurable via `RunConfig`
 (`src/enerdatasynth/utils/config.py`) and the `enerdatasynth train` CLI command; specific
 default values were not independently re-verified against `training/train.py` in this
@@ -161,7 +161,7 @@ the installed package** (`pjm_load` is packaged for zone `PS` only).
 ## Reproducibility
 
 `enerdatasynth preprocess` → `train` → `calibrate` → `evaluate` → `report`, or
-`enerdatasynth pipeline` end-to-end, given raw CSVs under `data/raw/`.
+`enerdatasynth pipeline` end-to-end, given raw CSVs under `data/raw/pjm_load/`.
 See `docs/quickstart.md`. Reproducing the exact Week 7 research numbers additionally
 requires the research-lineage 6-dim conditioning, not the current package preprocessing
 — not currently automated.

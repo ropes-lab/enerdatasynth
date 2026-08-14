@@ -1,12 +1,12 @@
 # Results
 
 Canonical results summary. Every number below is traceable to a specific file under
-`data/research_history/reports/` or `data/reports/`; the source is given after each
+`data/research_history/pjm_load/reports/` or `data/reports/pjm_load/`; the source is given after each
 table. **See `docs/research_status.md` §C/§D first** — the numbers here come from the
 research-history "Z5" (6-dimensional) conditioning representation, not the current
 package's 23-dimensional one-hot conditioning, unless stated otherwise.
 
-All metrics are defined in `docs/research_status.md` §G / `src/enerdatasynth/evaluation/metrics.py`.
+All metrics are defined in `docs/research_status.md` §G / `src/enerdatasynth/resources/pjm_load/evaluation/metrics.py`.
 Lower is better on every metric below.
 
 ---
@@ -26,7 +26,7 @@ Transformer beats the old MLP baseline on **6 of 7** metrics, at **~6× fewer pa
 loses on is `Energy` — see §6 (Calibration) for why, and §7 (Worst-Day Analysis) for the
 root cause.
 
-Source: `data/research_history/reports/week7/summary_report.md`.
+Source: `data/research_history/pjm_load/reports/week7/summary_report.md`.
 
 ## 2. MLP Comparison (Architecture Selection)
 
@@ -51,7 +51,7 @@ same controlled experiment — a ~30–40× slowdown with no explanation recorde
 source report. This was not re-investigated during this audit; it is flagged here as an
 open, unresolved item rather than silently omitted.
 
-Source: `data/research_history/reports/week6/arch/summary_report.md` /
+Source: `data/research_history/pjm_load/reports/week6/arch/summary_report.md` /
 `week6/arch/metrics.csv`.
 
 ## 3. Classical Baseline Comparison
@@ -72,7 +72,7 @@ The classical models are orders of magnitude worse across the board — none of 
 conditional generative model in the same sense; they are included as a sanity-check
 lower bound, not a close competitor.
 
-Source: `data/research_history/reports/week7/summary_report.md`.
+Source: `data/research_history/pjm_load/reports/week7/summary_report.md`.
 
 ## 4. Conditional Evaluation
 
@@ -94,10 +94,10 @@ Source: `data/research_history/reports/week7/summary_report.md`.
 Hardest slice: **calendar/Holiday** (RMSE 0.0306) — also the smallest slice (n=17), so
 some of this is small-sample noise rather than a systematic holiday failure.
 
-Source: `data/research_history/reports/week7/summary_report.md`.
+Source: `data/research_history/pjm_load/reports/week7/summary_report.md`.
 
 *(An earlier, pre-convergence conditional evaluation exists at
-`data/research_history/reports/week6/conditional/summary_report.md` with a fuller RMSE/
+`data/research_history/pjm_load/reports/week6/conditional/summary_report.md` with a fuller RMSE/
 FirstDiff/ACF/Peak/Energy/Ramp breakdown; it is superseded by the table above and kept
 only for provenance.)*
 
@@ -112,10 +112,10 @@ Three diffusion models, identical except the β schedule.
 | Quadratic | 0.02376 | 0.0244 | 0.0105 | 0.0470 | 0.0083 | 0.1216 | 0.0094 |
 
 Linear wins on both validation loss and generated-profile RMSE, and is dramatically
-better on `Energy`. This is why `src/enerdatasynth/diffusion/ddpm.py` defaults to a
+better on `Energy`. This is why `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py` defaults to a
 linear schedule (`beta_start=1e-4, beta_end=0.02`).
 
-Source: `data/research_history/reports/week6/noise/summary_report.md`.
+Source: `data/research_history/pjm_load/reports/week6/noise/summary_report.md`.
 
 ## 6. Calibration
 
@@ -131,7 +131,7 @@ Scalar calibration cuts Energy error 66% (0.1644 → 0.0563) at zero cost to sha
 and is strictly better than the per-hour variant on every other metric. See
 `docs/research_status.md` §F for the full mechanism and the train-fit caveat.
 
-Source: `data/research_history/reports/week7/calibration_report.md`.
+Source: `data/research_history/pjm_load/reports/week7/calibration_report.md`.
 
 ## 7. Worst-Day / Error Analysis
 
@@ -157,7 +157,7 @@ level offset**, not a shape problem.
 unresolved limitation, not a rounding artifact — the three worst individual days (RMSE
 0.46, 0.38, 0.34) are all June/July days with above-average `Tmax`.
 
-Source: `data/research_history/reports/week7/energy_diagnosis.md`.
+Source: `data/research_history/pjm_load/reports/week7/energy_diagnosis.md`.
 
 ## 8. Zone Expansion (Phase 2)
 
@@ -194,7 +194,7 @@ not, and this is not fixed.**
 `docs/research_status.md` §B. The 16-of-17-zone generalization result is a Phase 2
 research finding, not yet wired into the package's public zone list.
 
-Source: `data/research_history/reports/phase2/summary_report.md`.
+Source: `data/research_history/pjm_load/reports/phase2/summary_report.md`.
 
 ## 9. Limitations
 
@@ -213,13 +213,13 @@ Consolidated from the sections above — see `docs/research_status.md` and
 4. **DOM zone failure is unresolved** (§8).
 5. **Calibration is train-fit**, not independently validated on a held-out calibration
    set beyond the 1,200-day sample it was fit on (§6, `docs/research_status.md` §F).
-6. **In-sample validation only:** `data/reports/results_summary.md` states validation
+6. **In-sample validation only:** `data/reports/pjm_load/results_summary.md` states validation
    comparisons use the same conditioning vectors as the real validation set — this
    evaluates conditional fidelity, not out-of-distribution generalization.
 7. **Hot-day generation quality is weaker** than the aggregate metrics suggest (§7).
 8. **CNN's 118-minute training-time anomaly** (§2) was never explained.
 9. **No unified multi-zone model exists** — each zone in §8 was trained independently;
-   `data/reports/future_experiments.md` lists a unified PJM model as a recommended,
+   `data/reports/pjm_load/future_experiments.md` lists a unified PJM model as a recommended,
    not-yet-implemented future experiment.
 10. **No wind model is scientifically validated.** See `docs/research_status.md` and
     `docs/model_card.md` for the wind implementation's actual status (code-complete,

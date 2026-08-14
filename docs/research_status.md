@@ -3,7 +3,7 @@
 This document is the canonical, current-as-of-audit statement of what is scientifically
 established in this repository, what the installable package actually does today, and
 where those two things diverge. It was produced by directly reading the code and the
-result files under `data/research_history/` and `data/reports/` — every claim below is
+result files under `data/research_history/pjm_load/` and `data/reports/pjm_load/` — every claim below is
 either traced to a specific file or explicitly marked as not documented.
 
 **If anything in the main `README.md`, `MODEL_CARD.md`, or any `docs/` page contradicts
@@ -35,20 +35,20 @@ a point forecast, and not validated for any forecasting, dispatch, or control us
 
 | Item | Value | Source |
 |---|---|---|
-| Raw load data | `data/raw/hrl_load_metered_{2016..2025}.csv` — 10 annual files, originally sourced from PJM Data Miner 2. **Removed from this repository as of a later pass** (see `docs/data_card.md` "Licensing / Redistribution") — not bundled anymore; bring your own copy to reproduce preprocessing. | directory listing at time of original audit |
-| Raw temperature data | `data/raw/station_hourly_temps.csv`, `pjm_hourly_temps_wide.csv` — **also removed**, same pass. | directory listing at time of original audit |
-| Temperature source | NOAA Integrated Surface Database (ISD), one or more airport weather stations per PJM zone, resolved by USAF-WBAN station ID at runtime | `src/enerdatasynth/data/temperature.py` docstring + `STATION_ICAO`/`ZONE_STATIONS` tables |
-| Temperature mapping | Equal-weighted average across each zone's constituent stations (`ZONE_STATIONS` dict); handles station renumbering across years by re-resolving IDs from NOAA's inventory | `src/enerdatasynth/data/temperature.py` |
-| Temperature cache | Per-station-year Parquet cache at `data/cache/{station}_{year}.parquet`, so re-runs don't re-download. **Emptied in the same later pass** — regenerates automatically given network access; nothing here is bundled source data. | `data/cache/README.md` |
-| Hourly resolution | 24 values/day, fixed-width | `src/enerdatasynth/data/preprocess.py` |
-| Zones with full Phase-2 research validation | 17 zones: AP, DAY, PL, DEOK, CE, PN, DPL, BC, PS, RECO, JC, ME, DUQ, PE, AE, EKPC, DOM | `data/research_history/reports/phase2/summary_report.md` |
+| Raw load data | `data/raw/pjm_load/hrl_load_metered_{2016..2025}.csv` — 10 annual files, originally sourced from PJM Data Miner 2. **Removed from this repository as of a later pass** (see `docs/data_card.md` "Licensing / Redistribution") — not bundled anymore; bring your own copy to reproduce preprocessing. | directory listing at time of original audit |
+| Raw temperature data | `data/raw/pjm_load/station_hourly_temps.csv`, `pjm_hourly_temps_wide.csv` — **also removed**, same pass. | directory listing at time of original audit |
+| Temperature source | NOAA Integrated Surface Database (ISD), one or more airport weather stations per PJM zone, resolved by USAF-WBAN station ID at runtime | `src/enerdatasynth/resources/pjm_load/data/temperature.py` docstring + `STATION_ICAO`/`ZONE_STATIONS` tables |
+| Temperature mapping | Equal-weighted average across each zone's constituent stations (`ZONE_STATIONS` dict); handles station renumbering across years by re-resolving IDs from NOAA's inventory | `src/enerdatasynth/resources/pjm_load/data/temperature.py` |
+| Temperature cache | Per-station-year Parquet cache at `data/cache/pjm_load/{station}_{year}.parquet`, so re-runs don't re-download. **Emptied in the same later pass** — regenerates automatically given network access; nothing here is bundled source data. | `data/cache/README.md` |
+| Hourly resolution | 24 values/day, fixed-width | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` |
+| Zones with full Phase-2 research validation | 17 zones: AP, DAY, PL, DEOK, CE, PN, DPL, BC, PS, RECO, JC, ME, DUQ, PE, AE, EKPC, DOM | `data/research_history/pjm_load/reports/phase2/summary_report.md` |
 | Zones exposed by the installed package today | **`PS` only** | `src/enerdatasynth/generators/load_conditioning.py`: `register_resource(..., zones=["PS"], ...)` |
-| Training/validation split used for the current bundled dataset | 2,785 train / 600 validation days (zone PS), from 3,653 raw days before cleaning | `data/reports/results_summary.md` |
-| DST handling | Days with 23 or 25 hourly rows (detected pre-pivot via `detect_dst_days`) are flagged and removed — a fixed 24-column output can't represent them | `src/enerdatasynth/data/preprocess.py` (`detect_dst_days`, `is_dst` flag) |
-| Missing-load handling | Days with any NaN among the 24 hourly load columns (excluding days already flagged DST) are removed | `src/enerdatasynth/data/preprocess.py` (`missing_load` flag) |
-| Missing-weather handling | Days with NaN `Tmax` or `Tmin` after the zone temperature merge are removed | `src/enerdatasynth/data/preprocess.py` (`missing_weather` flag) |
-| COVID period | A separate `is_covid` flag exists and is also excluded from the cleaned set | `src/enerdatasynth/data/preprocess.py` (`remove_mask` includes `is_covid`) — exact date range: **not verified in this audit pass** |
-| Train/validation methodology | **Chronological split: 2016–2023 train / 2024–2025 validation** (not random) | `data/research_history/scripts/week3.py`, Step 6 |
+| Training/validation split used for the current bundled dataset | 2,785 train / 600 validation days (zone PS), from 3,653 raw days before cleaning | `data/reports/pjm_load/results_summary.md` |
+| DST handling | Days with 23 or 25 hourly rows (detected pre-pivot via `detect_dst_days`) are flagged and removed — a fixed 24-column output can't represent them | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`detect_dst_days`, `is_dst` flag) |
+| Missing-load handling | Days with any NaN among the 24 hourly load columns (excluding days already flagged DST) are removed | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`missing_load` flag) |
+| Missing-weather handling | Days with NaN `Tmax` or `Tmin` after the zone temperature merge are removed | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`missing_weather` flag) |
+| COVID period | A separate `is_covid` flag exists and is also excluded from the cleaned set | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`remove_mask` includes `is_covid`) — exact date range: **not verified in this audit pass** |
+| Train/validation methodology | **Chronological split: 2016–2023 train / 2024–2025 validation** (not random) | `data/research_history/pjm_load/scripts/week3.py`, Step 6 |
 
 ## C. Conditioning — Critical Distinction
 
@@ -57,8 +57,8 @@ interchangeable:**
 
 1. **Research-history conditioning ("Z5"/"Z9")** — the raw, lower-dimensional
    representation used to produce the reported Week 6/Week 7 Transformer results
-   (`cond_dim=6` for "Z5"). See `data/research_history/outputs/week3_outputs/Z5_train.npy`
-   / `Z9_train.npy` and the Week 6/7 scripts under `data/research_history/scripts/`.
+   (`cond_dim=6` for "Z5"). See `data/research_history/pjm_load/outputs/week3_outputs/Z5_train.npy`
+   / `Z9_train.npy` and the Week 6/7 scripts under `data/research_history/pjm_load/scripts/`.
 
 2. **Current package conditioning** — `src/enerdatasynth/utils/config.py`'s
    `COND_DIM = N_MONTHS + N_DOW + 1 + 1 + 1 + 1 = 23`:
@@ -83,9 +83,9 @@ See section D and `docs/results.md`'s "Critical Scientific Integrity Note".
 
 **Documentation contradiction found during this audit, and resolved by checking the
 actual data:** `week3.py`'s own header labels its baseline conditioning vector "Z5 matrix
-(N_days × 5)" (implying 5 dimensions), while `src/enerdatasynth/models/transformer.py`'s
+(N_days × 5)" (implying 5 dimensions), while `src/enerdatasynth/resources/pjm_load/models/transformer.py`'s
 docstring states the validated Transformer checkpoint used `cond_dim=6`. Loading
-`data/research_history/outputs/week3_outputs/Z5_train.npy` directly confirms shape
+`data/research_history/pjm_load/outputs/week3_outputs/Z5_train.npy` directly confirms shape
 `(2785, 6)` — **6 columns, not 5.** "Z5" is a research-era name referring to 5 conceptual
 input fields (month, day-of-week, holiday, temperature, spread) packed compactly into 6
 numeric columns — not a one-hot scheme like the current package's 23-dimensional
@@ -95,7 +95,7 @@ richer variant mentioned in the same script.)
 
 ## D. Model — Current Recommended Architecture
 
-`src/enerdatasynth/models/transformer.py`'s `TransformerDenoiser`, promoted to
+`src/enerdatasynth/resources/pjm_load/models/transformer.py`'s `TransformerDenoiser`, promoted to
 `DEFAULT_ARCHITECTURE = "transformer"` in `src/enerdatasynth/utils/config.py`.
 
 Verified directly from the code (not from old reports):
@@ -109,20 +109,20 @@ Verified directly from the code (not from old reports):
 | Encoder | Standard `nn.TransformerEncoder`, `dropout=0.0`, `activation="gelu"`, `batch_first=True` | `transformer.py:81-85` |
 | Default hyperparameters | `model_dim=64`, `num_heads=4`, `num_layers=2`, `t_embed_dim=64` | `transformer.py:67-69`, `utils/config.py` `DEFAULT_HIDDEN_DIM/DEFAULT_N_HEADS/DEFAULT_N_LAYERS` |
 | Diffusion steps default | `DEFAULT_T = 1000` ("matches the validated transformer/calibration research" per code comment) | `utils/config.py:139` |
-| Parameter count (Week 6 architecture-comparison run) | **110,401** — this specific number is for the Week-6 controlled comparison, which used `cond_dim=6` (Z5), not the current package's `cond_dim=23` | `data/research_history/reports/week6/arch/metrics.csv` |
-| Optimizer / learning rate / training procedure | Not re-verified against `src/enerdatasynth/training/train.py` in this pass beyond what's in the Results doc — **treat specific values (lr, optimizer type, batch size) as needing direct code confirmation before quoting in a paper.** | — |
+| Parameter count (Week 6 architecture-comparison run) | **110,401** — this specific number is for the Week-6 controlled comparison, which used `cond_dim=6` (Z5), not the current package's `cond_dim=23` | `data/research_history/pjm_load/reports/week6/arch/metrics.csv` |
+| Optimizer / learning rate / training procedure | Not re-verified against `src/enerdatasynth/resources/pjm_load/training/train.py` in this pass beyond what's in the Results doc — **treat specific values (lr, optimizer type, batch size) as needing direct code confirmation before quoting in a paper.** | — |
 
 **The critical caveat, already honestly disclosed in the code itself:**
 
 > "the checkpoint this architecture was actually validated against
 > (`transformer_baseline_z5.pt`) was trained with `cond_dim=6` (the research lineage's
 > raw 'Z5' conditioning vector), not the 23-dimensional one-hot conditioning
-> `enerdatasynth.data.preprocess` currently produces. No pretrained checkpoint compatible
+> `enerdatasynth.resources.pjm_load.data.preprocess` currently produces. No pretrained checkpoint compatible
 > with the current preprocessing pipeline exists yet."
-> — `src/enerdatasynth/models/transformer.py`, module docstring
+> — `src/enerdatasynth/resources/pjm_load/models/transformer.py`, module docstring
 
 **What this means in practice, verified by actually running it:** every checkpoint
-bundled under `data/checkpoints/` (`T100_H256_L4`, `T100_H128_L6`, `T200_H128_L4`,
+bundled under `data/checkpoints/pjm_load/` (`T100_H256_L4`, `T100_H128_L6`, `T200_H128_L4`,
 `T100_H64_L4`, `T100_H128_L4`, `T100_H128_L2`, `T50_H128_L4`) has no `"architecture"` key
 in its `result.json` — the historical marker for the original MLP hyperparameter sweep,
 before the `architecture` field existed. `generators/load.py`'s `from_run_id` deliberately
@@ -131,7 +131,7 @@ defaults a missing `architecture` key to `"mlp"`, not to the current
 an MLP run. `generators/load_conditioning.py`'s `_discover_best_checkpoint()` prefers a
 `"transformer"`-tagged run when one exists, but **none exists in this repository today**,
 so it falls back to the best legacy MLP run by validation loss
-(`T100_H256_L4`, 224,024 params, best val loss 0.08164 — see `data/reports/results_summary.md`).
+(`T100_H256_L4`, 224,024 params, best val loss 0.08164 — see `data/reports/pjm_load/results_summary.md`).
 
 **Therefore: `enerdatasynth.model("pjm_load", zone="PS")` today silently loads the legacy
 MLP baseline, not the Transformer**, despite the Transformer being the architecture this
@@ -143,7 +143,7 @@ the package's default sampling path reflects the validated Week 7 result.**
 
 ## E. Diffusion Process
 
-Implemented in `src/enerdatasynth/diffusion/ddpm.py`. Standard DDPM — no custom losses,
+Implemented in `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py`. Standard DDPM — no custom losses,
 no Fourier/spectral terms, no moment-matching terms (verified: `training_loss` is a bare
 `nn.functional.mse_loss` call).
 
@@ -160,7 +160,7 @@ no Fourier/spectral terms, no moment-matching terms (verified: `training_loss` i
 
 An earlier (never-shipped-in-this-package) sampler implementation reused a noise
 prediction incorrectly across sampling steps rather than recomputing it at every step.
-This was diagnosed and fixed in `data/research_history/scripts/sampler_bugfix.py`. The
+This was diagnosed and fixed in `data/research_history/pjm_load/scripts/sampler_bugfix.py`. The
 concrete before/after numbers, both preserved in this repository:
 
 | | Hourly | FirstDiff | ACF | RMSE | Peak | Energy |
@@ -168,10 +168,10 @@ concrete before/after numbers, both preserved in this repository:
 | Buggy sampler ("Diffusion (converged)", pre-fix) | 0.5799 | 2.2864 | 0.0612 | 0.5069 | 0.5246 | 1.4684 |
 | Corrected sampler ("Diffusion (converged)", post-fix) | 0.0436 | 0.0179 | 0.0404 | 0.0261 | 0.0119 | 0.0269 |
 
-Source: `data/research_history/reports/week5_comparison_table.csv` /
+Source: `data/research_history/pjm_load/reports/week5_comparison_table.csv` /
 `week5_metrics.json` (pre-fix) vs. `week5_comparison_corrected.csv` (post-fix).
 
-**The corrected ancestral sampler in `src/enerdatasynth/diffusion/ddpm.py` is
+**The corrected ancestral sampler in `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py` is
 load-bearing research infrastructure.** A regression test
 (`tests/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step` and
 `::test_sampler_noise_prediction_differs_across_steps`, added during this audit) asserts
@@ -182,7 +182,7 @@ impact, not as valid results.
 
 ## F. Calibration
 
-Implemented in `src/enerdatasynth/evaluation/calibration.py`.
+Implemented in `src/enerdatasynth/resources/pjm_load/evaluation/calibration.py`.
 
 - **Bias observed:** the trained denoiser reproduces daily *shape* well (first-difference,
   ramp, ACF) but carries a small systematic per-hour level offset. Summed over 24 hours,
@@ -203,7 +203,7 @@ Implemented in `src/enerdatasynth/evaluation/calibration.py`.
 - **Why scalar, not per-hour:** the per-hour variant was tested and found *worse* on ACF
   (0.0317 → 0.0501) and RMSE (0.0210 → 0.0249) than no calibration at all. The scalar
   variant matched or improved every metric. Source:
-  `data/research_history/reports/week7/calibration_report.md`.
+  `data/research_history/pjm_load/reports/week7/calibration_report.md`.
 - **Train-fit, not an independent test-set improvement.** The bias is measured on
   training days and applied uniformly; the reported improvement is not a validation-set
   holdout result for the calibration step itself (the *shape* metrics it doesn't touch
@@ -211,14 +211,14 @@ Implemented in `src/enerdatasynth/evaluation/calibration.py`.
   independently re-tested on held-out days beyond the 1,200-day training sample it was
   fit on).
 - **Current package status: no bundled checkpoint ships a `calibration.json`.** All seven
-  legacy MLP checkpoints under `data/checkpoints/` were checked directly — none has one.
+  legacy MLP checkpoints under `data/checkpoints/pjm_load/` were checked directly — none has one.
   `LoadDiffusionModel` treats a missing calibration file as "not yet calibrated" and skips
   correction silently (`load_calibration` returns `None` rather than raising). **Default,
   out-of-the-box `pjm_load` sampling today is therefore uncalibrated.**
 
 ## G. Evaluation
 
-Seven metrics, implemented once in `src/enerdatasynth/evaluation/metrics.py`
+Seven metrics, implemented once in `src/enerdatasynth/resources/pjm_load/evaluation/metrics.py`
 (`compute_metrics`), replacing four previously-incompatible ad hoc versions across the
 research-history scripts.
 

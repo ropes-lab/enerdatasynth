@@ -11,7 +11,7 @@ Real trained checkpoints (1ch/2ch/3ch) are bundled under
 `generators/wind_conditioning.py`'s `wind_construct`, which is what
 `enerdatasynth.model("wind", ...)` actually calls. Constructing
 `WindDiffusionModel` directly (bypassing that) falls through to
-`wind_diffusion.registry.resolve_weights`'s own chain (explicit path ->
+`enerdatasynth.resources.wind.registry.resolve_weights`'s own chain (explicit path ->
 `WIND_DIFFUSION_CHECKPOINTS` env dir -> manifest download), which *does*
 raise `CheckpointNotFoundError` for a preset with no local checkpoint
 and no manifest-published weights -- not a wiring bug, just a different,
@@ -26,13 +26,13 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from wind_diffusion.config import PresetName
-from wind_diffusion.data import NormStats
-from wind_diffusion.diffusion import DiffusionSchedule
-from wind_diffusion.evaluate import generate_multiple_for_condition, get_cached_model
-from wind_diffusion.registry import describe_model, resolve_weights
-from wind_diffusion.transforms import wind_regime_slice
-from wind_diffusion.utils import set_seed as _wind_set_seed
+from enerdatasynth.resources.wind.config import PresetName
+from enerdatasynth.resources.wind.data.data import NormStats
+from enerdatasynth.resources.wind.diffusion.diffusion import DiffusionSchedule
+from enerdatasynth.resources.wind.evaluation.evaluate import generate_multiple_for_condition, get_cached_model
+from enerdatasynth.resources.wind.registry import describe_model, resolve_weights
+from enerdatasynth.resources.wind.data.transforms import wind_regime_slice
+from enerdatasynth.resources.wind.utils import set_seed as _wind_set_seed
 
 # Fallback if a preset's manifest entry has no recommended_generation for
 # some reason (shouldn't happen against the bundled manifest.json, but a
@@ -58,7 +58,7 @@ class WindDiffusionModel(BaseGenerator):
     """
     Tier-2 (research/development) interface for generating synthetic wind
     profiles from a trained `wind_diffusion` checkpoint. Delegates
-    checkpoint resolution (`wind_diffusion.registry.resolve_weights` --
+    checkpoint resolution (`enerdatasynth.resources.wind.registry.resolve_weights` --
     already sha256-verified explicit-path/env-dir/cached-download
     resolution, strictly better than `LoadDiffusionModel`'s local-
     checkpoint-directory-only discovery) and sampling entirely to the
@@ -113,7 +113,7 @@ class WindDiffusionModel(BaseGenerator):
     def from_run_id(cls, run_id: str, **kwargs) -> "WindDiffusionModel":
         """
         `wind_diffusion` doesn't use enerdatasynth's `run_id`/`result.json`
-        convention -- checkpoints resolve via `wind_diffusion.registry`
+        convention -- checkpoints resolve via `enerdatasynth.resources.wind.registry`
         instead, keyed by preset. `run_id` here IS the preset
         (`"1ch"`/`"2ch"`/`"3ch"`), kept only for `BaseGenerator`-contract
         symmetry with `LoadDiffusionModel.from_run_id(run_id)`.
@@ -135,7 +135,7 @@ class WindDiffusionModel(BaseGenerator):
         """
         Generate one synthetic wind day per row of `z` -- a raw
         `(N, cond_dim)` conditioning array in `wind_diffusion`'s exact
-        format (see `wind_diffusion.evaluate.build_condition_vector`).
+        format (see `enerdatasynth.resources.wind.evaluation.evaluate.build_condition_vector`).
         Build it via `enerdatasynth.model("wind", ...).set()` (Tier 1),
         not by hand, unless you already have conditioning vectors in
         wind_diffusion's own format.

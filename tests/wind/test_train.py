@@ -6,19 +6,19 @@ import pytest
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from wind_diffusion.config import get_config
-from wind_diffusion.diffusion import DiffusionSchedule, q_sample
-from wind_diffusion.models import TransformerDenoiser
-from wind_diffusion.train import _joint_radius_consistency_loss, build_lr_scheduler, build_model, run_epoch
-from wind_diffusion.utils import resolve_device
+from enerdatasynth.resources.wind.config import get_config
+from enerdatasynth.resources.wind.diffusion.diffusion import DiffusionSchedule, q_sample
+from enerdatasynth.resources.wind.models.models import TransformerDenoiser
+from enerdatasynth.resources.wind.training.train import _joint_radius_consistency_loss, build_lr_scheduler, build_model, run_epoch
+from enerdatasynth.resources.wind.utils import resolve_device
 
-# wind_diffusion/__init__.py does `from wind_diffusion.train import ..., train`,
+# wind_diffusion/__init__.py does `from enerdatasynth.resources.wind.training.train import ..., train`,
 # which overwrites the `train` attribute on the `wind_diffusion` package with
-# the `train()` function -- shadowing the `wind_diffusion.train` *submodule*
-# on that same attribute. `import wind_diffusion.train as train_module` still
+# the `train()` function -- shadowing the `enerdatasynth.resources.wind.training.train` *submodule*
+# on that same attribute. `import enerdatasynth.resources.wind.training.train as train_module` still
 # resolves through that shadowed attribute and gets the function, not the
 # module, so importlib is used here to fetch the actual module object.
-train_module = importlib.import_module("wind_diffusion.train")
+train_module = importlib.import_module("enerdatasynth.resources.wind.training.train")
 
 
 def _tiny_model_and_schedule(n_channels: int = 1) -> tuple[TransformerDenoiser, DiffusionSchedule]:

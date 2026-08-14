@@ -14,7 +14,7 @@ seeding, device resolution.
     function actually writes into it, not at import time (a library shouldn't mutate
     the filesystem just from being imported).
   - `RunConfig` — the training/generation hyperparameter dataclass, loadable from
-    `data/configs/*.yaml` via `RunConfig.from_yaml(...)`.
+    `data/configs/pjm_load/*.yaml` via `RunConfig.from_yaml(...)`.
   - `resolve_device(device=None)`, `set_seed(seed)` — device/RNG helpers used
     throughout training and sampling.
   - `COND_DIM`, `N_MONTHS`, `N_DOW`, `DEFAULT_ARCHITECTURE`, and the other

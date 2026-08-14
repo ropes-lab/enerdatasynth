@@ -2,7 +2,7 @@
 examples/exploratory_data_analysis.py
 =======================================
 Small demonstration of inspecting the processed dataset that
-`enerdatasynth.data.preprocess` produces: mean daily load shape,
+`enerdatasynth.resources.pjm_load.data.preprocess` produces: mean daily load shape,
 per-hour spread, and the train/val split sizes from metadata.json.
 
 This is intentionally lightweight — it demonstrates how to work with
@@ -24,7 +24,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from enerdatasynth.utils.config import PROCESSED_DIR
-from enerdatasynth.visualization.plots import PRIMARY_COLOR, SECONDARY_COLOR
+from enerdatasynth.resources.pjm_load.visualization.plots import PRIMARY_COLOR, SECONDARY_COLOR
 
 
 def main():

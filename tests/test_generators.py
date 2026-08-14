@@ -81,7 +81,7 @@ def test_from_run_id_defaults_missing_architecture_to_mlp_not_current_default(tm
     """
     import json
     import torch
-    from enerdatasynth.models.denoiser import SimpleMLPDenoiser
+    from enerdatasynth.resources.pjm_load.models.denoiser import SimpleMLPDenoiser
 
     run_id = "legacy_no_architecture_field"
     ckpt_dir = tmp_path / run_id

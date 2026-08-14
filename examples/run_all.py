@@ -21,12 +21,12 @@ Usage (from the project root, with the package installed or
 from __future__ import annotations
 import argparse
 
-from enerdatasynth.data.preprocess import run_preprocessing
-from enerdatasynth.training.sweep import run_sweep
-from enerdatasynth.sampling.generate import generate_for_run
-from enerdatasynth.visualization.plots import run_all_validation_plots
-from enerdatasynth.evaluation.failure_analysis import analyze, write_failure_analysis_md
-from enerdatasynth.evaluation.results_report import generate_results_summary
+from enerdatasynth.resources.pjm_load.data.preprocess import run_preprocessing
+from enerdatasynth.resources.pjm_load.training.sweep import run_sweep
+from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
+from enerdatasynth.resources.pjm_load.visualization.plots import run_all_validation_plots
+from enerdatasynth.resources.pjm_load.evaluation.failure_analysis import analyze, write_failure_analysis_md
+from enerdatasynth.resources.pjm_load.evaluation.results_report import generate_results_summary
 
 
 def main():

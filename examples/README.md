@@ -5,7 +5,7 @@ script's own header explains exactly what it does — this file is the map.
 
 | Script | What it demonstrates | Runtime |
 |---|---|---|
-| `exploratory_data_analysis.py` | Inspecting the processed dataset (`metadata.json`, mean daily shape) — a lightweight companion to the full historical EDA in `data/research_history/scripts/eda_exploration.py` | Seconds |
+| `exploratory_data_analysis.py` | Inspecting the processed dataset (`metadata.json`, mean daily shape) — a lightweight companion to the full historical EDA in `data/research_history/pjm_load/scripts/eda_exploration.py` | Seconds |
 | `generate_samples.py` | Loading a trained checkpoint via `LoadDiffusionModel` and generating profiles — the minimal Tier-2 usage pattern | Seconds |
 | `run_full_pipeline.py` | End-to-end walkthrough (preprocess → train one small model → generate → validate) in a couple of minutes, not the full sweep | ~Minutes |
 | `run_all.py` | The real top-level orchestrator: preprocess → full hyperparameter sweep → generate for the best config → validation plots → failure analysis → results summary | Hours (full sweep) |
@@ -26,5 +26,5 @@ to see the whole pipeline connect without waiting hours.
 
 ## Assumptions these make
 
-All of these assume raw data is already present (`data/raw/`) or that
+All of these assume raw data is already present (`data/raw/pjm_load/`) or that
 preprocessing has already been run — none of them ship or download data themselves.

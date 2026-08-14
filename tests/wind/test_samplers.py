@@ -1,4 +1,4 @@
-"""Tests for the sampler abstraction (wind_diffusion.samplers), the device
+"""Tests for the sampler abstraction (enerdatasynth.resources.wind.diffusion.samplers), the device
 resolution helper, and the process-level model cache in evaluate.py.
 """
 
@@ -8,10 +8,10 @@ import numpy as np
 import pytest
 import torch
 
-from wind_diffusion.diffusion import DiffusionSchedule, _cfg_predict, clamp_x0
-from wind_diffusion.models import TransformerDenoiser
-from wind_diffusion.samplers import sample
-from wind_diffusion.utils import resolve_device
+from enerdatasynth.resources.wind.diffusion.diffusion import DiffusionSchedule, _cfg_predict, clamp_x0
+from enerdatasynth.resources.wind.models.models import TransformerDenoiser
+from enerdatasynth.resources.wind.diffusion.samplers import sample
+from enerdatasynth.resources.wind.utils import resolve_device
 
 SEQ_LEN = 16
 HIDDEN_DIM = 8
@@ -404,8 +404,8 @@ def _make_fake_checkpoint(tmp_path, n_channels: int = 2, cond_dim: int = COND_DI
     load_checkpoint_and_model's expectations (config dict + state dict with
     an inferable cond_mlp.net.0.weight shape).
     """
-    from wind_diffusion.config import get_config
-    from wind_diffusion.train import build_model
+    from enerdatasynth.resources.wind.config import get_config
+    from enerdatasynth.resources.wind.training.train import build_model
 
     config = get_config(
         "2ch",
@@ -435,7 +435,7 @@ def _make_fake_checkpoint(tmp_path, n_channels: int = 2, cond_dim: int = COND_DI
 
 
 def test_get_cached_model_returns_same_object_and_loads_once(tmp_path, monkeypatch):
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     ckpt_path = _make_fake_checkpoint(tmp_path)
 

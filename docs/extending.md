@@ -10,7 +10,7 @@ to special-case it.
 **Wind (`WindDiffusionModel`) is now a real, working second example** —
 not hypothetical anymore. It wraps a diffusion pipeline developed
 separately (`wind_diffusion`, vendored from a Data-For-Good research
-project — see `src/wind_diffusion/`), reachable via
+project — see `src/enerdatasynth/resources/wind/`), reachable via
 `enerdatasynth.model("wind", zone=...)` with real trained checkpoints
 bundled in this repo for all three channel presets
 (`data/checkpoints/wind/{1ch,2ch,3ch}/`). See
@@ -40,10 +40,10 @@ does).
 
 **How wind's actually looks** (`src/enerdatasynth/generators/wind.py`):
 `WindDiffusionModel.__init__` resolves a checkpoint via
-`wind_diffusion.registry.resolve_weights` and loads the model/schedule/
+`enerdatasynth.resources.wind.registry.resolve_weights` and loads the model/schedule/
 norm_stats; `.sample(z, seed=None, sampler=..., steps=..., eta=...,
 guidance_scale=..., dynamic_threshold=...)` delegates the actual
-generation to `wind_diffusion.evaluate.generate_multiple_for_condition`
+generation to `enerdatasynth.resources.wind.evaluation.evaluate.generate_multiple_for_condition`
 and returns `(N, seq_len, 2)` — windspeed and direction stacked on a new
 last axis, since collapsing to windspeed-only would silently drop
 direction for `2ch`/`3ch`. Nothing about the diffusion sampling itself is
@@ -104,7 +104,7 @@ extension against), `ResourceModel` gained an optional `condition_builder`
 override: a resource can provide a full custom
 `(conditions, metadata, n, rng) -> np.ndarray` callable instead of a
 `condition_spec`. Wind's (`generators/wind_conditioning.py`'s
-`wind_condition_builder`) wraps `wind_diffusion.evaluate.build_condition_vector`
+`wind_condition_builder`) wraps `enerdatasynth.resources.wind.evaluation.evaluate.build_condition_vector`
 directly — no new logic, just translation. `ResourceModel._missing_required()`
 also had to special-case this: a `condition_builder` resource reports
 nothing as hard-required, since wind's own defaults (unlike load's
@@ -161,7 +161,7 @@ Load's (`_load_construct`, in `generators/load_conditioning.py`) reads
 `result.json` files. Wind's (`wind_construct`, in
 `generators/wind_conditioning.py`) checks a bundled
 `data/checkpoints/wind/<preset>/` first, then falls through to
-`wind_diffusion.registry.resolve_weights`'s own chain (explicit path →
+`enerdatasynth.resources.wind.registry.resolve_weights`'s own chain (explicit path →
 env dir → manifest download → error) — an entirely different mechanism,
 already better than load's (sha256-verified, supports remote download)
 before any of this wind work started. `ConstructResult`'s fields
@@ -172,15 +172,49 @@ hook is the same idea for cheap introspection without constructing a full
 `ResourceModel` (wind's delegates to `wind_diffusion.list_models()`
 rather than load's irrelevant `CHECKPOINT_DIR` scan).
 
-**Adding a third resource, concretely**: a new `generators/<name>.py`
-(a `BaseGenerator` subclass — you get `count_parameters()` and the
-`sample()`-array-normalization helper `_ensure_batch()` for free as long
-as you store your model at `self.model`) and a new
-`generators/<name>_conditioning.py` (a `condition_spec` or
-`condition_builder`, a `construct()`/`checkpoint_status()` pair, and the
-`register_resource(...)` call), plus one import line in
-`generators/__init__.py` so that registration side effect actually runs.
-Nothing in `sdk.py` changes.
+**Adding a third resource, concretely**: two things, at two different layers.
+
+1. **The bridge** (always required, small): a new `generators/<name>.py`
+   (a `BaseGenerator` subclass — you get `count_parameters()` and the
+   `sample()`-array-normalization helper `_ensure_batch()` for free as long
+   as you store your model at `self.model`) and a new
+   `generators/<name>_conditioning.py` (a `condition_spec` or
+   `condition_builder`, a `construct()`/`checkpoint_status()` pair, and the
+   `register_resource(...)` call), plus one import line in
+   `generators/__init__.py` so that registration side effect actually runs.
+   Nothing in `sdk.py` changes. This part is genuinely resource-agnostic —
+   both load's and wind's bridge files follow this exact same shape.
+
+2. **The implementation** (the actual model, and only if you're building it
+   from scratch rather than wrapping an existing pipeline the way wind
+   does): lives under `src/enerdatasynth/resources/<name>/`, mirroring
+   `resources/pjm_load/`'s category taxonomy wherever a category genuinely
+   applies to your resource — `data/` (raw → cleaned tensors), `models/`
+   (denoiser/architecture code), `diffusion/` (or whatever your generative
+   process actually is), `training/`, `evaluation/`, `sampling/`,
+   `visualization/`. Not every category needs to exist for every resource
+   — wind, for example, has no `sampling/` folder of its own and keeps
+   `config.py`/`registry.py`/`exceptions.py` at its resource root instead of
+   forcing them into one of the shared categories, since load has no
+   equivalent for those. Match the categories that make sense; don't invent
+   empty ones just for symmetry. See [`docs/architecture.md`](architecture.md)
+   for the full reasoning behind this layout, and the `README.md` inside
+   each of `resources/pjm_load/{data,models,diffusion,training,evaluation,
+   sampling,visualization}/` for what each category actually contains in a
+   real, from-scratch resource implementation.
+
+   If you're instead *wrapping* an existing external pipeline (wind's
+   situation), the same `resources/<name>/` location applies, but its
+   internal layout can just mirror whatever that pipeline's own module
+   structure already is — see `resources/wind/README.md` for how that
+   vendored package's original files map onto the shared category names.
+
+For example: a hypothetical `water` resource generating synthetic reservoir
+or usage profiles would get `generators/water.py` +
+`generators/water_conditioning.py` (the bridge) and
+`resources/water/{data,models,...}/` (the implementation) — nothing about
+`sdk.py`, the CLI, or any other resource's code would need to change for
+either piece to exist.
 
 **One more thing that needed to be per-resource, discovered only once
 multiple wind presets were actually exercised together**: generation-time
@@ -205,7 +239,7 @@ priority order:
   gitignored there and never published anywhere else) rather than going
   through `wind_diffusion.manifest.json`'s intended mechanism (a declared
   download URL + sha256, resolved and cached by
-  `wind_diffusion.registry.resolve_weights` on demand). That mechanism
+  `enerdatasynth.resources.wind.registry.resolve_weights` on demand). That mechanism
   already exists and works — it's just not wired up for any preset yet.
   Committing ~14MB of checkpoint binaries directly into this repo's git
   history was the fast path, not the durable one; moving to real
@@ -230,11 +264,11 @@ priority order:
 
 Before writing any model code: get real data, do the EDA, and figure out
 what a sensible conditioning vector and evaluation metric suite look
-like — mirroring how both load's `data/research_history/` and wind's
+like — mirroring how both load's `data/research_history/pjm_load/` and wind's
 source project arrived at their pipelines empirically, not by assumption.
-`enerdatasynth.evaluation.metrics.compute_metrics` is load-specific
+`enerdatasynth.resources.pjm_load.evaluation.metrics.compute_metrics` is load-specific
 (hourly/first-diff/ACF/RMSE/peak/energy/ramp against a 24-value profile);
 wind uses its own separate fidelity-gate suite
-(`wind_diffusion.metrics`, Wasserstein/ACF/spectral/regime-accuracy
+(`enerdatasynth.resources.wind.evaluation.metrics`, Wasserstein/ACF/spectral/regime-accuracy
 against a 288-value profile) rather than reusing load's — check what's
 actually appropriate before reusing either uncritically.

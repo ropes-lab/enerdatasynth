@@ -9,7 +9,7 @@ entry) -- the structural/API skeleton described in `generators/base.py`.
 Builds a genuinely tiny real checkpoint via the vendored `wind_diffusion`
 package (same pattern `wind_diffusion`'s own `tests/wind/test_api.py`
 uses for its end-to-end test) rather than mocking, so this exercises the
-actual `wind_diffusion.registry.resolve_weights` -> `get_cached_model` ->
+actual `enerdatasynth.resources.wind.registry.resolve_weights` -> `get_cached_model` ->
 `generate_multiple_for_condition` call chain `WindDiffusionModel` wraps.
 """
 
@@ -21,10 +21,10 @@ import numpy as np
 import pytest
 import torch
 
-from wind_diffusion.config import get_config
-from wind_diffusion.data import NormStats
-from wind_diffusion.exceptions import CheckpointNotFoundError
-from wind_diffusion.train import build_model
+from enerdatasynth.resources.wind.config import get_config
+from enerdatasynth.resources.wind.data.data import NormStats
+from enerdatasynth.resources.wind.exceptions import CheckpointNotFoundError
+from enerdatasynth.resources.wind.training.train import build_model
 
 SEQ_LEN = 16
 HIDDEN_DIM = 8
@@ -70,7 +70,7 @@ def tiny_wind_checkpoint_dir(tmp_path, monkeypatch):
     monkeypatch.setenv("WIND_DIFFUSION_CHECKPOINTS", str(tmp_path))
     monkeypatch.delenv("WIND_DIFFUSION_OFFLINE", raising=False)
 
-    from wind_diffusion import evaluate as wind_evaluate
+    from enerdatasynth.resources.wind.evaluation import evaluate as wind_evaluate
     wind_evaluate._MODEL_CACHE.clear()
 
     return tmp_path
@@ -103,7 +103,7 @@ def test_wind_bundled_checkpoints_work_without_any_env_setup(monkeypatch):
     monkeypatch.delenv("WIND_DIFFUSION_CHECKPOINTS", raising=False)
     monkeypatch.delenv("WIND_DIFFUSION_OFFLINE", raising=False)
 
-    from wind_diffusion import evaluate as wind_evaluate
+    from enerdatasynth.resources.wind.evaluation import evaluate as wind_evaluate
     wind_evaluate._MODEL_CACHE.clear()
 
     import enerdatasynth

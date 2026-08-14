@@ -1,4 +1,4 @@
-"""Tests for wind_diffusion.evaluate: load_checkpoint_and_model's preset
+"""Tests for enerdatasynth.resources.wind.evaluation.evaluate: load_checkpoint_and_model's preset
 resolution, in particular the `preset=` override added to support legacy
 checkpoints saved by the original monolithic scripts.
 
@@ -15,9 +15,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from wind_diffusion.config import PresetName, get_config
-from wind_diffusion.evaluate import load_checkpoint_and_model
-from wind_diffusion.train import build_model
+from enerdatasynth.resources.wind.config import PresetName, get_config
+from enerdatasynth.resources.wind.evaluation.evaluate import load_checkpoint_and_model
+from enerdatasynth.resources.wind.training.train import build_model
 
 SEQ_LEN = 16
 HIDDEN_DIM = 8

@@ -1,6 +1,6 @@
 # PJM Zonal Hourly Temperature Profiles, 2016–2025
 
-Reference documentation for `src/enerdatasynth/data/temperature.py`, the NOAA temperature ingestion pipeline that produces `data/raw/pjm_hourly_temps_wide.csv` (consumed by `enerdatasynth.data.preprocess`).
+Reference documentation for `src/enerdatasynth/resources/pjm_load/data/temperature.py`, the NOAA temperature ingestion pipeline that produces `data/raw/pjm_load/pjm_hourly_temps_wide.csv` (consumed by `enerdatasynth.resources.pjm_load.data.preprocess`).
 
 ## What this builds
 
@@ -44,14 +44,14 @@ PJM does not publish percentage weights for its zone-weather mapping — it publ
 ## Running it
 
 ```bash
-python -m enerdatasynth.data.temperature
+python -m enerdatasynth.resources.pjm_load.data.temperature
 ```
 
-Runtime: 5–15 min depending on your connection. Re-runs are near-instant because raw station-year data is cached in `data/cache/` as parquet.
+Runtime: 5–15 min depending on your connection. Re-runs are near-instant because raw station-year data is cached in `data/cache/pjm_load/` as parquet.
 
-## Outputs (in `data/raw/`)
+## Outputs (in `data/raw/pjm_load/`)
 
-- `pjm_hourly_temps_wide.csv` — datetime in Eastern Prevailing Time (EPT, matches PJM), one column per zone, °F. This is what `enerdatasynth.data.preprocess` actually consumes.
+- `pjm_hourly_temps_wide.csv` — datetime in Eastern Prevailing Time (EPT, matches PJM), one column per zone, °F. This is what `enerdatasynth.resources.pjm_load.data.preprocess` actually consumes.
 - `pjm_hourly_temps_long.csv` — long format: zone, datetime_utc, datetime_ept, temp_f
 - `station_hourly_temps.csv` — raw per-station hourly temps in °F, for auditing.
 

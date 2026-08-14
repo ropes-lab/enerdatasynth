@@ -1,11 +1,11 @@
-"""Tests for enerdatasynth.diffusion: DDPM forward/reverse process and beta schedules."""
+"""Tests for enerdatasynth.resources.pjm_load.diffusion: DDPM forward/reverse process and beta schedules."""
 
 from __future__ import annotations
 import torch
 
-from enerdatasynth.diffusion.ddpm import DDPM
-from enerdatasynth.diffusion.schedules import make_betas
-from enerdatasynth.models.denoiser import SimpleMLPDenoiser
+from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
+from enerdatasynth.resources.pjm_load.diffusion.schedules import make_betas
+from enerdatasynth.resources.pjm_load.models.denoiser import SimpleMLPDenoiser
 
 X_DIM, COND_DIM, BATCH, T = 24, 23, 6, 20
 

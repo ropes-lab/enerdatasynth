@@ -1,12 +1,12 @@
-"""Tests for enerdatasynth.models: forward-pass shapes and the build_denoiser factory."""
+"""Tests for enerdatasynth.resources.pjm_load.models: forward-pass shapes and the build_denoiser factory."""
 
 from __future__ import annotations
 import pytest
 import torch
 
-from enerdatasynth.models import build_denoiser
-from enerdatasynth.models.denoiser import SimpleMLPDenoiser
-from enerdatasynth.models.transformer import TransformerDenoiser
+from enerdatasynth.resources.pjm_load.models import build_denoiser
+from enerdatasynth.resources.pjm_load.models.denoiser import SimpleMLPDenoiser
+from enerdatasynth.resources.pjm_load.models.transformer import TransformerDenoiser
 
 X_DIM, COND_DIM, BATCH = 24, 23, 5
 

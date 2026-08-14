@@ -4,10 +4,10 @@ Produced by a full repository audit and documentation/packaging pass. No model
 architecture, conditioning representation, diffusion process, or calibration logic was
 changed — this is a documentation, testing, and packaging-hygiene pass only.
 
-**Addendum:** raw PJM CSVs (`data/raw/`) and the cached NOAA
-temperature data (`data/cache/`) were removed in a follow-up pass, per an explicit
-decision that this repository should not distribute raw source data at all. `data/processed/`
-(derived tensors + scaler metadata) and `data/checkpoints/` (trained models) were kept —
+**Addendum:** raw PJM CSVs (`data/raw/pjm_load/`) and the cached NOAA
+temperature data (`data/cache/pjm_load/`) were removed in a follow-up pass, per an explicit
+decision that this repository should not distribute raw source data at all. `data/processed/pjm_load/`
+(derived tensors + scaler metadata) and `data/checkpoints/pjm_load/` (trained models) were kept —
 the package still generates out-of-the-box. Verified: full test suite (230/230) and the
 README quickstart both still pass with zero raw data present. This closes blocker #10
 below.
@@ -15,8 +15,8 @@ below.
 ## Repository Status
 
 Clean. No stray hardcoded local paths in the installed package's source code (only in
-`data/research_history/scripts/`, which is frozen historical record by design — see that
-directory's README). Bundled checkpoint metadata (`data/checkpoints/*/result.json`) had
+`data/research_history/pjm_load/scripts/`, which is frozen historical record by design — see that
+directory's README). Bundled checkpoint metadata (`data/checkpoints/pjm_load/*/result.json`) had
 machine-specific paths; fixed during this audit. No secrets, no TODO/FIXME/HACK markers
 found anywhere in the current package code.
 
@@ -38,7 +38,7 @@ Complete for everything requested: `docs/research_status.md`, `docs/results.md`,
 `docs/model_report_card.md` + two report cards, `data/research_history/README.md`, plus
 folder READMEs for `docs/`, `src/enerdatasynth/` and its `data/`, `models/`,
 `diffusion/`, `training/` (+ `sampling/`), `evaluation/`, `generators/` subpackages,
-`examples/`, `tests/`, and `data/configs/`. Main `README.md` updated with a "What This
+`examples/`, `tests/`, and `data/configs/pjm_load/`. Main `README.md` updated with a "What This
 Is / What This Is Not" section, an explicit research question, a Zone Generalization
 section, and links to all new pages. No internal doc links found broken (checked
 directly, not assumed).
@@ -87,7 +87,7 @@ cited Week 7 Transformer numbers is not currently automated or verified** — se
   therefore resolves to the legacy MLP baseline today (verified by reading every bundled
   `result.json` and the resolution code directly, and by live-testing `enerdatasynth.model("pjm_load", ...)`).
 - No bundled checkpoint ships a `calibration.json` (verified: searched
-  `data/checkpoints/` directly).
+  `data/checkpoints/pjm_load/` directly).
 - The Week 3 "Z5" conditioning tensor is actually 6-dimensional, not 5 as its own
   filename/header comment implies (verified by loading the `.npy` file directly).
 - 17-zone Phase 2 results and the DOM outlier are real, traceable numbers (verified by

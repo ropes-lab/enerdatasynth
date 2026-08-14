@@ -90,11 +90,11 @@ where = ["src"]
 # from the built wheel. Ships it so downstream mypy/IDE users actually
 # get type-checking signal from an installed (non-editable) copy.
 enerdatasynth = ["py.typed"]
-# wind_diffusion/manifest.json (bundled weights index, loaded at runtime
-# via importlib.resources -- see wind_diffusion/registry.py) is the same
+# resources/wind/manifest.json (bundled weights index, loaded at runtime
+# via importlib.resources -- see resources/wind/registry.py) is the same
 # kind of non-.py data file; carried over from the original repo's own
 # pyproject.toml comment about this exact gotcha.
-wind_diffusion = ["manifest.json"]
+"enerdatasynth.resources.wind" = ["manifest.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

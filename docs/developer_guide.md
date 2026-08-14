@@ -34,7 +34,7 @@ src/enerdatasynth/
 ├── utils/config.py               all paths, conditioning spec, architecture + sweep defaults
 └── cli.py                        `enerdatasynth` console-script entry point
 
-data/configs/                          transformer.yaml / mlp.yaml — RunConfig.from_yaml() sources
+data/configs/pjm_load/                          transformer.yaml / mlp.yaml — RunConfig.from_yaml() sources
 tests/                            pytest suite (~2-20s), self-contained synthetic data + real-artifact regression tests
 docs/                              this documentation set
 examples/run_benchmark.py       classical-vs-diffusion comparison, built on library code only
@@ -44,12 +44,12 @@ data/
 ├── processed/                    X, Z tensors + metadata + README (working copy)
 └── processed_backup/             FROZEN duplicate — restore from here if corrupted
 
-data/checkpoints/<run_id>/             best.pt, latest.pt, loss_curve.png, result.json, calibration.json
-data/outputs/
+data/checkpoints/pjm_load/<run_id>/             best.pt, latest.pt, loss_curve.png, result.json, calibration.json
+data/outputs/pjm_load/
 ├── generated/                    X_generated_<run_id>.npy
 └── logs/                         per-epoch CSV training logs
 
-data/reports/
+data/reports/pjm_load/
 ├── figures/                      validation plots per run
 ├── results_summary.md            auto-generated
 ├── hyperparameter_results.csv
@@ -60,10 +60,10 @@ data/reports/
 
 examples/run_all.py                end-to-end orchestrator (same stages as `enerdatasynth pipeline`)
 examples/                         small demonstration scripts (see docs/examples.md)
-data/research_history/                 frozen historical research scripts, kept for provenance and reproducibility
+data/research_history/pjm_load/                 frozen historical research scripts, kept for provenance and reproducibility
 ```
 
-Production code in `src/enerdatasynth/` never imports from `data/research_history/` — that directory exists purely for provenance/reproducibility and is not part of the installed package.
+Production code in `src/enerdatasynth/` never imports from `data/research_history/pjm_load/` — that directory exists purely for provenance/reproducibility and is not part of the installed package.
 
 ## Conditioning Vector (23 dimensions)
 
@@ -80,9 +80,9 @@ The exact schema `data/preprocess.py` produces and the models consume:
 
 See [`docs/api_reference.md`](api_reference.md) for how `.set()` maps human-readable inputs onto this vector, and [`docs/architecture.md`](architecture.md) for the conditioning-encoding caveat (this one-hot scheme vs. the research lineage's raw encoding).
 
-## Restoring `data/processed/` from Backup
+## Restoring `data/processed/pjm_load/` from Backup
 
-If `data/processed/` ever gets corrupted by a bad re-run:
+If `data/processed/pjm_load/` ever gets corrupted by a bad re-run:
 
 ```bash
 rm -rf data/processed
@@ -111,7 +111,7 @@ Most tests use small synthetic arrays and run in ~2s with no dependency on the r
 
 1. Run the test suite: `pytest tests/ -v`.
 2. If you changed a default hyperparameter or added a new architecture/schedule/calibration mode, cite the evidence (a results file, a report) the way [MIGRATION.md](../MIGRATION.md) does — this project's standard is "every default is backed by a specific number in a specific file," not "this seemed reasonable."
-3. If you promote a `data/research_history/` script into `src/`, verify checkpoint/behavior compatibility explicitly where it matters — see [MIGRATION.md](../MIGRATION.md) §3 for the pattern (loading the actual legacy checkpoint with `strict=True`, confirming zero mismatched keys).
+3. If you promote a `data/research_history/pjm_load/` script into `src/`, verify checkpoint/behavior compatibility explicitly where it matters — see [MIGRATION.md](../MIGRATION.md) §3 for the pattern (loading the actual legacy checkpoint with `strict=True`, confirming zero mismatched keys).
 4. If you touched `pyproject.toml` or added new modules, rebuild and sanity-check packaging: `python -m build && twine check dist/*`, and ideally a real `pip install dist/*.whl` — see [`docs/packaging.md`](packaging.md) for why the editable install alone isn't sufficient verification.
 
 ## Reporting Issues

@@ -1,4 +1,4 @@
-"""Tests for wind_diffusion.api: the v2 public API (generate_wind_profile,
+"""Tests for enerdatasynth.resources.wind.api: the v2 public API (generate_wind_profile,
 WindProfile, list_models, describe_model). Zero real network calls -- the
 end-to-end happy path builds a tiny synthetic checkpoint + norm_stats.json
 fixture entirely in tmp_path, following the same pattern as
@@ -14,11 +14,11 @@ import pandas as pd
 import pytest
 import torch
 
-from wind_diffusion import api
-from wind_diffusion.config import get_config
-from wind_diffusion.data import NormStats
-from wind_diffusion.exceptions import CheckpointNotFoundError, InvalidConditionError
-from wind_diffusion.train import build_model
+from enerdatasynth.resources.wind import api
+from enerdatasynth.resources.wind.config import get_config
+from enerdatasynth.resources.wind.data.data import NormStats
+from enerdatasynth.resources.wind.exceptions import CheckpointNotFoundError, InvalidConditionError
+from enerdatasynth.resources.wind.training.train import build_model
 
 SEQ_LEN = 16
 HIDDEN_DIM = 8
@@ -165,7 +165,7 @@ def test_generate_wind_profile_invalid_wind_regime_raises_before_generation(tmp_
 def test_generate_wind_profile_end_to_end(tmp_path):
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats(tmp_path)
 
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -214,7 +214,7 @@ def test_generate_wind_profile_end_to_end(tmp_path):
 def test_generate_wind_profile_anchors_date(tmp_path):
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats(tmp_path)
 
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -288,7 +288,7 @@ def _build_tiny_checkpoint_and_norm_stats_with_persistence(tmp_path, persistence
 def test_generate_wind_profile_rejection_sampling_disabled_by_default(tmp_path):
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats(tmp_path)
 
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -306,11 +306,11 @@ def test_generate_wind_profile_rejection_sampling_guarantees_regime_match(tmp_pa
     OWN realized daily-mean windspeed must land in the requested regime's
     bucket, unlike the non-rejection path which only relies on the model's
     conditioning to steer it there."""
-    from wind_diffusion.transforms import assign_wind_bucket
+    from enerdatasynth.resources.wind.data.transforms import assign_wind_bucket
 
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats(tmp_path)
 
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -335,7 +335,7 @@ def test_generate_wind_profile_rejection_sampling_reports_shortfall(tmp_path):
     back an under-sized (or worse, padded/fabricated) batch."""
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats(tmp_path)
 
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -355,7 +355,7 @@ def test_rejection_rank_by_diurnal_shape_default_off_keeps_generation_order(monk
     """Off by default -- must not rank/reorder even when a reference profile
     is available, so rejection_sampling=True alone keeps its
     already-reported, unranked behavior."""
-    from wind_diffusion import api as api_module
+    from enerdatasynth.resources.wind import api as api_module
 
     seq_len = 4
     n_realizations = 2
@@ -400,7 +400,7 @@ def test_rejection_rank_by_diurnal_shape_default_off_keeps_generation_order(monk
 def test_rejection_rank_by_diurnal_shape_keeps_closest_matches(monkeypatch):
     """Enabled: among more matches than needed, keep the ones closest to the
     real reference diurnal profile -- not just the first found."""
-    from wind_diffusion import api as api_module
+    from enerdatasynth.resources.wind import api as api_module
 
     seq_len = 4
     n_realizations = 2
@@ -450,7 +450,7 @@ def test_generate_wind_profile_samples_persistence_default_when_not_given(tmp_pa
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats_with_persistence(
         tmp_path, persistence_by_regime={"low": [1.0], "mid": [42.0], "high": [99.0]},
     )
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -470,7 +470,7 @@ def test_generate_wind_profile_persistence_sampling_varies_per_realization(tmp_p
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats_with_persistence(
         tmp_path, persistence_by_regime={"low": [1.0], "mid": [10.0, 20.0, 30.0, 40.0], "high": [99.0]},
     )
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -496,7 +496,7 @@ def test_generate_wind_profile_explicit_previous_day_windspeed_overrides_samplin
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats_with_persistence(
         tmp_path, persistence_by_regime={"low": [1.0], "mid": [42.0], "high": [99.0]},
     )
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 
@@ -550,7 +550,7 @@ def test_generate_wind_profile_default_wind_regime(tmp_path):
     """When wind_regime is None, a sensible default from NormStats.wind_buckets is used."""
     ckpt_path, norm_stats_path, config = _build_tiny_checkpoint_and_norm_stats(tmp_path)
 
-    import wind_diffusion.evaluate as evaluate_module
+    import enerdatasynth.resources.wind.evaluation.evaluate as evaluate_module
 
     evaluate_module._MODEL_CACHE.clear()
 

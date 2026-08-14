@@ -3,7 +3,7 @@
 A chronological map of the research program, from the original EDA pass to the
 Transformer-based, calibrated, 17-zone result. Each entry answers: what question was
 being asked, how it was answered, what the result was, and what to do with that result
-today. Source files are under `data/research_history/` unless noted.
+today. Source files are under `data/research_history/pjm_load/` unless noted.
 
 ---
 
@@ -39,7 +39,7 @@ today. Source files are under `data/research_history/` unless noted.
 - **Still scientifically relevant:** Yes — the MLP baseline is the comparison point every
   later architecture result is measured against.
 - **Source files:** `scripts/week3.py`, `outputs/week3_outputs/`.
-- **Part of the public package:** Superseded by `src/enerdatasynth/data/preprocess.py`,
+- **Part of the public package:** Superseded by `src/enerdatasynth/resources/pjm_load/data/preprocess.py`,
   `models/denoiser.py`, `diffusion/ddpm.py` — but the package's own conditioning
   (23-dim one-hot) differs from Z5/Z9 (see `docs/research_status.md` §C).
 - **Paper-worthy:** As the baseline row in a results table, yes.
@@ -76,7 +76,7 @@ today. Source files are under `data/research_history/` unless noted.
 - **Source files:** `scripts/week5_benchmark.py`, `week5_part2.py`, `sampler_bugfix.py`,
   `reports/week5_comparison_table.csv`, `week5_comparison_corrected.csv`,
   `week5_metrics.json`.
-- **Part of the public package:** Yes — `src/enerdatasynth/diffusion/ddpm.py` ships only
+- **Part of the public package:** Yes — `src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py` ships only
   the corrected sampler; a regression test was added during this audit
   (`tests/test_diffusion.py`) to prevent silently reintroducing the bug.
 - **Paper-worthy:** Yes, and should be reported honestly, including the bug — this is

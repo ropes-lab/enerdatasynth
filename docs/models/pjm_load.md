@@ -53,7 +53,7 @@ this is the single most important thing to know before quoting a result:**
 **No checkpoint bridges the two.** The Transformer's validated results (§8) were
 produced with the 6-dimensional research conditioning; no Transformer checkpoint has
 been trained against the current 23-dimensional package conditioning. This is disclosed
-directly in the code (`src/enerdatasynth/models/transformer.py`'s module docstring) and
+directly in the code (`src/enerdatasynth/resources/pjm_load/models/transformer.py`'s module docstring) and
 is not a documentation oversight — see [`docs/research_status.md`](../research_status.md) §C/§D.
 
 ## 5. Generative Model
@@ -89,7 +89,7 @@ recommended. See §14 for how to close this gap.
 
 Standard DDPM training: AdamW, plain diffusion MSE loss (no auxiliary terms), best +
 latest checkpoint saving, per-epoch CSV logs, optional early stopping (patience=10).
-Config-driven via `RunConfig` / `data/configs/{transformer,mlp}.yaml`. The Transformer's
+Config-driven via `RunConfig` / `data/configs/pjm_load/{transformer,mlp}.yaml`. The Transformer's
 validated training run (Week 7) trained to convergence against the 6-dim research
 conditioning; specific optimizer/LR/batch-size values for that exact run were not
 independently re-verified against the current `training/train.py` in this documentation
@@ -98,7 +98,7 @@ pass. Runtime for the bundled MLP sweep's best config: 6.7s (`T100_H256_L4`, 50 
 ## 7. Evaluation
 
 Seven metrics, all lower-is-better, implemented once in
-`enerdatasynth.evaluation.metrics.compute_metrics`:
+`enerdatasynth.resources.pjm_load.evaluation.metrics.compute_metrics`:
 
 | Metric | What it measures | Why it matters |
 |---|---|---|
@@ -220,7 +220,7 @@ correction — one number added to every hour — fixes this:
 ## 14. Reproduction
 
 Raw source data is not bundled with this repository (§2) — supply your own copy of the
-PJM/NOAA files under `data/raw/` first (see the placeholder file
+PJM/NOAA files under `data/raw/pjm_load/` first (see the placeholder file
 there for exactly which files and where to get them). Generation itself (`.sample()`)
 does not need raw data at all — only retraining/re-preprocessing does:
 

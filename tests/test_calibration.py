@@ -1,9 +1,9 @@
-"""Tests for enerdatasynth.evaluation.calibration: bias measurement and correction."""
+"""Tests for enerdatasynth.resources.pjm_load.evaluation.calibration: bias measurement and correction."""
 
 from __future__ import annotations
 import numpy as np
 
-from enerdatasynth.evaluation.calibration import (
+from enerdatasynth.resources.pjm_load.evaluation.calibration import (
     compute_bias, apply_calibration, save_calibration, load_calibration,
 )
 
@@ -56,9 +56,9 @@ def test_calibrate_from_samples_reports_scalar_recommended():
     """The research evidence (see MIGRATION.md) showed per-hour calibration is
     actually worse on several metrics; this module must keep recommending scalar."""
     import torch
-    from enerdatasynth.evaluation.calibration import calibrate_from_samples
-    from enerdatasynth.diffusion.ddpm import DDPM
-    from enerdatasynth.models.denoiser import SimpleMLPDenoiser
+    from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_from_samples
+    from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
+    from enerdatasynth.resources.pjm_load.models.denoiser import SimpleMLPDenoiser
 
     rng = np.random.default_rng(0)
     X_train = rng.uniform(0, 1, size=(20, 24)).astype(np.float32)

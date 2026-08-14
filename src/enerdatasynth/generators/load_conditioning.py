@@ -104,7 +104,7 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     Load-specific: scans CHECKPOINT_DIR for result.json files, a
     convention only enerdatasynth's own training pipeline produces. Wind's
     equivalent (`generators/wind_conditioning.py`'s `wind_construct`)
-    resolves checkpoints through `wind_diffusion.registry` instead --
+    resolves checkpoints through `enerdatasynth.resources.wind.registry` instead --
     a different mechanism entirely, not something this function generalizes.
     """
     checkpoint_root = Path(checkpoint_root)

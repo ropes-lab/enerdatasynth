@@ -7,7 +7,7 @@ loaded checkpoint** (see LIMITATIONS).
 
 **MODEL**
 Conditional DDPM denoiser using a Transformer encoder over the 24 hourly tokens of a
-daily load profile. `src/enerdatasynth/models/transformer.py`.
+daily load profile. `src/enerdatasynth/resources/pjm_load/models/transformer.py`.
 
 **DATA**
 PJM zone PS, 2016–2023 train / 2024–2025 validation (research-lineage split), 2,785
@@ -71,7 +71,7 @@ slice, likely partly a small-sample effect.
    trained.** All results above use the 6-dim research conditioning.
 2. **Not the checkpoint `enerdatasynth.model("pjm_load", ...)` loads today** — the
    package falls back to the best legacy MLP run because no transformer-tagged
-   checkpoint exists in `data/checkpoints/`.
+   checkpoint exists in `data/checkpoints/pjm_load/`.
 3. Zone generalization (16/17 zones, DOM fails) was validated with this architecture but
    not re-exposed through the package (`pjm_load` ships zone `PS` only).
 4. Calibration method is validated for this architecture but no calibrated checkpoint is

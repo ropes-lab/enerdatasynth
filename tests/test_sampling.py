@@ -1,5 +1,5 @@
 """
-Tests for enerdatasynth.sampling.generate: generate_for_run against a
+Tests for enerdatasynth.resources.pjm_load.sampling.generate: generate_for_run against a
 real (tiny) trained checkpoint. Reads real val-set X/Z from
 data/processed/ (must exist — `enerdatasynth preprocess` already run
 in this repo) since generate_for_run's whole job is to condition on
@@ -22,7 +22,7 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_generate_for_run_matches_real_validation_set_size(tiny_trained_checkpoint):
-    from enerdatasynth.sampling.generate import generate_for_run
+    from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
 
     result = tiny_trained_checkpoint
     out_path = generate_for_run(
@@ -40,7 +40,7 @@ def test_generate_for_run_matches_real_validation_set_size(tiny_trained_checkpoi
 
 
 def test_generate_for_run_seed_reproducible(tiny_trained_checkpoint):
-    from enerdatasynth.sampling.generate import generate_for_run
+    from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
 
     result = tiny_trained_checkpoint
     kwargs = dict(

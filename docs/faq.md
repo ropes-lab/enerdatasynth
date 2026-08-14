@@ -28,10 +28,10 @@ No formal guarantee was evaluated. See [MODEL_CARD.md](../MODEL_CARD.md#out-of-s
 A deliberate, low-risk default for open-source research tooling — see [MIGRATION.md](../MIGRATION.md) for when/how this was decided.
 
 **`pip install .` / `pip install dist/*.whl` fails to find my data — why?**
-`PROJECT_ROOT` (where `data/`, `data/checkpoints/`, etc. are expected) comes from the current working directory or `$ENERDATASYNTH_PROJECT_ROOT`, not from where pip installed the code. Run `enerdatasynth ...` / import the package from inside your project directory, or set the environment variable explicitly. See [`docs/packaging.md`](packaging.md).
+`PROJECT_ROOT` (where `data/`, `data/checkpoints/pjm_load/`, etc. are expected) comes from the current working directory or `$ENERDATASYNTH_PROJECT_ROOT`, not from where pip installed the code. Run `enerdatasynth ...` / import the package from inside your project directory, or set the environment variable explicitly. See [`docs/packaging.md`](packaging.md).
 
-**Why does the README cite different benchmark numbers than `data/research_history/reports/week7/`?**
-Because they're two different (real) things: the `data/research_history/` numbers were validated under a different conditioning encoding never ported into this package; the README's numbers are a real run against the currently-shipped pipeline. Both are accurate for what they measure — see the caveat in [`docs/architecture.md`](architecture.md).
+**Why does the README cite different benchmark numbers than `data/research_history/pjm_load/reports/week7/`?**
+Because they're two different (real) things: the `data/research_history/pjm_load/` numbers were validated under a different conditioning encoding never ported into this package; the README's numbers are a real run against the currently-shipped pipeline. Both are accurate for what they measure — see the caveat in [`docs/architecture.md`](architecture.md).
 
 **How do I reproduce the exact results in this repo?**
 `pip install -r requirements.txt` (pinned to the exact versions used) instead of `pyproject.toml`'s looser ranges — see [`docs/installation.md`](installation.md).

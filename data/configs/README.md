@@ -7,7 +7,7 @@ Diffable YAML mirrors of `RunConfig`'s hyperparameters, loadable via
   (`architecture: transformer`, `T=1000`, `hidden_dim=64`, `n_layers=2`, `n_heads=4`).
   **Important nuance not stated in the file's own comment:** these are the same
   *hyperparameters* used to produce the Week 7 Transformer results, but running
-  `enerdatasynth train --config data/configs/transformer.yaml` today trains against the
+  `enerdatasynth train --config data/configs/pjm_load/transformer.yaml` today trains against the
   package's current 23-dimensional one-hot conditioning, not the 6-dimensional research
   conditioning those results were actually produced with (see
   `../../docs/research_status.md` §C/§D). Matching hyperparameters is not the same as
@@ -22,7 +22,7 @@ Diffable YAML mirrors of `RunConfig`'s hyperparameters, loadable via
 
 ```python
 from enerdatasynth.utils.config import RunConfig
-cfg = RunConfig.from_yaml("data/configs/transformer.yaml")
+cfg = RunConfig.from_yaml("data/configs/pjm_load/transformer.yaml")
 ```
 
-or via the CLI: `enerdatasynth train --config data/configs/transformer.yaml`.
+or via the CLI: `enerdatasynth train --config data/configs/pjm_load/transformer.yaml`.

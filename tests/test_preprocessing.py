@@ -1,5 +1,5 @@
 """
-Tests for enerdatasynth.data.preprocess: pivoting, DST detection,
+Tests for enerdatasynth.resources.pjm_load.data.preprocess: pivoting, DST detection,
 exclusion rules, and conditioning-vector construction. All synthetic
 — no dependency on the real raw CSVs being present.
 """
@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from enerdatasynth.data.preprocess import (
+from enerdatasynth.resources.pjm_load.data.preprocess import (
     build_daily_pivot, apply_exclusions, detect_dst_days,
     build_conditioning_vector, LOAD_COLS,
 )

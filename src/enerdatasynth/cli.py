@@ -73,12 +73,12 @@ def _run_config_from_args(args: argparse.Namespace) -> RunConfig:
 
 
 def cmd_preprocess(args: argparse.Namespace) -> None:
-    from enerdatasynth.data.preprocess import run_preprocessing
+    from enerdatasynth.resources.pjm_load.data.preprocess import run_preprocessing
     run_preprocessing()
 
 
 def cmd_train(args: argparse.Namespace) -> None:
-    from enerdatasynth.training.train import train_one_config
+    from enerdatasynth.resources.pjm_load.training.train import train_one_config
     cfg = _run_config_from_args(args)
     X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
     Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
@@ -88,12 +88,12 @@ def cmd_train(args: argparse.Namespace) -> None:
 
 
 def cmd_sweep(args: argparse.Namespace) -> None:
-    from enerdatasynth.training.sweep import run_sweep
+    from enerdatasynth.resources.pjm_load.training.sweep import run_sweep
     run_sweep(max_epochs=args.epochs, full_grid=args.full_grid)
 
 
 def cmd_generate(args: argparse.Namespace) -> None:
-    from enerdatasynth.sampling.generate import generate_for_run
+    from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
     cfg = _run_config_from_args(args)
     generate_for_run(
         run_id=cfg.run_id,
@@ -106,7 +106,7 @@ def cmd_generate(args: argparse.Namespace) -> None:
 
 
 def cmd_calibrate(args: argparse.Namespace) -> None:
-    from enerdatasynth.evaluation.calibration import calibrate_checkpoint
+    from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_checkpoint
     result = calibrate_checkpoint(
         run_id=args.run_id,
         architecture=args.architecture,
@@ -119,8 +119,8 @@ def cmd_calibrate(args: argparse.Namespace) -> None:
 
 
 def cmd_evaluate(args: argparse.Namespace) -> None:
-    from enerdatasynth.visualization.plots import run_all_validation_plots
-    from enerdatasynth.evaluation.failure_analysis import analyze, write_failure_analysis_md
+    from enerdatasynth.resources.pjm_load.visualization.plots import run_all_validation_plots
+    from enerdatasynth.resources.pjm_load.evaluation.failure_analysis import analyze, write_failure_analysis_md
     run_all_validation_plots(args.run_id)
     result = analyze(args.run_id)
     write_failure_analysis_md(result)
@@ -128,19 +128,19 @@ def cmd_evaluate(args: argparse.Namespace) -> None:
 
 
 def cmd_report(args: argparse.Namespace) -> None:
-    from enerdatasynth.evaluation.results_report import generate_results_summary
+    from enerdatasynth.resources.pjm_load.evaluation.results_report import generate_results_summary
     path = generate_results_summary()
     print(f"Saved: {path}")
 
 
 def cmd_pipeline(args: argparse.Namespace) -> None:
-    from enerdatasynth.data.preprocess import run_preprocessing
-    from enerdatasynth.training.sweep import run_sweep
-    from enerdatasynth.sampling.generate import generate_for_run
-    from enerdatasynth.evaluation.calibration import calibrate_checkpoint
-    from enerdatasynth.visualization.plots import run_all_validation_plots
-    from enerdatasynth.evaluation.failure_analysis import analyze, write_failure_analysis_md
-    from enerdatasynth.evaluation.results_report import generate_results_summary
+    from enerdatasynth.resources.pjm_load.data.preprocess import run_preprocessing
+    from enerdatasynth.resources.pjm_load.training.sweep import run_sweep
+    from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
+    from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_checkpoint
+    from enerdatasynth.resources.pjm_load.visualization.plots import run_all_validation_plots
+    from enerdatasynth.resources.pjm_load.evaluation.failure_analysis import analyze, write_failure_analysis_md
+    from enerdatasynth.resources.pjm_load.evaluation.results_report import generate_results_summary
 
     if not args.skip_preprocess:
         run_preprocessing()

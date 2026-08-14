@@ -1,4 +1,4 @@
-"""Tests for wind_diffusion.registry: manifest loading, weights resolution
+"""Tests for enerdatasynth.resources.wind.registry: manifest loading, weights resolution
 precedence (explicit args > env dir > cached download > pending error), and
 the sha256-verified download/cache path. Zero real network calls -- the
 "download" tests serve fixture files from a local tmp_path via plain
@@ -12,8 +12,8 @@ import hashlib
 
 import pytest
 
-from wind_diffusion import registry
-from wind_diffusion.exceptions import CheckpointNotFoundError, WeightsDownloadError
+from enerdatasynth.resources.wind import registry
+from enerdatasynth.resources.wind.exceptions import CheckpointNotFoundError, WeightsDownloadError
 
 PRESETS = ("1ch", "2ch", "3ch")
 

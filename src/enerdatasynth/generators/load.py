@@ -12,9 +12,9 @@ architecture, hyperparameters, or research script produced it.
     samples = model.sample(z, seed=0)
 
 Internally this wraps checkpoint loading, architecture selection
-(`enerdatasynth.models.build_denoiser`), the DDPM sampler
-(`enerdatasynth.diffusion.ddpm.DDPM`), and calibration
-(`enerdatasynth.evaluation.calibration`, auto-discovered next to the
+(`enerdatasynth.resources.pjm_load.models.build_denoiser`), the DDPM sampler
+(`enerdatasynth.resources.pjm_load.diffusion.ddpm.DDPM`), and calibration
+(`enerdatasynth.resources.pjm_load.evaluation.calibration`, auto-discovered next to the
 checkpoint and applied by default) behind one object. It implements
 `generators.base.BaseGenerator`, the common contract any other
 resource-type generator in this package (e.g. a future wind model)
@@ -39,9 +39,9 @@ from enerdatasynth.utils.config import (
     DEFAULT_ARCHITECTURE, DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_N_HEADS,
     set_seed, resolve_device,
 )
-from enerdatasynth.models import build_denoiser
-from enerdatasynth.diffusion.ddpm import DDPM
-from enerdatasynth.evaluation.calibration import load_calibration, apply_calibration as _apply_calibration_correction
+from enerdatasynth.resources.pjm_load.models import build_denoiser
+from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
+from enerdatasynth.resources.pjm_load.evaluation.calibration import load_calibration, apply_calibration as _apply_calibration_correction
 from enerdatasynth.generators.base import BaseGenerator
 
 
@@ -109,7 +109,7 @@ class LoadDiffusionModel(BaseGenerator):
                 f"No result.json found at {result_path}. Use the main "
                 f"constructor directly (with explicit architecture/"
                 f"dimensions/hyperparameters) if this checkpoint wasn't "
-                f"produced by enerdatasynth.training.train.train_one_config."
+                f"produced by enerdatasynth.resources.pjm_load.training.train.train_one_config."
             )
         with open(result_path) as f:
             result = json.load(f)
@@ -135,7 +135,7 @@ class LoadDiffusionModel(BaseGenerator):
         z : (cond_dim,) or (N, cond_dim) conditioning vector(s)
 
         `seed`, if given, reseeds every RNG immediately before
-        sampling for reproducibility — `enerdatasynth.sampling.
+        sampling for reproducibility — `enerdatasynth.resources.pjm_load.sampling.
         generate.generate_for_run` historically didn't do this (a
         known gap flagged in the Phase 1 audit); this entry point
         fixes it by making it opt-in explicit.

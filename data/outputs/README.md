@@ -1,12 +1,12 @@
 # `data/outputs/`
 
-Where the package writes its own generated artifacts — as opposed to `data/checkpoints/`
-(trained models) or `data/processed/` (cleaned training data).
+Where the package writes its own generated artifacts — as opposed to `data/checkpoints/pjm_load/`
+(trained models) or `data/processed/pjm_load/` (cleaned training data).
 
-- **`generated/`** — synthetic samples written by `enerdatasynth.sampling.generate.generate_for_run`
+- **`generated/`** — synthetic samples written by `enerdatasynth.resources.pjm_load.sampling.generate.generate_for_run`
   (backs `enerdatasynth generate`).
 - **`logs/`** — per-epoch training CSV logs, one per run (`<run_id>_training_log.csv`),
-  written by `enerdatasynth.training.train.train_one_config`.
+  written by `enerdatasynth.resources.pjm_load.training.train.train_one_config`.
 
 Both are created on demand by `ensure_dirs()` (`src/enerdatasynth/utils/config.py`) —
 empty here is the normal starting state, not a missing-file problem.

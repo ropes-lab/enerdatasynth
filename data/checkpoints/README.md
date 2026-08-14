@@ -7,15 +7,19 @@ The actual trained models this package ships — this is the folder that makes
 
 ```
 checkpoints/
-├── T50_H128_L4/ … T200_H128_L4/   # 7 legacy MLP hyperparameter-sweep runs
-│   ├── best.pt, latest.pt          #   (see run_id naming: T=diffusion steps,
-│   ├── result.json                 #    H=hidden_dim, L=n_layers)
-│   └── loss_curve.png
+├── pjm_load/
+│   └── T50_H128_L4/ … T200_H128_L4/   # 7 legacy MLP hyperparameter-sweep runs
+│       ├── best.pt, latest.pt          #   (see run_id naming: T=diffusion steps,
+│       ├── result.json                 #    H=hidden_dim, L=n_layers)
+│       └── loss_curve.png
 └── wind/
     ├── 1ch/  model_checkpoint.pt, norm_stats.json
     ├── 2ch/  model_checkpoint.pt, norm_stats.json
     └── 3ch/  model_checkpoint.pt, norm_stats.json
 ```
+
+One folder per resource — `pjm_load/` and `wind/` sit side by side here exactly like
+everywhere else in `data/`; a third resource adds one more sibling, not a parallel tree.
 
 ## PJM load checkpoints
 

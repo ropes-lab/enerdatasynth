@@ -18,10 +18,10 @@ package installed):
 
 from __future__ import annotations
 
-from enerdatasynth.data.preprocess import run_preprocessing
-from enerdatasynth.training.train import train_one_config
-from enerdatasynth.sampling.generate import generate_for_run
-from enerdatasynth.visualization.plots import run_all_validation_plots
+from enerdatasynth.resources.pjm_load.data.preprocess import run_preprocessing
+from enerdatasynth.resources.pjm_load.training.train import train_one_config
+from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
+from enerdatasynth.resources.pjm_load.visualization.plots import run_all_validation_plots
 from enerdatasynth.utils.config import RunConfig, PROCESSED_DIR
 import numpy as np
 

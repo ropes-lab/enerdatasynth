@@ -3,7 +3,7 @@
 **This is where PJM load and wind actually become one product.** Everywhere else in
 `src/enerdatasynth/` (`models/`, `diffusion/`, `training/`, `sampling/`, `evaluation/`,
 `data/`) is load-only, and wind's equivalent code lives entirely in the separate
-`src/wind_diffusion/` package — this subpackage is the shared layer that makes both
+`src/enerdatasynth/resources/wind/` package — this subpackage is the shared layer that makes both
 resources drivable identically through one interface despite that split. `BaseGenerator`
 is the common contract every resource-type generator implements, so `sdk.py`'s
 `ResourceModel` can drive any of them the same way, regardless of what's underneath.
@@ -22,7 +22,7 @@ is the common contract every resource-type generator implements, so `sdk.py`'s
   actually adds `"pjm_load"` to the shared registry. **This is the reference
   implementation** a third resource type would copy.
 - **`wind.py`** — `WindDiffusionModel`, wrapping the vendored `wind_diffusion` package
-  (see `src/wind_diffusion/`). Real trained checkpoints for all three presets (1ch/2ch/
+  (see `src/enerdatasynth/resources/wind/`). Real trained checkpoints for all three presets (1ch/2ch/
   3ch) are bundled under `data/checkpoints/wind/`.
 - **`wind_conditioning.py`** — wind's registration + its `condition_builder` (an
   escape hatch from the generic `ConditionField` model — see the module docstring for

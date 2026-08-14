@@ -25,7 +25,7 @@ contains only a placeholder file. The bundled checkpoints (§5) were trained els
 on data this repository does not include and cannot reproduce preprocessing for.
 `h5py`/`h5pyd`/`python-dotenv` are declared dependencies (suggesting an HSDS/NREL WIND
 Toolkit-style original data source) but have **zero actual usage** anywhere in
-`src/wind_diffusion/` — the original data-acquisition step was never vendored into this
+`src/enerdatasynth/resources/wind/` — the original data-acquisition step was never vendored into this
 package. This is the single largest gap in the wind resource relative to the PJM load
 resource, which does ship its raw data pipeline.
 
@@ -47,7 +47,7 @@ underlying preset's internal channel count.
 
 ## 4. Conditioning
 
-Config-level default conditioning fields (`wind_diffusion.config.WindDiffusionConfig.condition_on`):
+Config-level default conditioning fields (`enerdatasynth.resources.wind.config.WindDiffusionConfig.condition_on`):
 `month`, `day_of_week`, `temp_min_max_spread` (a derived, jointly z-scored transform,
 not one column per raw input), and `wind_regime_bucket` (checkpoint-level choice of
 one-hot or ordinal encoding — one-hot is the default, kept for backward compatibility;
@@ -65,7 +65,7 @@ conditioning convention, defined by `wind_diffusion` itself.
 ## 5. Generative Model
 
 A conditional DDPM, implemented in the vendored `wind_diffusion` package
-(`src/wind_diffusion/`, from a separate Data-For-Good research project) — not built or
+(`src/enerdatasynth/resources/wind/`, from a separate Data-For-Good research project) — not built or
 trained by this project. Architecture: Transformer-style denoiser,
 `hidden_dim=128, num_heads=4` (config defaults). Diffusion: `T=200` steps, **cosine**
 beta schedule (`beta_start=1e-4, beta_end=0.02`) — a different, independently-chosen
@@ -85,7 +85,7 @@ manifest records the training recipe behind each bundled checkpoint:
 - **`2ch`**: the same recipe, plus `joint_consistency_channels=[0,1], joint_consistency_weight=1.0`
   — a non-default recipe, specific to fixing `2ch`'s originally-broken behavior (§8).
 
-`wind_diffusion/manifest.json` marks every preset's `status` as `"pending"` (its own
+`resources/wind/manifest.json` marks every preset's `status` as `"pending"` (its own
 external-download mechanism has nothing published) — **this does not mean wind is
 unavailable in this package.** This package's own convention (`data/checkpoints/wind/<preset>/`)
 bundles real, working checkpoints for all three presets directly, checked before falling
@@ -94,7 +94,7 @@ back to the manifest's (empty) download path. See
 
 ## 7. Evaluation
 
-A different metric suite from load's (`wind_diffusion.metrics`), all lower-is-better
+A different metric suite from load's (`enerdatasynth.resources.wind.evaluation.metrics`), all lower-is-better
 except `regime_accuracy` (higher is better):
 
 | Metric | What it measures | Why it matters |
@@ -108,7 +108,7 @@ except `regime_accuracy` (higher is better):
 
 ## 8. Quantitative Results
 
-Real numbers from `src/wind_diffusion/manifest.json`, measured 2026-07-21 against each
+Real numbers from `src/enerdatasynth/resources/wind/manifest.json`, measured 2026-07-21 against each
 preset's own validation split (100 synthetic realizations per regime):
 
 **`1ch`** (best-tuned preset — `sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0`):
@@ -134,7 +134,7 @@ training recipe (joint-consistency loss). It was originally measured badly broke
 substantially with the joint-consistency fix, but **is not treated as equivalent to
 `1ch`/`3ch`** — its own manifest entry explicitly says so. Exact current per-regime gate
 values for `2ch` were not re-extracted for this documentation pass; see
-`src/wind_diffusion/manifest.json` directly for the authoritative numbers.
+`src/enerdatasynth/resources/wind/manifest.json` directly for the authoritative numbers.
 
 **The one problem nothing fixed, across every preset:** `mid`-regime steering accuracy
 never exceeded ~41–43% — barely above the one-third no-conditioning chance floor for a
@@ -185,7 +185,7 @@ step.
    gap.
 3. **`2ch` is not equivalent to `1ch`/`3ch`** — improved but explicitly not validated to
    the same standard.
-4. `wind_diffusion/manifest.json`'s own `status: "pending"` fields could mislead a
+4. `resources/wind/manifest.json`'s own `status: "pending"` fields could mislead a
    reader into thinking no checkpoint is available; this package's local-checkpoint
    convention supersedes that status for all three presets (§6).
 5. No real-vs-generated visual evidence exists (§9) — plausibility has only been
@@ -213,10 +213,10 @@ samples = wind.sample(n=10, seed=0)              # (10, 288, 2): m/s, degrees
 ```
 
 Retraining or re-evaluating against real data would require obtaining the original
-`wind_diffusion` project's dataset and its own training code (`src/wind_diffusion/train.py`).
+`wind_diffusion` project's dataset and its own training code (`src/enerdatasynth/resources/wind/train.py`).
 The package's own error messages reference a `wind-diffusion-train --preset <preset>
---data-path <csv> --output-dir <dir>` command (`wind_diffusion/registry.py`), but **this
+--data-path <csv> --output-dir <dir>` command (`resources/wind/registry.py`), but **this
 is not registered as an installable console script by this package's `pyproject.toml`**
-— it describes `wind_diffusion.train`'s intended invocation from the upstream project,
+— it describes `enerdatasynth.resources.wind.training.train`'s intended invocation from the upstream project,
 not a command this repository currently exposes. See [`docs/api_reference.md`](../api_reference.md)
 for the full generation-side parameter reference.

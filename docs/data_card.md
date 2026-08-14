@@ -18,11 +18,11 @@ context?
 
 | Artifact | Location | Contents |
 |---|---|---|
-| Raw load CSVs | `data/raw/` | **Not bundled.** `data/raw/README.md` names the exact files and source; bring your own copy to reproduce preprocessing (§ below, "Reproducibility"). |
-| Raw temperature CSVs | `data/raw/` | Same as above — not bundled. |
-| Temperature cache | `data/cache/` | **Not bundled** (empty; `README.md` there explains it's a regenerable NOAA fetch cache, not source data). |
-| Processed tensors (current package) | `data/processed/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet`, `metadata.json` | **Bundled** — zone `PS` only, 23-dim conditioning, small (~1.3MB), required for `enerdatasynth.model("pjm_load", ...)` to construct at all |
-| Processed tensors (research history) | `data/research_history/outputs/week3_outputs/*.npy` (Z5/Z9 conditioning), `zone_outputs/<ZONE>/` (16 additional zones) | Bundled — 6-dim/9-dim conditioning, the representation the reported Transformer results actually used; frozen provenance, not the package |
+| Raw load CSVs | `data/raw/pjm_load/` | **Not bundled.** `data/raw/README.md` names the exact files and source; bring your own copy to reproduce preprocessing (§ below, "Reproducibility"). |
+| Raw temperature CSVs | `data/raw/pjm_load/` | Same as above — not bundled. |
+| Temperature cache | `data/cache/pjm_load/` | **Not bundled** (empty; `README.md` there explains it's a regenerable NOAA fetch cache, not source data). |
+| Processed tensors (current package) | `data/processed/pjm_load/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet`, `metadata.json` | **Bundled** — zone `PS` only, 23-dim conditioning, small (~1.3MB), required for `enerdatasynth.model("pjm_load", ...)` to construct at all |
+| Processed tensors (research history) | `data/research_history/pjm_load/outputs/week3_outputs/*.npy` (Z5/Z9 conditioning), `zone_outputs/<ZONE>/` (16 additional zones) | Bundled — 6-dim/9-dim conditioning, the representation the reported Transformer results actually used; frozen provenance, not the package |
 | Wind raw data | `data/raw_data/wind_data/` | **Empty — placeholder file only (`add_raw_data_here.txt`).** No wind dataset exists in this repository. |
 
 ## Source
@@ -31,11 +31,11 @@ context?
   standard PJM operational dataset format. Exact acquisition method (manual download vs.
   API) is **not documented in this repository as of this audit.**
 - **Temperature data:** NOAA Integrated Surface Database (ISD), fetched per airport
-  weather station and cached locally (`src/enerdatasynth/data/temperature.py`).
+  weather station and cached locally (`src/enerdatasynth/resources/pjm_load/data/temperature.py`).
 
 ## Time Coverage
 
-2016–2025 (10 years), per the raw CSV filenames and `data/cache/` station-year files.
+2016–2025 (10 years), per the raw CSV filenames and `data/cache/pjm_load/` station-year files.
 
 ## Geographic Coverage
 
@@ -51,7 +51,7 @@ Hourly source data, pivoted to fixed 24-column daily profiles (one row per calen
 
 - Hourly metered load (MW, later normalized)
 - Hourly temperature per zone (equal-weighted average of that zone's constituent
-  stations — see `ZONE_STATIONS` in `src/enerdatasynth/data/temperature.py`)
+  stations — see `ZONE_STATIONS` in `src/enerdatasynth/resources/pjm_load/data/temperature.py`)
 - Derived: daily `Tmax`, `Tmin`, `spread = Tmax − Tmin`
 - Calendar: month, day-of-week, US federal holiday flag (via the `holidays` package,
   inferred from `pyproject.toml` dependencies — exact holiday calendar/region not
@@ -60,7 +60,7 @@ Hourly source data, pivoted to fixed 24-column daily profiles (one row per calen
 ## PJM Zones
 
 See "Geographic Coverage" above. Zone-to-station weather mapping is defined in
-`ZONE_STATIONS` (`src/enerdatasynth/data/temperature.py`); an `"RTO"` catch-all entry
+`ZONE_STATIONS` (`src/enerdatasynth/resources/pjm_load/data/temperature.py`); an `"RTO"` catch-all entry
 (equal weight across every known station) also exists there.
 
 ## Temperature Data
@@ -68,7 +68,7 @@ See "Geographic Coverage" above. Zone-to-station weather mapping is defined in
 NOAA ISD, resolved by USAF-WBAN station ID with automatic re-resolution across years
 (stations get renumbered). On a 404 for a given station-year, the code falls back to
 alternate USAF-WBAN combinations for that station code. See
-`src/enerdatasynth/data/temperature.py`'s module docstring for the full mechanism.
+`src/enerdatasynth/resources/pjm_load/data/temperature.py`'s module docstring for the full mechanism.
 
 ## Temperature-to-Zone Mapping
 
@@ -77,7 +77,7 @@ Equal-weighted average across each zone's constituent stations (`ZONE_STATIONS` 
 
 ## Preprocessing
 
-Implemented in `src/enerdatasynth/data/preprocess.py`:
+Implemented in `src/enerdatasynth/resources/pjm_load/data/preprocess.py`:
 1. Sort by timestamp, pivot to one row per day / 24 hour-columns.
 2. Detect and flag DST days (23 or 25 hourly rows for that date).
 3. Merge zone temperature, flag missing `Tmax`/`Tmin`.
@@ -104,7 +104,7 @@ represent them. See `docs/research_status.md` §B.
 
 ## Weather Availability
 
-Per-station-year caching (`data/cache/`) means weather availability is bounded by NOAA
+Per-station-year caching (`data/cache/pjm_load/`) means weather availability is bounded by NOAA
 ISD's own station coverage and uptime; a station with sparse ISD history will produce
 sparser cached years. Not independently audited per-zone in this pass.
 
@@ -163,20 +163,20 @@ bundles raw or cached source data either**, for the same reason.
 
 **No raw PJM load data or NOAA ISD-derived temperature cache is distributed in this
 repository.** Both were removed (previously bundled under
-`data/raw/` and `data/cache/`) specifically so this project isn't
+`data/raw/pjm_load/` and `data/cache/pjm_load/`) specifically so this project isn't
 redistributing third-party-sourced data whose terms of use were never independently
 verified. What remains:
 
 - Placeholder files at both locations point to the actual public sources (PJM Data
   Miner 2, NOAA ISD) so anyone reproducing this pipeline fetches the data themselves,
   under whatever terms those sources publish it.
-- `data/processed/` (small, derived tensors + scaler metadata) is still bundled — this
+- `data/processed/pjm_load/` (small, derived tensors + scaler metadata) is still bundled — this
   is the package's own cleaned/normalized representation, not a redistribution of the
   raw source files, and is required for `enerdatasynth.model("pjm_load", ...)` to
   construct at all.
 - The software license (`LICENSE`, MIT) covers the code in this repository only. It does
   not and cannot grant redistribution rights to third-party datasets — moot now that
-  none are bundled, but the distinction still matters for `data/processed/`'s status if
+  none are bundled, but the distinction still matters for `data/processed/pjm_load/`'s status if
   that's ever questioned.
 
 This closes the redistribution-rights blocker previously flagged in
