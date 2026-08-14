@@ -60,7 +60,7 @@ Only **PS** (PSE&G, New Jersey). Requesting any other zone via `enerdatasynth.mo
 
 - **Architecture selection**: controlled 4-way comparison (MLP/CNN/attention/transformer), identical data/conditioning/schedule/seed. Transformer had the best generated-profile RMSE (0.0215) despite CNN having the lowest training validation loss (0.01022) — `data/research_history/reports/week6/arch/summary_report.md`.
 - **Head-to-head vs. classical baselines** (under the research-validated 6-dim conditioning): beats AR/ARMA/ARIMA/SARIMA on 7 of 7 metrics; beats the old MLP baseline on 6 of 7 at ~6x fewer parameters — `data/research_history/reports/week7/summary_report.md`.
-- **Under this package's own current pipeline** (23-dim one-hot conditioning, the model actually shipped today): beats every classical baseline outright on 5 of 7 metrics; ARMA edges it out on ACF, ARIMA on Ramp. See the README's [Benchmark Results](README.md#-benchmark-results) for the full table, from a real run against the full 600-day validation set.
+- **Under this package's own current pipeline** (23-dim one-hot conditioning, the model actually shipped today): beats every classical baseline outright on 5 of 7 metrics; ARMA edges it out on ACF, ARIMA on Ramp. See [`docs/results.md`](docs/results.md) and [`docs/models/pjm_load.md`](docs/models/pjm_load.md#8-quantitative-results) for the full table, from a real run against the full 600-day validation set.
 - **Consistency across conditions**: RMSE 0.0195–0.0306 across temperature/calendar/season slices under the research-validated conditioning; hardest slice is Holiday (n=17, the smallest slice — sparse-data effect, not necessarily a real generalization failure).
 
 ## Calibration

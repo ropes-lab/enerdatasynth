@@ -71,3 +71,12 @@ looks the way it does — read this for *why*. See `docs/research_status.md` §D
 important place these two currently diverge: **no checkpoint compatible with the
 package's current 23-dimensional conditioning has been trained**, so the package does not
 yet ship the validated Transformer result described here.
+
+**If you're looking for a readable, final summary of these results — not the scripts
+that produced them — you want [`docs/models/pjm_load.md`](../../docs/models/pjm_load.md),
+not this directory.** This is provenance for people extending or auditing the research;
+the model report is the primary documentation for people using or evaluating the
+package. Nothing in `src/enerdatasynth/` imports from here, and nothing here should be
+run as a way to "use" the package — see [Where things live](#where-things-live) above
+for the one-time historical scripts, and the root `README.md` / model reports for the
+actual product.

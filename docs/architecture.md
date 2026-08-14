@@ -89,13 +89,23 @@ with the current preprocessing exists yet.
 
 ## SDK / extension points
 
-`enerdatasynth.generators.BaseGenerator` is the common interface any
-domain-specific generator implements (`LoadDiffusionModel` today). The
-fluent public API (`enerdatasynth.model()`/`.set()`/`.sample()`,
-`src/enerdatasynth/sdk.py`) wraps `LoadDiffusionModel` behind
-human-readable conditioning and hides all of the above — architecture,
-sampler, schedule, calibration — entirely; see
-[`docs/api_reference.md`](api_reference.md) for that contract. See
-[`docs/extending.md`](extending.md) for what adding a new resource
-type — e.g. wind — would involve; nothing wind-specific is implemented
-in this package.
+`enerdatasynth.generators.BaseGenerator` is the common interface every
+domain-specific generator implements. Two resources are registered
+today: `LoadDiffusionModel` (electric load, this page) and
+`WindDiffusionModel` (wind — wraps the vendored `wind_diffusion`
+package under `src/wind_diffusion/`; a different generative pipeline
+behind the same interface, with its own bundled checkpoints for three
+channel presets — see [`docs/models/wind.md`](models/wind.md)).
+
+A resource registers itself with `enerdatasynth.registry.register_resource(...)`
+at import time (`generators/load_conditioning.py`,
+`generators/wind_conditioning.py`) rather than `sdk.py` hardcoding a
+per-resource dispatch table — `sdk.py` only ever reads from
+`registry.get_registry()`. The fluent public API
+(`enerdatasynth.model()`/`.set()`/`.sample()`, `src/enerdatasynth/sdk.py`)
+wraps whichever generator a resource registers behind human-readable
+conditioning and hides all of the above — architecture, sampler,
+schedule, calibration — entirely; see
+[`docs/api_reference.md`](api_reference.md) for that contract, and
+[`docs/extending.md`](extending.md) for what registering a *third*
+resource type would involve.

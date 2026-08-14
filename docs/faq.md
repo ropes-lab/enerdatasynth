@@ -10,10 +10,10 @@ The SDK auto-discovers the best *available* checkpoint, preferring transformer r
 Degrees Fahrenheit — matching the training data. Not silently converted from Celsius. See [`docs/api_reference.md`](api_reference.md).
 
 **Can I generate load for a zone other than PS?**
-Not currently — `PS` (PSE&G, New Jersey) is the only zone the shipped pipeline has data/checkpoints for. See [MODEL_CARD.md](../MODEL_CARD.md#supported-zones) and the README Roadmap.
+Not currently — `PS` (PSE&G, New Jersey) is the only zone the shipped pipeline has data/checkpoints for, even though 17 PJM zones were researched and 16 generalize well. See [`docs/models/pjm_load.md`](models/pjm_load.md#11-multi-zone-results) for the full multi-zone result, including the unresolved `DOM` outlier.
 
 **Can I generate wind data?**
-Not yet — there's no wind data, model, or validated research anywhere in this project. The SDK's interface (`BaseGenerator`) is designed so wind *could* be added without changing how callers use the SDK, but nothing wind-specific is implemented. See [`docs/extending.md`](extending.md).
+Yes — `enerdatasynth.model("wind", zone="1ch")` (or `"2ch"`/`"3ch"`), with real trained checkpoints bundled in this repository. It wraps a separately-developed diffusion pipeline (`wind_diffusion`, vendored from a Data-For-Good research project) behind the same `.set()`/`.sample()` interface load uses. See [`docs/models/wind.md`](models/wind.md) for what's actually validated (and what isn't — there's no raw wind data in this repository, so nothing here can be independently re-verified against ground truth yet) and [`docs/api_reference.md`](api_reference.md) for the full parameter reference.
 
 **Why does `spread` default to the mean instead of being computed from `Tmax`/`Tmin`?**
 `spread` is a property of the load profile being generated, not something derivable from weather alone with any validated method here. See the "Why does `spread` default to the mean?" section in [`docs/api_reference.md`](api_reference.md).
@@ -37,4 +37,4 @@ Because they're two different (real) things: the `data/research_history/` number
 `pip install -r requirements.txt` (pinned to the exact versions used) instead of `pyproject.toml`'s looser ranges — see [`docs/installation.md`](installation.md).
 
 **Where do I report a bug or propose a change?**
-See [`docs/developer_guide.md`](developer_guide.md) — known gaps are already tracked in [MIGRATION.md](../MIGRATION.md) and the README Roadmap; check there before opening something new.
+See [`docs/developer_guide.md`](developer_guide.md) — known gaps are already tracked in [`docs/release_audit.md`](release_audit.md) and [MIGRATION.md](../MIGRATION.md); check there before opening something new.
