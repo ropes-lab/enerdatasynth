@@ -12,7 +12,7 @@
 **enerdatasynth generates synthetic energy-resource profiles — electric load and wind
 — from trained conditional generative models, behind one shared Python interface.** You
 describe the conditions (season, temperature, calendar type); it returns a realistic
-profile. No ML expertise required to use it.
+profile. 
 
 ## Generators
 
@@ -27,9 +27,6 @@ three channel presets (`1ch`/`2ch`/`3ch`), conditioned on calendar, temperature,
 wind regime.
 → [Wind model report](docs/models/wind.md)
 
-Both share the same `model()` → `.set()` → `.sample()` interface. The underlying data,
-conditioning, and architectures are resource-specific — the product is unified, the
-science is not forced to match.
 
 ## Quick Start
 
@@ -120,7 +117,7 @@ repository:
 ```bibtex
 @software{enerdatasynth,
   title  = {enerdatasynth: A Research SDK for Synthetic PJM Energy Resource Profiles},
-  author = {Sharma, Sonakshi},
+  author = {Sharma, Sonakshi}, {Tikkawar, Pranav}, {Mieth, Robert}
   year   = {2026},
   note   = {Software}
 }
