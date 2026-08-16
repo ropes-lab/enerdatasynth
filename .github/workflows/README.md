@@ -9,4 +9,4 @@ CI/CD automation, two workflows:
 
 `tests.yml`'s pinned CPU-only torch install exists specifically because several tests load real checkpoint weights committed under `data/checkpoints/` — a mismatched torch version can fail to deserialize them. Bumping the pin means re-verifying checkpoint loading, not just checking that `pip install` succeeds.
 
-Any change to `publish.yml` that could make it upload to PyPI automatically should be treated as high-risk and reviewed carefully — this project's standing convention is that PyPI publishing is triggered by a person, not by CI on its own.
+Any change to `publish.yml` that could make it upload to PyPI automatically should be treated as high-risk and reviewed carefully. 
