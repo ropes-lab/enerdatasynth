@@ -14,7 +14,7 @@
 | Contribute to the package | [`developer_guide.md`](developer_guide.md) |
 
 **Model reports** ([`models/pjm_load.md`](models/pjm_load.md),
-[`models/wind.md`](models/wind.md)) are the primary scientific documentation — start
+[`models/wind.md`](models/wind.md)) are the primary scientific documentation. Start
 there for anything beyond basic usage.
 
 ## Everything else
