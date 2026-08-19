@@ -4,6 +4,35 @@ Wind's generative pipeline, vendored from a separate, previously-published Data-
 
 See [`docs/models/wind.md`](../../../../docs/models/wind.md) for the science; this file is about the code. [`../../README.md`](../../README.md)'s package map covers the parallel PJM-load structure this mirrors.
 
+## Architecture
+
+A conditional DDPM (Ho et al., 2020), not built here — vendored from a separate, previously-published project. Shared across all three channel presets (`1ch`/`2ch`/`3ch`); only the input/output channel count differs per preset.
+
+| Property | Value |
+|---|---|
+| Denoiser | Transformer-style, `hidden_dim=128`, `num_heads=4` |
+| Diffusion steps | `T=200` |
+| Beta schedule | Cosine (`beta_start=1e-4`, `beta_end=0.02`) — chosen independently, not matched to load's linear default |
+| Sampler | DDIM, with classifier-free guidance and dynamic thresholding |
+| Sequence length | 288 steps (24h at 5-minute resolution) |
+| Output | `(N, 288, 2)` always — `[..., 0]` = windspeed (m/s), `[..., 1]` = direction (degrees), a fixed resource-level contract independent of the preset's internal channel count |
+
+Full detail, including per-preset training-recipe differences (`2ch`'s non-default joint-consistency loss): [`docs/models/wind.md`](../../../../docs/models/wind.md) §5–6.
+
+## Results
+
+Real numbers from `manifest.json`, measured against each preset's own validation split:
+
+| Preset | `marginal_wasserstein` range | `regime_accuracy` range | Status |
+|---|---|---|---|
+| `1ch` | 2.00 – 2.25 | 0.41 (mid) – 0.69 (low) | Best-tuned |
+| `3ch` | 1.16 – 2.67 | 0.41 (low) – 0.82 (high) | Healthy |
+| `2ch` | — | — | Improved, but not equivalent to `1ch`/`3ch` — needs different generation settings (`eta=0.0`, no guidance) to stay stable |
+
+**The one problem nothing fixed:** `mid`-regime steering never exceeds ~41–43% across every preset and every generation setting tried — barely above chance for a 3-way bucket.
+
+Full per-regime tables and methodology: [`docs/models/wind.md`](../../../../docs/models/wind.md) §7–8, [`docs/report_cards/wind_presets.md`](../../../../docs/report_cards/wind_presets.md).
+
 ## Layout
 
 Same category taxonomy as `resources/pjm_load/` wherever it applies (`data/`, `models/`, `diffusion/`, `training/`, `evaluation/`, `sampling/`, `visualization/`), plus wind-only infrastructure at this package's root (`api.py`, `config.py`, `registry.py`, `exceptions.py`, `utils.py`, `manifest.json`) rather than forcing it into a shared folder that wouldn't really fit.
