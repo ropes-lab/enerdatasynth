@@ -45,8 +45,20 @@ jobs:
         # works on 3.10. `pip install -e .` resolves pyproject.toml's own
         # (unpinned-except-torch) dependency ranges per Python version
         # instead, which is what CI should actually be verifying.
+        #
+        # `[research]` (statsmodels/matplotlib): moved out of core
+        # dependencies so a bare `pip install enerdatasynth` (just
+        # generation) doesn't need them, but the test suite itself
+        # exercises `enerdatasynth train`'s validation-plot/classical-
+        # baseline path (tests/pjm_load/test_api.py,
+        # tests/pjm_load/test_sampling.py, tests/test_generators.py),
+        # which imports them lazily at call time. Installing core-only
+        # here made every one of those tests fail with
+        # ModuleNotFoundError -- this is what CI should actually be
+        # testing, not the artificially narrower core-only install
+        # (verified separately, by hand, in docs/release_audit.md).
         run: |
-          pip install -e .
+          pip install -e ".[research]"
           pip install pytest pyyaml
 
       - name: Run test suite
