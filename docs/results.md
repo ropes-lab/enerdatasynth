@@ -222,6 +222,6 @@ Consolidated from the sections above — see `docs/research_status.md` and
    `data/reports/pjm_load/future_experiments.md` lists a unified PJM model as a recommended,
    not-yet-implemented future experiment.
 10. **No wind model is scientifically validated.** See `docs/research_status.md` and
-    `docs/model_card.md` for the wind implementation's actual status (code-complete,
+    `docs/models/wind.md` for the wind implementation's actual status (code-complete,
     checkpoints exist, but no raw training data or independent validation against
     ground-truth wind observations exists in this repository).
