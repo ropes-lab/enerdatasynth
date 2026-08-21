@@ -236,3 +236,34 @@ new experiment, not an automatic reproduction of the Week 7 numbers in §8 (see 
 Reproducing the Week 7 numbers exactly would additionally require the research-lineage
 6-dimensional conditioning, which the current `enerdatasynth preprocess` does not
 produce. See [`docs/training.md`](../training.md) for the full workflow.
+
+## 15. Intended Use and Out-of-Scope Uses
+
+**Intended**: generating synthetic daily load profiles for research on load-shape
+modeling, scenario analysis, or data augmentation where real metered data is limited or
+sensitive; studying conditional generative modeling techniques (diffusion, conditioning
+strategies, calibration) on a real-world time-series domain.
+
+**Out of scope**:
+
+- **Not a forecasting model.** Does not predict actual future load values (§1).
+- **Not an operational dispatch or grid-control system.** No output from this model
+  should inform real-time grid operations.
+- **Not a causal model.** Conditioning variables (temperature, calendar) shape the
+  generated distribution; they are not validated as causal drivers.
+- **Not a guarantee of physical feasibility.** Generated profiles are statistically
+  plausible, not verified against grid physics or operational constraints.
+- **Not evaluated for privacy guarantees.** No differential-privacy or re-identification
+  analysis was performed; don't rely on generated profiles as a certified anonymization
+  mechanism.
+
+## 16. Ethical / Operational Considerations
+
+Do not use generated profiles as a substitute for real metered data in any context where
+the distinction matters operationally (billing, settlement, grid planning, forecasting).
+Generated data should be clearly labeled as synthetic in any downstream use.
+
+## 17. Versioning
+
+Package version `0.5.0` (`enerdatasynth.__version__`). See `CHANGELOG.md` for the
+version history and `docs/release_audit.md` for the current release/PyPI status.
