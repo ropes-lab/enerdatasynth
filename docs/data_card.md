@@ -175,7 +175,8 @@ sections above. Full narrative: `docs/models/wind.md` §2.
   nothing in it to validate a generated wind profile against. `docs/models/wind.md` §9
   now shows the upstream `wind_diffusion` project's own real-vs-synthetic envelope
   plots (borrowed, clearly attributed, not reproduced here) as the closest available
-  evidence.
+  evidence. Only their mean curves are informative; their percentile bands are
+  saturated at the sampler's clip bounds (see §9).
 
 ## Reproducibility
 

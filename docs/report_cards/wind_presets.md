@@ -105,8 +105,9 @@ This is a real, unresolved limitation, not a documentation gap.
    exists for any preset — there is no raw wind data here to independently verify
    against (`docs/data_card.md` §Wind Data). `docs/models/wind.md` §9 now shows the
    upstream `wind_diffusion` project's own envelope plots for `1ch`, borrowed and
-   explicitly attributed, as the closest available evidence — not a substitute for
-   an independently-generated comparison.
+   explicitly attributed, as the closest available evidence. Their generation
+   settings are unrecorded and their percentile bands are saturated at the clip
+   bounds, so they are not a substitute for an independently-generated comparison.
 4. All three presets share one architecture/training pipeline (vendored, not built by
    this project) — this card compares channel representations and generation-time
    settings, not independently-designed models.
