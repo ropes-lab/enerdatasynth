@@ -1,16 +1,25 @@
 # `enerdatasynth.resources.wind.data`
 
-Wind's data-handling code, but there's no raw wind dataset in this repository to actually run it against — `data/raw/wind/` is empty (see [`docs/models/wind.md`](../../../../../docs/models/wind.md) §2). This subpackage exists for structural parity with `resources/pjm_load/data/` and to document what the vendored pipeline expects, not because preprocessing is runnable here today.
+Wind's data-handling code. There is no raw wind data in this repository to run it on
+(`data/raw/wind/` is empty; see
+[`docs/models/wind.md`](../../../../../docs/models/wind.md) §2). The folder mirrors
+`resources/pjm_load/data/` and shows what input the pipeline expects.
 
 ## Files
 
-- **`data.py`** — raw-CSV loading, channel derivation (`1ch`/`2ch`/`3ch`), and windowing into 288-step (24-hour, 5-minute) sequences. Needs `windspeed_100m`/`winddirection_100m` columns this repo doesn't ship.
-- **`transforms.py`** — feature engineering: wind-regime bucketing (low/mid/high) and the onehot/ordinal regime encoding choice, which is a checkpoint-level setting (see `docs/models/wind.md` §4).
+- **`data.py`:** raw CSV loading, channel derivation for `1ch`/`2ch`/`3ch`, and splitting
+  into 288-step (24-hour, 5-minute) windows. Needs `windspeed_100m` and
+  `winddirection_100m` columns, which this repository doesn't include.
+- **`transforms.py`:** wind-regime bucketing (low, mid, high) and the one-hot or ordinal
+  regime encoding, which is set per checkpoint (`docs/models/wind.md` §4).
 
 ## Public API vs. internal
 
-Not re-exported at the top level. Reach it via `enerdatasynth.resources.wind.data.data`/`.transforms` directly if you need it. Everyday generation doesn't touch this module at all — the bundled checkpoints already exist.
+Not exported at the top level. Import `enerdatasynth.resources.wind.data.data` or
+`.transforms` directly if you need them. Normal generation never uses this module,
+because the checkpoints are already trained.
 
 ## What should not be placed here
 
-Anything `enerdatasynth`-specific. Resource-specific glue belongs in `generators/wind*.py` instead — see [`../README.md`](../README.md).
+Anything specific to `enerdatasynth`. Glue code belongs in `generators/wind*.py` (see
+[`../README.md`](../README.md)).

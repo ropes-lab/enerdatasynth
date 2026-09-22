@@ -1,35 +1,39 @@
 # Wind Model
 
-`enerdatasynth.model("wind", zone=<preset>)` — synthetic 24-hour (288-step, 5-minute
-resolution) wind profiles, conditioned on calendar, temperature, and wind-regime
-context, across three channel presets (`1ch`/`2ch`/`3ch`).
+`enerdatasynth.model("wind", zone=<preset>)` generates synthetic 24-hour wind profiles
+at 5-minute resolution (288 steps). Profiles are conditioned on calendar, temperature
+and wind regime, and there are three channel presets: `1ch`, `2ch` and `3ch`.
 
-This report is the scientific "report card" for this resource, structured to parallel
-[`docs/models/pjm_load.md`](pjm_load.md) — the underlying science is different (a
-separately-developed diffusion pipeline, vendored rather than built in-house), so the
-content below is wind-specific even where the section headings match.
+This report follows the same section layout as [`docs/models/pjm_load.md`](pjm_load.md).
+The wind model comes from a separate diffusion pipeline that was vendored into this
+package rather than built here, so the content under each heading is specific to wind.
 
 ## 1. Overview
 
-Generates synthetic wind profiles at 5-minute resolution over a 24-hour window (288
-steps), for one of three channel presets: windspeed only (`1ch`), wind-vector U/V
-components (`2ch`), or windspeed plus sin/cos-encoded direction (`3ch`). Conditioned on
-month, day-of-week, a derived temperature-spread feature, and a wind-regime bucket
-(low/mid/high). **Like the load resource, this is a conditional generator, not a
-forecaster.**
+The model generates 24-hour wind profiles at 5-minute resolution for one of three
+channel presets:
+
+- `1ch`: windspeed only
+- `2ch`: wind-vector U/V components
+- `3ch`: windspeed plus direction encoded as sin/cos
+
+It is conditioned on month, day of week, a temperature-spread feature, and a wind-regime
+bucket (low, mid or high). Like the load model, it generates plausible profiles for given
+conditions. It does not forecast.
 
 ## 2. Input Data
 
-**No raw wind training data exists in this repository.** `data/raw/wind/`
-contains only a placeholder README. The bundled checkpoints (§5) were trained elsewhere,
-on data this repository does not include and cannot reproduce preprocessing for.
-`h5py`/`h5pyd`/`python-dotenv` are declared dependencies (suggesting an HSDS/NREL WIND
-Toolkit-style original data source) but have **zero actual usage** anywhere in
-`src/enerdatasynth/resources/wind/` — the original data-acquisition step was never vendored into this
-package. This is the single largest gap in the wind resource relative to the PJM load
-resource, which does ship its raw data pipeline.
+This repository contains no raw wind training data. `data/raw/wind/` holds only a
+placeholder README. The bundled checkpoints (§5) were trained elsewhere, on data that
+isn't included here, and the preprocessing can't be reproduced from this repository.
 
-What *is* documented, from the vendored package's own code and manifest:
+`pyproject.toml` lists `h5py`, `h5pyd` and `python-dotenv` as dependencies, which
+suggests the original data came from an HSDS source such as the NREL WIND Toolkit.
+Nothing in `src/enerdatasynth/resources/wind/` uses them, though, because the
+data-download step was never vendored. This is the biggest difference from the load
+resource, which ships its full raw-data pipeline.
+
+What the vendored code and manifest do record:
 
 | Item | Value |
 |---|---|
@@ -39,108 +43,107 @@ What *is* documented, from the vendored package's own code and manifest:
 
 ## 3. Data Representation
 
-One generated sample is a `(288, n_channels)` array at the vendored-package level
-(`n_channels` = 1/2/2 for `1ch`/`2ch`/`3ch`). The public `.sample()` interface always
-returns `(N, 288, 2)` regardless of preset: `[..., 0]` = windspeed (m/s), `[..., 1]` =
-direction (degrees) — a fixed, resource-level output contract, independent of the
-underlying preset's internal channel count.
+Inside the vendored package, one sample is a `(288, n_channels)` array, where
+`n_channels` is 1, 2 and 2 for `1ch`, `2ch` and `3ch`. The public `.sample()` method
+always returns `(N, 288, 2)` whatever the preset: `[..., 0]` is windspeed in m/s and
+`[..., 1]` is direction in degrees.
 
 ## 4. Conditioning
 
-Config-level default conditioning fields (`enerdatasynth.resources.wind.config.WindDiffusionConfig.condition_on`):
-`month`, `day_of_week`, `temp_min_max_spread` (a derived, jointly z-scored transform,
-not one column per raw input), and `wind_regime_bucket` (checkpoint-level choice of
-one-hot or ordinal encoding — one-hot is the default, kept for backward compatibility;
-an ordinal alternative exists specifically because one-hot's `mid` bucket has never
-achieved better than chance-level steering accuracy, see §10).
+The default conditioning fields are set in
+`enerdatasynth.resources.wind.config.WindDiffusionConfig.condition_on`:
 
-**This does not fit the `ConditionField`-based system `pjm_load` uses** — which fields
-exist is checkpoint-dependent, one field is a derived joint transform, and the regime
-encoding is itself a checkpoint-level choice. `ResourceModel` supports a
-`condition_builder` escape hatch for exactly this case; wind is the only resource using
-it today. There is no separate "historical vs. package" conditioning split for wind the
-way load has one (§4 of `docs/models/pjm_load.md`) — wind has always used one
-conditioning convention, defined by `wind_diffusion` itself.
+- `month`
+- `day_of_week`
+- `temp_min_max_spread`: a single transform derived from the min and max temperature and
+  z-scored jointly, not one column per input
+- `wind_regime_bucket`: one-hot by default. Each checkpoint can use ordinal encoding
+  instead, which was added because `mid` steering with one-hot encoding has stayed
+  near chance for `1ch` and `3ch` (§10).
+
+This doesn't fit the `ConditionField` system that `pjm_load` uses. The set of fields
+depends on the checkpoint, one field is a derived transform, and the regime encoding is
+chosen per checkpoint. `ResourceModel` has a `condition_builder` option for cases like
+this, and wind is currently the only resource that uses it. Unlike load (§4 of
+`docs/models/pjm_load.md`), wind has only ever had one conditioning scheme, defined by
+`wind_diffusion` itself.
 
 ## 5. Generative Model
 
-A conditional DDPM, implemented in the vendored `wind_diffusion` package
-(`src/enerdatasynth/resources/wind/`, from a separate Data-For-Good research project) — not built or
-trained by this project. Architecture: Transformer-style denoiser,
-`hidden_dim=128, num_heads=4` (config defaults). Diffusion: `T=200` steps, **cosine**
-beta schedule (`beta_start=1e-4, beta_end=0.02`) — a different, independently-chosen
-schedule from load's linear default; not forced to match load's choice. Sampling: DDIM
-with classifier-free guidance and dynamic thresholding, **not** the ancestral sampler
-load uses — a materially different sampling algorithm, appropriate to this pipeline's
-own tuning (§8).
+The model is a conditional DDPM from the vendored `wind_diffusion` package
+(`src/enerdatasynth/resources/wind/`), which came from a separate Data-For-Good research
+project. It was not built or trained in this repository.
+
+- **Denoiser:** transformer, `hidden_dim=128`, `num_heads=4` (config defaults).
+- **Diffusion:** `T=200` steps with a cosine beta schedule (`beta_start=1e-4`,
+  `beta_end=0.02`). Load uses a linear schedule.
+- **Sampling:** DDIM with classifier-free guidance and dynamic thresholding. Load uses
+  the ancestral DDPM sampler. The wind settings were tuned upstream (§8).
 
 ## 6. Training
 
-Not performed by this project — training happened upstream, in the source
-`wind_diffusion` project, against data this repository doesn't include (§2). The
-manifest records the training recipe behind each bundled checkpoint:
+Training happened upstream in the `wind_diffusion` project, on data this repository
+doesn't include (§2). The manifest records the recipe for each bundled checkpoint:
 
-- **`1ch`/`3ch`**: Post-LN transformer (`norm_first=False`), `hidden_dim=128`,
-  `warmup_epochs=8`, 60 epochs, `cond_dropout_prob=0.3, cond_dropout_scope="wind_regime"`.
-- **`2ch`**: the same recipe, plus `joint_consistency_channels=[0,1], joint_consistency_weight=1.0`
-  — a non-default recipe, specific to fixing `2ch`'s originally-broken behavior (§8).
+- **`1ch` and `3ch`:** post-LN transformer (`norm_first=False`), `hidden_dim=128`,
+  `warmup_epochs=8`, 60 epochs, `cond_dropout_prob=0.3`, `cond_dropout_scope="wind_regime"`.
+- **`2ch`:** the same recipe plus `joint_consistency_channels=[0,1]` and
+  `joint_consistency_weight=1.0`, added to fix `2ch`'s original failures (§8).
 
-`resources/wind/manifest.json` marks every preset's `status` as `"pending"` (its own
-external-download mechanism has nothing published) — **this does not mean wind is
-unavailable in this package.** This package's own convention (`data/checkpoints/wind/<preset>/`)
-bundles real, working checkpoints for all three presets directly, checked before falling
-back to the manifest's (empty) download path. See
+`resources/wind/manifest.json` lists every preset's `status` as `"pending"` because the
+manifest's download location has nothing published. Wind still works: this package
+looks for checkpoints in `data/checkpoints/wind/<preset>/` first, and all three presets
+are bundled there. See
 [`src/enerdatasynth/generators/README.md`](../../src/enerdatasynth/generators/README.md).
 
 ## 7. Evaluation
 
-A different metric suite from load's (`enerdatasynth.resources.wind.evaluation.metrics`), all lower-is-better
-except `regime_accuracy` (higher is better):
+Wind uses its own metric suite (`enerdatasynth.resources.wind.evaluation.metrics`).
+Lower is better for every metric except `regime_accuracy`.
 
 | Metric | What it measures | Why it matters |
 |---|---|---|
-| `marginal_wasserstein` | Wasserstein-1 distance between real/synthetic windspeed value distributions (m/s) | Overall value-distribution fidelity |
-| `acf_rmse` | RMSE between mean real/synthetic autocorrelation curves | Temporal persistence structure, not just marginal values |
-| `spectral_low_band` / `spectral_high_band` | Log-ratio of average power spectra, split into low/high frequency bands | Whether generated turbulence has the right frequency content, not just the right autocorrelation |
-| `ramp_wasserstein` | Wasserstein-1 distance between real/synthetic within-day first-difference distributions | Ramp/volatility fidelity, wind's analogue of load's `Ramp` |
-| `diurnal_rmse` | RMSE between mean daily profile curves | Whether the average diurnal cycle shape is right |
-| `regime_accuracy` | Fraction of generated days whose actual mean windspeed lands in the *requested* regime bucket | Whether conditioning on `wind_regime` actually controls output, not just whether output looks plausible |
+| `marginal_wasserstein` | Wasserstein-1 distance between real and synthetic windspeed distributions (m/s) | Overall match of the value distribution |
+| `acf_rmse` | RMSE between mean real and synthetic autocorrelation curves | How long wind conditions persist |
+| `spectral_low_band` / `spectral_high_band` | Log-ratio of average power spectra, split into low and high frequency bands | Whether turbulence has the right frequency content |
+| `ramp_wasserstein` | Wasserstein-1 distance between real and synthetic step-to-step changes within a day | Ramp and volatility behavior (the wind version of load's `Ramp`) |
+| `diurnal_rmse` | RMSE between mean daily profiles | Shape of the average daily cycle |
+| `regime_accuracy` | Share of generated days whose mean windspeed falls in the requested regime bucket | Whether the `wind_regime` input actually controls the output |
 
 ## 8. Quantitative Results
 
-Real numbers from `src/enerdatasynth/resources/wind/manifest.json`, measured 2026-07-21 against each
-preset's own validation split (100 synthetic realizations per regime):
+These numbers come from `src/enerdatasynth/resources/wind/manifest.json`. They were
+measured on 2026-07-21 against each preset's validation split, with 100 synthetic
+realizations per regime.
 
-**`1ch`** (best-tuned preset — `sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0`):
+`1ch`, the best-tuned preset (`sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0`):
 
 | Regime | n (real) | `marginal_wasserstein` | `acf_rmse` | `regime_accuracy` |
 |---|---|---|---|---|
 | Low | 156 | 2.25 | 0.060 | 0.69 |
-| Mid | 300 | 2.00 | 0.108 | **0.41 (near chance)** |
+| Mid | 300 | 2.00 | 0.108 | 0.41 (near chance) |
 | High | 147 | 2.11 | 0.101 | 0.55 |
 
-**`3ch`** (`sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0`):
+`3ch` (`sampler=ddim, steps=50, eta=1.0, guidance_scale=40.0`):
 
 | Regime | `marginal_wasserstein` | `acf_rmse` | `regime_accuracy` |
 |---|---|---|---|
 | Low | 2.67 | 0.074 | 0.41 |
-| Mid | 2.21 | 0.109 | **0.43 (near chance)** |
+| Mid | 2.21 | 0.109 | 0.43 (near chance) |
 | High | 1.16 | 0.118 | 0.82 |
 
-**`2ch`** requires different generation settings (`eta=0.0, guidance_scale=1.0` — guidance
-measurably breaks this preset even with dynamic thresholding on) and a non-default
-training recipe (joint-consistency loss). It was originally measured badly broken
-(~2.8× inflated windspeed, effectively no regime control) and has since improved
-substantially with the joint-consistency fix, but **is not treated as equivalent to
-`1ch`/`3ch`** — its own manifest entry explicitly says so. Exact current per-regime gate
-values for `2ch` were not re-extracted for this documentation pass; see
-`src/enerdatasynth/resources/wind/manifest.json` directly for the authoritative numbers.
+`2ch` needs different generation settings (`eta=0.0`, `guidance_scale=1.0`), because
+guidance breaks this preset even with dynamic thresholding on. It also needs the
+joint-consistency training recipe (§6). Its first version produced windspeeds about 2.8×
+too high and had almost no regime control. The fix improved it a lot, but its manifest
+entry says it should not be treated as equivalent to `1ch` or `3ch`. Current per-regime
+numbers for `2ch` haven't been copied into this report; see the manifest.
 
-**The one problem nothing fixed, across every preset:** `mid`-regime steering accuracy
-never exceeded ~41–43% — barely above the one-third no-conditioning chance floor for a
-3-way bucket, let alone a meaningfully-above-chance number. `low` and `high` both
-improved substantially with generation-setting tuning (`eta=1.0` over DDIM's default
-`eta=0.0`); `mid` did not move.
+For `1ch` and `3ch`, `mid` is the one regime nothing has fixed. Its accuracy has never
+gone above about 41–43%, barely better than the one-in-three you'd get with no
+conditioning. Switching
+from DDIM's default `eta=0.0` to `eta=1.0` improved `low` and `high` a lot but didn't
+change `mid`.
 
 ## 9. Actual vs. Generated Examples
 
@@ -183,56 +186,48 @@ checkpoint at its recommended settings once real wind data is available here.
 
 ## 10. Conditional / Regime Evaluation
 
-Covered in §8's per-regime tables — `wind_regime` (low/mid/high) is the primary
-conditioning slice this pipeline evaluates against, analogous to load's temperature/
-calendar/season slices. The `mid` regime is the resource's clearest and most persistent
-weak point (§8), directly comparable in kind (though not in cause) to load's DOM-zone
-and hot-day weaknesses.
+The per-regime tables in §8 cover this. Wind regime (low, mid, high) is the main slice
+this pipeline evaluates, much as load is sliced by temperature, calendar and season.
+`mid` is wind's most persistent weak spot (§8), comparable to load's weak spots in the
+DOM zone and on hot days, though for different reasons.
 
 ## 11. Multi-Zone / Multi-Site Results
 
-Not applicable in the geographic sense load's 17-zone study covers — wind's three
-"presets" (`1ch`/`2ch`/`3ch`) are channel-representation variants of the same
-underlying site/dataset, not different geographic sites. No multi-site wind study
-exists in this repository.
+Not applicable. The three presets are different channel representations of the same
+site and dataset, not different locations, so there is nothing like load's 17-zone
+study. This repository has no multi-site wind study.
 
 ## 12. Calibration
 
-**No calibration step exists for wind**, unlike load's scalar bias correction. Each
-preset's `recommended_generation` settings (sampler/steps/eta/guidance) function as a
-form of tuned generation-time correction, but this is a different mechanism from load's
-post-hoc additive calibration — not a gap, just a different pipeline with no equivalent
-step.
+Wind has no calibration step. Load applies a scalar bias correction after generation;
+wind instead relies on each preset's tuned `recommended_generation` settings (sampler,
+steps, `eta`, guidance). That is a different mechanism rather than a missing step.
 
 ## 13. Limitations
 
-1. **No raw wind data or acquisition pipeline exists in this repository** — the largest
-   gap relative to load. Checkpoints work; nothing here can retrain or independently
-   revalidate them against ground truth.
-2. **`mid`-regime conditioning is unreliable** across every preset and every generation
-   setting tried (§8) — a real, unresolved scientific limitation, not a documentation
-   gap.
-3. **`2ch` is not equivalent to `1ch`/`3ch`** — improved but explicitly not validated to
-   the same standard.
-4. `resources/wind/manifest.json`'s own `status: "pending"` fields could mislead a
-   reader into thinking no checkpoint is available; this package's local-checkpoint
-   convention supersedes that status for all three presets (§6).
+1. **No raw wind data or download pipeline.** The checkpoints work, but nothing here can
+   retrain them or check them against real data.
+2. **`mid` regime conditioning is unreliable.** For `1ch` and `3ch` it stays near chance
+   under every generation setting tried (§8).
+3. **`2ch` is not equivalent to `1ch` and `3ch`.** It has improved but hasn't been
+   validated to the same standard.
+4. **The manifest's `status: "pending"` is misleading.** All three presets are bundled
+   locally and work (§6).
 5. This repository can't produce its own real-vs-generated figure (§9). The plots
    shown there come from the upstream project, with unknown generation settings,
    and only their mean lines are useful.
-6. `units="normalized"` is not supported for any preset — only `"m/s"` — a permanent
-   interface gap in the vendored evaluation code, not prioritized for a fix.
-7. **Generation is CPU-slow and scales poorly with batch size**, verified directly
-   during this documentation pass: `n=2` completes in ~6s, `n=10` in ~9s, but `n=100`
-   did not finish within 2.5 minutes on CPU (`1ch`, default DDIM settings). Request
-   small batches, or expect a long wait for large ones — this is not a hang.
+6. **Only `units="m/s"` is supported.** The vendored evaluation code doesn't support
+   `units="normalized"` for any preset, and there are no plans to add it.
+7. **Generation is slow on CPU, and larger batches get much slower.** With `1ch` and
+   default DDIM settings, `n=2` took about 6 seconds and `n=10` about 9 seconds, but
+   `n=100` hadn't finished after 2.5 minutes. Use small batches, or expect a long wait;
+   the process hasn't hung.
 
 ## 14. Reproduction
 
-**Not reproducible from this repository alone.** There is no raw data to preprocess and
-no training entry point exposed through `enerdatasynth`'s own CLI for wind (unlike
-`pjm_load`'s `enerdatasynth train`). The bundled checkpoints can be used for generation
-immediately:
+The wind model can't be retrained from this repository. There is no raw data, and
+`enerdatasynth`'s CLI has no wind training command (load has `enerdatasynth train`).
+The bundled checkpoints work for generation right away:
 
 ```python
 import enerdatasynth
@@ -241,11 +236,10 @@ wind.set(wind_regime="mid", month=7, temp_min=10, temp_max=22)
 samples = wind.sample(n=10, seed=0)              # (10, 288, 2): m/s, degrees
 ```
 
-Retraining or re-evaluating against real data would require obtaining the original
-`wind_diffusion` project's dataset and its own training code (`src/enerdatasynth/resources/wind/train.py`).
-The package's own error messages reference a `wind-diffusion-train --preset <preset>
---data-path <csv> --output-dir <dir>` command (`resources/wind/registry.py`), but **this
-is not registered as an installable console script by this package's `pyproject.toml`**
-— it describes `enerdatasynth.resources.wind.training.train`'s intended invocation from the upstream project,
-not a command this repository currently exposes. See [`docs/api_reference.md`](../api_reference.md)
-for the full generation-side parameter reference.
+Retraining would need the original `wind_diffusion` dataset and the training code in
+`src/enerdatasynth/resources/wind/training/train.py`. Some error messages mention a
+`wind-diffusion-train --preset <preset> --data-path <csv> --output-dir <dir>` command
+(`resources/wind/registry.py`). That command is not installed by this package; only
+`enerdatasynth` is registered in `pyproject.toml`. It is how the upstream project runs
+`enerdatasynth.resources.wind.training.train`. For generation parameters, see
+[`docs/api_reference.md`](../api_reference.md).
