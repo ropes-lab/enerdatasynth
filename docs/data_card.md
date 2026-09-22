@@ -171,12 +171,9 @@ sections above. Full narrative: `docs/models/wind.md` §2.
 - **What the trained checkpoints imply about the source data:** 5-minute-resolution
   `windspeed_100m` (and, for `2ch`/`3ch`, `winddirection_100m`) sequences, windowed to
   288 steps (24 hours) — see `docs/models/wind.md` §2–3 for the full representation.
-- **No real-vs-generated comparison can be produced by this repository** — there is
-  nothing in it to validate a generated wind profile against. `docs/models/wind.md` §9
-  now shows the upstream `wind_diffusion` project's own real-vs-synthetic envelope
-  plots (borrowed, clearly attributed, not reproduced here) as the closest available
-  evidence. Only their mean curves are informative; their percentile bands are
-  saturated at the sampler's clip bounds (see §9).
+- **No real-vs-generated comparison can be made from this repository**, because it
+  has no real wind data. `docs/models/wind.md` §9 shows plots from the upstream
+  `wind_diffusion` project instead; only their mean lines are useful.
 
 ## Reproducibility
 
