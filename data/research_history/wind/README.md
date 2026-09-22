@@ -1,5 +1,11 @@
 # `data/research_history/wind/`
 
-Empty on purpose. Compare [`../pjm_load/`](../README.md) (the parent folder), whose `research_history/` holds a full provenance table — the actual scripts and reports behind every number in `docs/results.md`. Wind has no equivalent here because its research history belongs to a separate, previously-published project (`wind_diffusion`, developed independently and vendored into this package as `enerdatasynth.resources.wind` — see [`docs/models/wind.md`](../../../docs/models/wind.md) §5/§6) rather than to work done inside this repository. Duplicating that project's research history here would misattribute it as this package's own.
+Empty on purpose. [`../pjm_load/`](../README.md) holds the scripts and reports behind
+every number in `docs/results.md`. Wind's research was done in the separate
+`wind_diffusion` project, not in this repository
+([`docs/models/wind.md`](../../../docs/models/wind.md) §5–6), so copying that history
+here would present it as this package's own work.
 
-This folder exists purely so the "one folder per resource, per category" pattern holds everywhere in `data/`, and so a future third resource's provenance folder has an unambiguous place to go. If wind's original research history (the upstream project's own evidence trail, analogous to `pjm_load`'s week-by-week scripts) ever becomes available and is vendored in the same way the checkpoints were, it goes here.
+The folder keeps the one-folder-per-resource layout used throughout `data/`. If the
+upstream project's research history is ever vendored the way the checkpoints were, it
+goes here.
