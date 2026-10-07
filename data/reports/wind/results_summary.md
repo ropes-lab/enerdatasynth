@@ -1,6 +1,6 @@
 # Wind Results Summary
 
-Generated from `resources/wind/manifest.json` — real numbers measured by the upstream project, not a new comparison run in this repository (there is no real wind data here to compare against; see [`docs/models/wind.md`](../../../../docs/models/wind.md) §2).
+Generated from `resources/wind/manifest.json` — real numbers measured by the upstream project, not a new comparison run in this repository (there is no real wind data here to compare against; see [`docs/models/wind.md`](../../../docs/models/wind.md) §2).
 
 ## Preset `1ch`
 

@@ -6,7 +6,7 @@
 #
 # Usage:
 #   from enerdatasynth.utils.config import RunConfig
-#   cfg = RunConfig.from_yaml("configs/mlp.yaml")
+#   cfg = RunConfig.from_yaml("data/configs/pjm_load/mlp.yaml")
 architecture: mlp
 diffusion_steps: 100
 hidden_dim: 128     # MLP hidden width

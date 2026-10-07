@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/data/temperature.py
-========================================
+src/enerdatasynth/resources/pjm_load/data/temperature.py
+========================================================
 PJM zonal hourly temperature builder, 2016-2025.
 
 Pulls hourly temperature observations from NOAA's Integrated Surface Database

@@ -132,7 +132,7 @@ EXCLUDED_BY_DESIGN = [
 # ─────────────────────────────────────────────────────────────────────────────
 # "transformer": the Week-6 architecture-comparison winner, promoted
 #   to primary baseline in Week 7 (research_history/reports/week6/arch/,
-#   research_history/reports/week7/summary_report.md). model_dim=64,
+#   data/research_history/pjm_load/reports/week7/summary_report.md). model_dim=64,
 #   num_layers=2, num_heads=4, T=1000 are the exact hyperparameters
 #   that produced those validated results.
 # "mlp": the original simple baseline, kept as a legacy/research option.

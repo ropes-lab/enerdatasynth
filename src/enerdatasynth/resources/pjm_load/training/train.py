@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/training/train.py
-======================================
+src/enerdatasynth/resources/pjm_load/training/train.py
+======================================================
 Training loop for a single configuration. Implements:
   - model checkpoint saving (best + latest)
   - training logs (per-epoch loss to CSV)

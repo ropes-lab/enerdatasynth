@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/visualization/plots.py
-===========================================
+src/enerdatasynth/resources/pjm_load/visualization/plots.py
+===========================================================
 All plotting for the pipeline lives here, sharing one color palette,
 instead of being scattered/duplicated across training and evaluation
 code (previously `PRIMARY_COLOR`/`SECONDARY_COLOR` were hardcoded

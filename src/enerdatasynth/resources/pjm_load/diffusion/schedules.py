@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/diffusion/schedules.py
-===========================================
+src/enerdatasynth/resources/pjm_load/diffusion/schedules.py
+===========================================================
 Beta-schedule constructors for the DDPM forward process.
 
 Extracted from week6.py's `make_betas` (see research_history/week6.py),

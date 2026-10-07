@@ -1,13 +1,13 @@
 """
-src/enerdatasynth/models/transformer.py
-==========================================
+src/enerdatasynth/resources/pjm_load/models/transformer.py
+==========================================================
 Transformer denoiser — the Week-6 architecture-comparison winner,
 promoted to the primary/default architecture in Week 7. It beats the
 MLP baseline on 6 of 7 generation metrics at ~6x fewer parameters
 (110K vs 688K) and beats every classical baseline (AR/ARMA/ARIMA/
 SARIMA) on 7 of 7 — see
 research_history/reports/week6/arch/summary_report.md and
-research_history/reports/week7/summary_report.md.
+data/research_history/pjm_load/reports/week7/summary_report.md.
 
 Extracted from research_history/scripts/week7.py's `TransformerDenoiser`.
 Submodule attribute names (`cond`, `val`, `pos`, `enc`, `out`) are kept

@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/evaluation/calibration.py
-===============================================
+src/enerdatasynth/resources/pjm_load/evaluation/calibration.py
+==============================================================
 Post-processing bias correction for generated profiles.
 
 The trained denoiser reproduces daily SHAPE well but carries a small,

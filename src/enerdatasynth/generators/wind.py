@@ -2,7 +2,7 @@
 src/enerdatasynth/generators/wind.py
 =======================================
 `WindDiffusionModel` -- the wind-domain implementation of `BaseGenerator`,
-wrapping the vendored `wind_diffusion` package (`src/wind_diffusion/`,
+wrapping the vendored `wind_diffusion` package (`src/enerdatasynth/resources/wind/`,
 copied from Data-For-Good) rather than reimplementing diffusion sampling
 here. The wind counterpart to `generators/load.py`'s `LoadDiffusionModel`.
 

@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/data/preprocess.py
-=======================================
+src/enerdatasynth/resources/pjm_load/data/preprocess.py
+=======================================================
 Fully reproducible preprocessing pipeline.
 
 Raw PJM load CSVs + NOAA temperature data  -->  X, Z tensors ready for training.

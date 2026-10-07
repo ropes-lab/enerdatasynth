@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/evaluation/failure_analysis.py
-====================================================
+src/enerdatasynth/resources/pjm_load/evaluation/failure_analysis.py
+===================================================================
 Automatically detects and summarizes common failure modes by
 comparing real vs generated profiles:
   - Peak underestimation / overestimation

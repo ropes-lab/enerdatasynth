@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/evaluation/results_report.py
-==================================================
+src/enerdatasynth/resources/pjm_load/evaluation/results_report.py
+=================================================================
 Generates reports/results_summary.md automatically from:
   - data/processed/metadata.json
   - reports/hyperparameter_results.csv

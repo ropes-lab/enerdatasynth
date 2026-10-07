@@ -1,6 +1,6 @@
 # `tests/`
 
-252 tests, all passing (`pytest tests/`, about 20s). Fast by design — no test needs the full raw dataset.
+258 tests, all passing (`pytest tests/`, about 20s). Fast by design — no test needs the full raw dataset.
 
 ## Layout
 

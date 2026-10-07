@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/training/sweep.py
-======================================
+src/enerdatasynth/resources/pjm_load/training/sweep.py
+======================================================
 Runs a manual hyperparameter sweep over:
   Diffusion steps: 50, 100, 200
   Hidden dimension / model dimension: 64, 128, 256
