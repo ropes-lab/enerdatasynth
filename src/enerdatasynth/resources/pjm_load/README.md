@@ -17,7 +17,7 @@ Same category taxonomy as `resources/wind/` wherever it applies (`data/`, `model
 | `data/preprocess.py` | Raw-CSV loading, DST/missing-data cleaning, conditioning-vector construction |
 | `data/temperature.py` | NOAA ISD fetch and zone-weighted temperature aggregation |
 | `models/transformer.py` | Transformer denoiser, the recommended architecture |
-| `models/denoiser.py` | MLP denoiser — the legacy baseline, and still the current package default (see `docs/models/pjm_load.md` §5) |
+| `models/denoiser.py` | MLP denoiser — the legacy baseline, no longer the default (see `docs/models/pjm_load.md` §5) |
 | `diffusion/ddpm.py` | Forward/reverse diffusion process, corrected ancestral sampling |
 | `diffusion/schedules.py` | Beta schedules — linear by default, with cosine/quadratic alternatives |
 | `training/train.py` | Single-config training entry point |

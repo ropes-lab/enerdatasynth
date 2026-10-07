@@ -203,13 +203,14 @@ Consolidated from the sections above — see `docs/research_status.md` and
 
 1. **Conditioning mismatch (critical):** the Transformer results in §1–§7 above used the
    research-history 6-dimensional "Z5" conditioning, not the current package's
-   23-dimensional one-hot conditioning. No checkpoint has been trained or evaluated
-   against the current conditioning. These results should not be quoted as "what the
-   installed package produces" without independent revalidation.
-2. **The installed package doesn't default to the Transformer at all.** No
-   `"architecture": "transformer"` checkpoint exists among the bundled checkpoints;
-   `enerdatasynth.model("pjm_load", ...)` resolves to the legacy MLP baseline today.
-3. **Default sampling is uncalibrated.** No bundled checkpoint ships a `calibration.json`.
+   23-dimensional one-hot conditioning. They should not be quoted as "what the installed
+   package produces". The shipped Transformer was trained on the 23-dim conditioning and
+   has its own numbers: `docs/models/pjm_load.md` §8 and
+   `data/reports/pjm_load/checkpoint_comparison.csv`.
+2. **The shipped default is the Transformer** (`transformer_T1000_H64_L2`), from a single
+   training run with the research-validated hyperparameters, not a from-scratch sweep.
+3. **The shipped default is calibrated** (scalar +0.02342, fit on training days). The seven
+   legacy MLP checkpoints are not.
 4. **DOM zone failure is unresolved** (§8).
 5. **Calibration is train-fit**, not independently validated on a held-out calibration
    set beyond the 1,200-day sample it was fit on (§6, `docs/research_status.md` §F).

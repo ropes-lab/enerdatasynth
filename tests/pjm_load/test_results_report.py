@@ -29,11 +29,15 @@ def test_generate_results_summary_reports_dataset_and_best_run(tmp_path, monkeyp
     assert text.startswith("# Results Summary")
     assert "Training samples: 2785" in text
     assert "Validation samples: 600" in text
-    assert "T100_H256_L4" in text  # lowest validation loss in the bundled sweep
+    # the shipped default and the sweep's own winner are reported separately
+    assert "Shipped Default Checkpoint" in text
+    assert "transformer_T1000_H64_L2" in text
+    assert "Best sweep configuration: **T100_H256_L4**" in text  # lowest val loss in the bundled MLP sweep
 
 
 def test_generate_results_summary_without_sweep_results(tmp_path, monkeypatch):
     monkeypatch.setattr(rr, "REPORTS_DIR", tmp_path)
     text = rr.generate_results_summary().read_text()
     assert "Dataset Summary" in text
-    assert "Best configuration" not in text
+    assert "Shipped Default Checkpoint" in text
+    assert "Best sweep configuration" not in text

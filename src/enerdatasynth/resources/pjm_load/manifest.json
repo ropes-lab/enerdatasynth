@@ -1,8 +1,10 @@
 {
   "_generated_from": "data/checkpoints/pjm_load/*/result.json (real values, not fabricated)",
-  "_note": "No 'transformer' architecture checkpoint exists yet -- every entry below predates the architecture field and is treated as 'mlp' by generators/load.py's from_run_id, same fallback logic used here. See docs/research_status.md \u00a7D.",
-  "default_run_id": "T100_H256_L4",
-  "transformer_runs_available": [],
+  "_note": "default_run_id is the Transformer trained on the shipped 23-dim conditioning with data/configs/pjm_load/transformer.yaml and calibrated with a scalar offset fit on training days. The seven legacy runs predate the architecture field and are treated as 'mlp' by generators/load.py's from_run_id, same fallback logic used here.",
+  "default_run_id": "transformer_T1000_H64_L2",
+  "transformer_runs_available": [
+    "transformer_T1000_H64_L2"
+  ],
   "checkpoints": {
     "T100_H128_L2": {
       "architecture": "mlp",
@@ -87,6 +89,18 @@
       "epochs_trained": 50,
       "training_time_sec": 4.909621953964233,
       "calibrated": false
+    },
+    "transformer_T1000_H64_L2": {
+      "architecture": "transformer",
+      "diffusion_steps": 1000,
+      "hidden_dim": 64,
+      "n_layers": 2,
+      "n_heads": 4,
+      "n_params": 111489,
+      "best_val_loss": 0.009455992840230465,
+      "epochs_trained": 163,
+      "training_time_sec": 143.98609328269958,
+      "calibrated": true
     }
   }
 }

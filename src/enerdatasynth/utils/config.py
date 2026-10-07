@@ -169,6 +169,20 @@ EARLY_STOP_PATIENCE = 40     # matches week7.py --patience 40; set to None to di
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
 
 
+
+def project_relative(path: str | Path) -> str:
+    """`path` as a POSIX string relative to PROJECT_ROOT when it lives under it, else unchanged.
+
+    Used when recording file locations inside checkpoint metadata, so committed
+    `result.json`/`calibration.json` files don't embed one machine's home directory.
+    """
+    path = Path(path)
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
+
+
 def resolve_device(device: str | None = None) -> str:
     """`device` if given, else "cuda"/"cpu" resolved fresh, at call time.
 

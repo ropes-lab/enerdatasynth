@@ -20,7 +20,7 @@ enerdatasynth generate --diffusion-steps 1000 --hidden-dim 64 --n-layers 2
 
 ## What a researcher should look at first
 
-`docs/research_status.md` §D flags a real gap: no Transformer checkpoint compatible with the current 23-dim conditioning exists yet. Closing it starts here — `enerdatasynth train` (which already defaults to `architecture="transformer"`), then `enerdatasynth calibrate --run-id <new-run-id>`.
+The shipped default was produced with exactly this workflow: `enerdatasynth train --config data/configs/pjm_load/transformer.yaml`, then a calibration fit (`enerdatasynth calibrate --run-id <new-run-id> --seed 42 ...` with the same architecture flags). `docs/research_status.md` §D has the history. The open item is a from-scratch hyperparameter sweep for the Transformer; the current values are the research-validated ones.
 
 ## Assumptions this makes
 

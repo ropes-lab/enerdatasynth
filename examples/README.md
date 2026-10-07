@@ -8,6 +8,8 @@ Runnable demonstrations of the package's public API, in increasing order of scop
 | `generate_samples.py` | Loading a trained checkpoint via `LoadDiffusionModel` and generating profiles — the minimal Tier-2 usage pattern | Seconds |
 | `run_full_pipeline.py` | End-to-end walkthrough (preprocess, train one small model, generate, validate) in a couple of minutes, not the full sweep | Minutes |
 | `run_all.py` | The real top-level orchestrator: preprocess, full hyperparameter sweep, generate for the best config, validation plots, failure analysis, results summary | Hours (full sweep) |
+| `compare_checkpoints.py` | Multi-seed comparison of trained checkpoints on the validation set (the evidence for which one ships as the default); writes `data/reports/pjm_load/checkpoint_comparison.csv` | A few minutes |
+| `plot_real_vs_generated.py` | The six-day real-vs-generated figure in `docs/assets/`, for any checkpoint, with a fixed seed and a rule-based choice of days | Under a minute |
 | `run_benchmark.py` | Classical-vs-diffusion comparison (AR/ARMA/ARIMA/SARIMA vs. a trained checkpoint), built entirely from library code with no duplicated logic | Depends on data size |
 
 One naming quirk found during an earlier audit: `run_benchmark.py`'s own module docstring calls itself `benchmarks/run_benchmark.py` and describes itself as the "move to benchmarks/" successor to the research-history benchmark scripts. There's no top-level `benchmarks/` directory in this repository, though — the file just lives here in `examples/`. It wasn't moved, since that would change every path any external doc or script references; it's flagged in `docs/release_audit.md` as a low-priority inconsistency to fix deliberately rather than as a drive-by change.

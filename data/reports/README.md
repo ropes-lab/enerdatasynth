@@ -11,7 +11,7 @@ Auto-generated reports from the current package's own hyperparameter sweep and e
 | `future_experiments.md` | Hand-written — recommended next experiments, not yet implemented |
 | `figures/` | Validation plots (`enerdatasynth evaluate`) |
 
-These numbers describe the legacy MLP sweep — the only architecture with a bundled, compatible checkpoint today (see `data/checkpoints/README.md`) — not the Transformer. `docs/results.md` is the canonical, cross-checked results reference for the project as a whole, reconciling both the current package's own numbers and the historical research numbers with sources traced. Read that first. This folder is where the current-package numbers actually come from, and it gets overwritten the next time you re-run `sweep`/`evaluate`/`report`.
+The sweep files (`hyperparameter_*`) describe the legacy MLP sweep. The rest of the current-package reports describe the shipped default, the calibrated Transformer (see `data/checkpoints/README.md`). `docs/results.md` is the canonical, cross-checked results reference for the project as a whole, reconciling both the current package's own numbers and the historical research numbers with sources traced. Read that first. This folder is where the current-package numbers actually come from, and it gets overwritten the next time you re-run `sweep`/`evaluate`/`report`.
 
 ## What should not be placed here
 

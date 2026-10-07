@@ -3,9 +3,9 @@ src/enerdatasynth/resources/pjm_load/evaluation/results_report.py
 =================================================================
 Generates reports/results_summary.md automatically from:
   - data/processed/metadata.json
-  - reports/hyperparameter_results.csv
+  - the shipped default checkpoint's result.json / calibration.json
+  - reports/hyperparameter_results.csv (the sweep, if one was run)
   - reports/failure_analysis.md (already written)
-  - the best run's checkpoint result.json
 """
 
 from __future__ import annotations
@@ -15,6 +15,61 @@ from pathlib import Path
 import pandas as pd
 
 from enerdatasynth.utils.config import PROCESSED_DIR, REPORTS_DIR, CHECKPOINT_DIR, ensure_dirs
+
+
+_ARCH_BLURB = {
+    "transformer": (
+        "Transformer-encoder denoiser. Each of the 24 hours is one token with "
+        "a learned positional embedding; the diffusion timestep (sinusoidal "
+        "embedding) and the condition vector are projected through a shared "
+        "MLP and added to every token; a standard `nn.TransformerEncoder` "
+        "(GELU, 4x feedforward) and a linear head predict the noise. Loss: "
+        "standard diffusion MSE only."
+    ),
+    "mlp": (
+        "Simple feedforward MLP denoiser (no attention, no transformers, no "
+        "Fourier features). Inputs: noisy profile x_t, diffusion timestep t "
+        "(sinusoidal embedding), condition vector z (concatenated). Output: "
+        "predicted noise. Loss: standard diffusion MSE only."
+    ),
+}
+
+
+def _default_checkpoint_section() -> list[str]:
+    """Describe the checkpoint `enerdatasynth.model("pjm_load")` actually loads."""
+    from enerdatasynth.generators.load_conditioning import _discover_best_checkpoint
+
+    try:
+        run_id = _discover_best_checkpoint(CHECKPOINT_DIR)
+    except FileNotFoundError:
+        return ["## Shipped Default Checkpoint", "", "_No trained checkpoint found. Run `enerdatasynth train` first._", ""]
+
+    with open(CHECKPOINT_DIR / run_id / "result.json") as f:
+        res = json.load(f)
+    arch = res.get("architecture", "mlp")
+    cal_path = CHECKPOINT_DIR / run_id / "calibration.json"
+    if cal_path.exists():
+        with open(cal_path) as f:
+            cal = json.load(f)
+        calibration = f"scalar offset {cal['scalar']:+.5f}, fit on {cal['n_days_used']} training days"
+    else:
+        calibration = "none (uncalibrated)"
+
+    return [
+        "## Shipped Default Checkpoint",
+        "",
+        f"Run: **{run_id}** (architecture: {arch})",
+        f"- Diffusion steps: {res['diffusion_steps']}",
+        f"- Hidden dimension: {res['hidden_dim']}, layers: {res['n_layers']}",
+        f"- Parameters: {res['n_params']:,}",
+        f"- Best validation loss: {res['best_val_loss']:.5f} (epoch {res['best_epoch']} of {res['epochs_trained']} trained)",
+        f"- Calibration: {calibration}",
+        "",
+        "## Model Architecture",
+        "",
+        _ARCH_BLURB.get(arch, f"{arch} denoiser."),
+        "",
+    ]
 
 
 def generate_results_summary() -> Path:
@@ -42,21 +97,20 @@ def generate_results_summary() -> Path:
         f"- X shape (train): {meta['X_shape_train']}",
         f"- Z shape (train): {meta['Z_shape_train']}, dim={meta['condition_dim']}",
         "",
-        "## Model Architecture",
-        "",
-        "Simple feedforward MLP denoiser (no attention, no transformers, "
-        "no Fourier features). Inputs: noisy profile x_t, diffusion "
-        "timestep t (sinusoidal embedding), condition vector z "
-        "(concatenated). Output: predicted noise. Loss: standard "
-        "diffusion MSE only.",
-        "",
     ]
+    lines += _default_checkpoint_section()
 
     if best_row is not None:
         lines += [
-            "## Training Results",
+            "## Hyperparameter Sweep",
             "",
-            f"Best configuration: **{best_row['run_id']}**",
+            "Best configuration in `hyperparameter_results.csv`, ranked by "
+            "validation loss. This is the sweep's own winner and is separate "
+            "from the shipped default described above (a Transformer is "
+            "selected over any MLP run regardless of validation loss, since "
+            "losses are not comparable across diffusion-step counts).",
+            "",
+            f"Best sweep configuration: **{best_row['run_id']}**",
             f"- Diffusion steps: {best_row['diffusion_steps']}",
             f"- Hidden dimension: {best_row['hidden_dim']}",
             f"- Layers: {best_row['n_layers']}",
@@ -67,15 +121,13 @@ def generate_results_summary() -> Path:
             f"- Generation time (64 samples): "
             f"{best_row['generation_time_sec_per_64']:.2f}s",
             "",
-            "## Best Hyperparameters",
-            "",
             "See `hyperparameter_results.csv` and `hyperparameter_summary.md` "
             "for the full ranked sweep.",
             "",
         ]
     else:
         lines += [
-            "## Training Results",
+            "## Hyperparameter Sweep",
             "",
             "_Sweep not yet run. Run `python -m enerdatasynth.resources.pjm_load.training.sweep` first._",
             "",

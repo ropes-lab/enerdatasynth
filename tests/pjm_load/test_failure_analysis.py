@@ -1,7 +1,7 @@
 """Tests for enerdatasynth.resources.pjm_load.evaluation.failure_analysis.
 
 Mirrors tests/wind/test_failure_analysis.py. Runs against the real bundled
-validation set and the real generated sample set for the default checkpoint
+validation set and the real generated sample set for the shipped default checkpoint
 (no mocks), writing its report to a temp dir so the tracked report in
 data/reports/pjm_load/ is left untouched.
 """
@@ -13,7 +13,7 @@ import pytest
 from enerdatasynth.resources.pjm_load.evaluation import failure_analysis as fa
 from enerdatasynth.utils.config import GENERATED_DIR
 
-RUN_ID = "T100_H256_L4"
+RUN_ID = "transformer_T1000_H64_L2"  # the shipped default checkpoint
 
 needs_bundled_samples = pytest.mark.skipif(
     not (GENERATED_DIR / f"X_generated_{RUN_ID}.npy").exists(),
