@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/diffusion/ddpm.py
-======================================
+src/enerdatasynth/resources/pjm_load/diffusion/ddpm.py
+======================================================
 Denoising Diffusion Probabilistic Model (DDPM) — forward noising
 process, training loss, and reverse sampling.
 

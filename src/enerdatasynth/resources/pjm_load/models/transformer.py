@@ -1,13 +1,13 @@
 """
-src/enerdatasynth/models/transformer.py
-==========================================
+src/enerdatasynth/resources/pjm_load/models/transformer.py
+==========================================================
 Transformer denoiser — the Week-6 architecture-comparison winner,
 promoted to the primary/default architecture in Week 7. It beats the
 MLP baseline on 6 of 7 generation metrics at ~6x fewer parameters
 (110K vs 688K) and beats every classical baseline (AR/ARMA/ARIMA/
 SARIMA) on 7 of 7 — see
 research_history/reports/week6/arch/summary_report.md and
-research_history/reports/week7/summary_report.md.
+data/research_history/pjm_load/reports/week7/summary_report.md.
 
 Extracted from research_history/scripts/week7.py's `TransformerDenoiser`.
 Submodule attribute names (`cond`, `val`, `pos`, `enc`, `out`) are kept
@@ -24,13 +24,15 @@ second duplicate implementation — that class holds no learnable
 parameters, so this has no effect on checkpoint compatibility.
 
 Caveat (see the migration report): the checkpoint this architecture
-was actually validated against (`transformer_baseline_z5.pt`) was
+was originally validated against (`transformer_baseline_z5.pt`) was
 trained with `cond_dim=6` (the research lineage's raw "Z5" conditioning
 vector), not the 23-dimensional one-hot conditioning
-`enerdatasynth.resources.pjm_load.data.preprocess` currently produces. No pretrained
-checkpoint compatible with the current preprocessing pipeline exists
-yet — training a fresh one is required (`enerdatasynth train`, which
-now defaults to this architecture).
+`enerdatasynth.resources.pjm_load.data.preprocess` produces, so those
+Week 6/7 numbers describe a different model from the one the package
+ships. The shipped default, `transformer_T1000_H64_L2` in
+data/checkpoints/pjm_load/, was trained afterwards on the 23-dim
+conditioning with data/configs/pjm_load/transformer.yaml and has its own
+separately measured results (docs/models/pjm_load.md §8).
 """
 
 from __future__ import annotations

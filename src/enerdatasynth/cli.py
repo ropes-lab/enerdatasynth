@@ -134,6 +134,7 @@ def cmd_calibrate(args: argparse.Namespace) -> None:
         hidden_dim=args.hidden_dim,
         n_layers=args.n_layers,
         n_heads=args.n_heads,
+        seed=args.seed,
     )
     print(f"Scalar offset: {result['scalar']:+.5f}  (saved to {result['path']})")
 

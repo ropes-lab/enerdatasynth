@@ -34,7 +34,7 @@ dependencies = [
     "tqdm",
     "pyarrow",
     "pyyaml",
-    # Below: wind_diffusion's own dependencies (src/wind_diffusion/, vendored
+    # Below: wind_diffusion's own dependencies (src/enerdatasynth/resources/wind/, vendored
     # from Data-For-Good) that weren't already covered above. torch's pin
     # is likewise wind_diffusion's -- see the comment in the original repo's
     # pyproject.toml: torch==2.12.0+cpu segfaults during the autograd-tracked

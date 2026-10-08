@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/models/denoiser.py
-=======================================
+src/enerdatasynth/resources/pjm_load/models/denoiser.py
+=======================================================
 Simple feedforward MLP denoiser for the conditional diffusion model.
 
 This was the original baseline architecture. Research later found a

@@ -19,10 +19,25 @@ def test_list_models_returns_real_bundled_checkpoints():
     assert "checkpoints" in models
     assert "default_run_id" in models
     assert models["default_run_id"] in models["checkpoints"]
-    # every bundled checkpoint predates the architecture field -- see
-    # docs/research_status.md §D; the manifest must say so honestly, not "transformer"
-    for entry in models["checkpoints"].values():
-        assert entry["architecture"] == "mlp"
+    # the shipped default is the calibrated Transformer, and it is the only
+    # Transformer run; the seven legacy runs predate the architecture field
+    # and must keep being reported honestly as "mlp"
+    default = models["checkpoints"][models["default_run_id"]]
+    assert default["architecture"] == "transformer"
+    assert default["calibrated"] is True
+    assert models["transformer_runs_available"] == [models["default_run_id"]]
+    legacy = [e for rid, e in models["checkpoints"].items() if rid != models["default_run_id"]]
+    assert len(legacy) == 7
+    assert all(e["architecture"] == "mlp" for e in legacy)
+
+
+def test_manifest_default_matches_what_the_sdk_actually_selects():
+    # the manifest is hand-regenerated from result.json files; this keeps it
+    # from silently drifting away from the real checkpoint-selection logic
+    from enerdatasynth.generators.load_conditioning import _discover_best_checkpoint
+    from enerdatasynth.utils.config import CHECKPOINT_DIR
+
+    assert list_models()["default_run_id"] == _discover_best_checkpoint(CHECKPOINT_DIR)
 
 
 def test_describe_model_known_run_id():

@@ -3,8 +3,8 @@
 **Do I need to know anything about diffusion models to use this?**
 No. `enerdatasynth.model(...).set(...).sample(...)` never exposes tensors, architecture classes, or checkpoint paths. See the [README Quick Start](../README.md#-quick-start).
 
-**Why does `enerdatasynth.model("pjm_load")` sometimes use the MLP instead of the transformer, if the transformer is supposed to be better?**
-The SDK auto-discovers the best *available* checkpoint, preferring transformer runs. If no transformer checkpoint has been trained yet against this package's current preprocessing pipeline, it falls back to the best MLP run rather than failing. Train one (`enerdatasynth train`) to make it the new default automatically — see [`docs/api_reference.md`](api_reference.md)'s `_discover_best_checkpoint` note and [MIGRATION.md](../MIGRATION.md) §5 for why no transformer checkpoint exists under the current pipeline yet.
+**Which model does `enerdatasynth.model("pjm_load")` use?**
+The SDK auto-discovers the best *available* checkpoint, preferring transformer runs, and falls back to the best MLP run only if no transformer checkpoint exists. A calibrated Transformer (`transformer_T1000_H64_L2`) ships in `data/checkpoints/pjm_load/`, so that is what loads; the seven older MLP checkpoints stay bundled as the comparison baseline. Train another one with `enerdatasynth train` and it will be picked up automatically. See [`docs/api_reference.md`](api_reference.md)'s `_discover_best_checkpoint` note and [`docs/models/pjm_load.md`](models/pjm_load.md) §5.
 
 **What temperature units does `.set(Tmax=, Tmin=)` expect?**
 Degrees Fahrenheit — matching the training data. Not silently converted from Celsius. See [`docs/api_reference.md`](api_reference.md).

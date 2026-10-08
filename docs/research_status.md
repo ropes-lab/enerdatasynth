@@ -114,14 +114,18 @@ Verified directly from the code (not from old reports):
 
 **The critical caveat, already honestly disclosed in the code itself:**
 
-> "the checkpoint this architecture was actually validated against
+> "the checkpoint this architecture was originally validated against
 > (`transformer_baseline_z5.pt`) was trained with `cond_dim=6` (the research lineage's
 > raw 'Z5' conditioning vector), not the 23-dimensional one-hot conditioning
-> `enerdatasynth.resources.pjm_load.data.preprocess` currently produces. No pretrained checkpoint compatible
-> with the current preprocessing pipeline exists yet."
+> `enerdatasynth.resources.pjm_load.data.preprocess` produces, so those Week 6/7 numbers
+> describe a different model from the one the package ships."
 > — `src/enerdatasynth/resources/pjm_load/models/transformer.py`, module docstring
 
-**What this means in practice, verified by actually running it:** every checkpoint
+**Status: resolved on 2026-10-07.** Until then, no Transformer checkpoint compatible with the
+23-dim conditioning existed. The history below is kept because several earlier results
+were produced during that period.
+
+**What this meant before the shipped Transformer, verified by actually running it:** every checkpoint
 bundled under `data/checkpoints/pjm_load/` (`T100_H256_L4`, `T100_H128_L6`, `T200_H128_L4`,
 `T100_H64_L4`, `T100_H128_L4`, `T100_H128_L2`, `T50_H128_L4`) has no `"architecture"` key
 in its `result.json` — the historical marker for the original MLP hyperparameter sweep,
@@ -129,17 +133,24 @@ before the `architecture` field existed. `generators/load.py`'s `from_run_id` de
 defaults a missing `architecture` key to `"mlp"`, not to the current
 `DEFAULT_ARCHITECTURE`, specifically because every checkpoint without that key really is
 an MLP run. `generators/load_conditioning.py`'s `_discover_best_checkpoint()` prefers a
-`"transformer"`-tagged run when one exists, but **none exists in this repository today**,
-so it falls back to the best legacy MLP run by validation loss
-(`T100_H256_L4`, 224,024 params, best val loss 0.08164 — see `data/reports/pjm_load/results_summary.md`).
+`"transformer"`-tagged run when one exists. None did, so it fell back to the best legacy
+MLP run by validation loss (`T100_H256_L4`, 224,024 params, best val loss 0.08164).
 
-**Therefore: `enerdatasynth.model("pjm_load", zone="PS")` today silently loads the legacy
-MLP baseline, not the Transformer**, despite the Transformer being the architecture this
-project recommends and defaults new training to. This is confirmed by direct inspection
-of `_discover_best_checkpoint()` and by the absence of any `"architecture": "transformer"`
-entry among the bundled `result.json` files. **Training a fresh Transformer checkpoint
-against the current 23-dimensional conditioning (`enerdatasynth train`) is required before
-the package's default sampling path reflects the validated Week 7 result.**
+**The fix:** a Transformer was trained against the current 23-dimensional conditioning with
+the validated config (`enerdatasynth train --config data/configs/pjm_load/transformer.yaml`,
+seed 42), calibrated, and added as `data/checkpoints/pjm_load/transformer_T1000_H64_L2/`.
+`_discover_best_checkpoint()` now selects it, so **`enerdatasynth.model("pjm_load", zone="PS")`
+loads the calibrated Transformer**; `tests/pjm_load/test_api.py` checks that the manifest
+and the selection logic agree. On the 600 validation days it beats the legacy MLP on all
+seven metrics in every one of 5 generation seeds, before and after calibration
+(`data/reports/pjm_load/checkpoint_comparison.csv`; reproduce with
+`examples/compare_checkpoints.py`).
+
+**What this does not do.** The Week 7 numbers (RMSE 0.0195, Peak 0.0089, ...) are still
+research-conditioning results; the shipped model's own numbers differ and are reported
+separately. It is also one training run with research-validated hyperparameters rather than
+a from-scratch sweep, and the checkpoint-selection rule prefers any Transformer over any MLP
+because validation losses aren't comparable across diffusion-step counts.
 
 ## E. Diffusion Process
 
@@ -210,11 +221,12 @@ Implemented in `src/enerdatasynth/resources/pjm_load/evaluation/calibration.py`.
   were validated on the validation set, but the calibration offset itself was never
   independently re-tested on held-out days beyond the 1,200-day training sample it was
   fit on).
-- **Current package status: no bundled checkpoint ships a `calibration.json`.** All seven
-  legacy MLP checkpoints under `data/checkpoints/pjm_load/` were checked directly — none has one.
-  `LoadDiffusionModel` treats a missing calibration file as "not yet calibrated" and skips
-  correction silently (`load_calibration` returns `None` rather than raising). **Default,
-  out-of-the-box `pjm_load` sampling today is therefore uncalibrated.**
+- **Current package status: the shipped default carries a `calibration.json`.**
+  `transformer_T1000_H64_L2/calibration.json` holds a scalar offset of +0.02342, fit on 1,200
+  training days (seed 42), and `LoadDiffusionModel` applies it automatically, so default
+  `pjm_load` sampling is calibrated. The seven legacy MLP checkpoints have none;
+  `LoadDiffusionModel` treats a missing file as "not yet calibrated" and skips correction
+  silently (`load_calibration` returns `None` rather than raising).
 
 ## G. Evaluation
 

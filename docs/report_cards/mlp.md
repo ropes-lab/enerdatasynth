@@ -1,8 +1,9 @@
 # Report Card — MLP Denoiser
 
-**Status: Original baseline / legacy architecture. Currently the package's de facto
-default** (see LIMITATIONS — this is not by design, it's the absence of a bundled
-Transformer checkpoint).
+**Status: Original baseline / legacy architecture. No longer the package default** —
+the shipped default is now the calibrated Transformer (`transformer_T1000_H64_L2`; see
+[`transformer.md`](transformer.md)). The seven legacy MLP checkpoints stay bundled as the
+comparison baseline.
 
 ---
 
@@ -63,14 +64,15 @@ Same 7-metric suite as the Transformer.
 MLP wins only on Energy among the two diffusion models — and loses to the Transformer on
 6 of 7 metrics at ~6× more parameters.
 
-*Package sweep result (23-dim conditioning, `T100_H256_L4`, from `data/reports/pjm_load/results_summary.md`,
+*Package sweep result (23-dim conditioning, `T100_H256_L4`, from `data/reports/pjm_load/failure_analysis_legacy_mlp_T100_H256_L4.md`,
 its own known failure modes):* ramp-rate std overshoot (+289.8% vs. real), seasonal mean
 mismatch (winter −10.8%, summer −14.9%). This is a genuinely different, earlier-stage
 result from the Week 6/7 comparison above — not directly comparable, and notably worse
 on shape metrics than either research-lineage result.
 
 **FAILURE MODES**
-Per the package's own `data/reports/pjm_load/failure_analysis.md`: ramp-rate mismatch (too noisy)
+Per `data/reports/pjm_load/failure_analysis_legacy_mlp_T100_H256_L4.md` (preserved from
+before the default changed): ramp-rate mismatch (too noisy)
 and seasonal under-utilization of the month conditioning — both attributed to
 under-training relative to the Transformer/Week-7 convergence work.
 
@@ -79,9 +81,10 @@ under-training relative to the Transformer/Week-7 convergence work.
 2. The specific bundled checkpoint (`T100_H256_L4`) is from an earlier, smaller,
    less-converged sweep than the Week 6/7 research runs — its failure modes (ramp/
    seasonal) are worse than either research-lineage MLP result.
-3. **No calibration.json is bundled** for any MLP checkpoint — Energy's apparent
-   advantage over the Transformer in the Week 6/7 table has not been tested against a
-   calibrated Transformer under the same conditions.
-4. **This is currently what `enerdatasynth.model("pjm_load", ...)` actually returns**,
-   despite the Transformer being the documented recommendation — see
-   `docs/research_status.md` §D for exactly why.
+3. **No calibration.json is bundled** for any MLP checkpoint. Energy's apparent
+   advantage over the Transformer in the Week 6/7 table was a research-conditioning
+   result; on the 23-dim conditioning the calibrated Transformer's Energy error (0.046)
+   is far below this MLP's (0.770).
+4. **It is not what `enerdatasynth.model("pjm_load", ...)` returns any more.** On the
+   package's own 23-dim conditioning, the shipped Transformer beats `T100_H256_L4` on all
+   seven metrics in every seed (`data/reports/pjm_load/checkpoint_comparison.csv`).

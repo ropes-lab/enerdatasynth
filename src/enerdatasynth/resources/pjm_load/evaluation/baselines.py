@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/evaluation/baselines.py
-=============================================
+src/enerdatasynth/resources/pjm_load/evaluation/baselines.py
+============================================================
 Classical time-series baselines (AR / ARMA / ARIMA / SARIMA) used to
 benchmark the diffusion model against non-deep-learning alternatives.
 

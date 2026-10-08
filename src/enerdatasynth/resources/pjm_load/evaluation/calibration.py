@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/evaluation/calibration.py
-===============================================
+src/enerdatasynth/resources/pjm_load/evaluation/calibration.py
+==============================================================
 Post-processing bias correction for generated profiles.
 
 The trained denoiser reproduces daily SHAPE well but carries a small,
@@ -115,7 +115,7 @@ def calibrate_checkpoint(run_id: str, architecture: str, diffusion_steps: int,
     ("stored in calibration.json next to the checkpoint... applied at
     generation time"). `LoadDiffusionModel` auto-discovers this file.
     """
-    from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, ensure_dirs, resolve_device
+    from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, ensure_dirs, resolve_device, project_relative
     from enerdatasynth.resources.pjm_load.models import build_denoiser
     from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
 
@@ -135,7 +135,7 @@ def calibrate_checkpoint(run_id: str, architecture: str, diffusion_steps: int,
     calibration = calibrate_from_samples(
         model, ddpm, X_train, Z_train, n_fit=n_fit, seed=seed, device=device,
     )
-    calibration["checkpoint"] = str(ckpt_path)
+    calibration["checkpoint"] = project_relative(ckpt_path)
 
     out_path = CHECKPOINT_DIR / run_id / "calibration.json"
     save_calibration(out_path, calibration)

@@ -100,3 +100,13 @@ def test_project_root_is_not_derived_from_installed_package_location():
                 cwd=elsewhere, capture_output=True, text=True, check=True, env=env,
             )
             assert os.path.realpath(result2.stdout.strip()) == os.path.realpath(override_target)
+
+
+def test_project_relative_strips_the_project_root_only():
+    # checkpoint metadata must not embed one machine's home directory
+    from enerdatasynth.utils.config import PROJECT_ROOT, project_relative
+
+    inside = PROJECT_ROOT / "data" / "checkpoints" / "pjm_load" / "run" / "best.pt"
+    assert project_relative(inside) == "data/checkpoints/pjm_load/run/best.pt"
+    # a path outside the project is returned untouched rather than mangled
+    assert project_relative("/somewhere/else/best.pt") == "/somewhere/else/best.pt"

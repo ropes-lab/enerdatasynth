@@ -5,6 +5,9 @@ The actual trained models this package ships — what lets `enerdatasynth.model(
 ```
 checkpoints/
 ├── pjm_load/
+│   ├── transformer_T1000_H64_L2/      # the shipped default: calibrated Transformer
+│   │   ├── best.pt, latest.pt, result.json, loss_curve.png
+│   │   └── calibration.json
 │   └── T50_H128_L4/ … T200_H128_L4/   # 7 legacy MLP sweep runs
 │       ├── best.pt, latest.pt          #   (T=diffusion steps, H=hidden_dim, L=n_layers)
 │       ├── result.json
@@ -19,9 +22,9 @@ One folder per resource, sitting side by side like everywhere else in `data/` �
 
 ## PJM load checkpoints
 
-Every `result.json` here predates the `"architecture"` field, so `from_run_id` treats them all as `"mlp"` — correctly, since all seven really are legacy MLP runs, not the Transformer. No Transformer checkpoint compatible with the current 23-dim conditioning exists in this repository yet. `_discover_best_checkpoint()` picks the best by validation loss (`T100_H256_L4` as of writing) — see [`docs/models/pjm_load.md`](../../docs/models/pjm_load.md) §5.
+The default is **`transformer_T1000_H64_L2`**, a Transformer trained on the current 23-dim conditioning and calibrated. `_discover_best_checkpoint()` prefers any `"transformer"` run over any MLP run, because validation losses aren't comparable across diffusion-step counts. The seven older runs have no `"architecture"` field in their `result.json`, so `from_run_id` treats them as `"mlp"` — correctly, since all seven really are legacy MLP runs. They stay as the comparison baseline. See [`docs/models/pjm_load.md`](../../docs/models/pjm_load.md) §5.
 
-None of these have a `calibration.json`, so default sampling is uncalibrated. Run `enerdatasynth calibrate --run-id <run_id>` if you want one.
+Only the Transformer has a `calibration.json`, applied automatically at generation. Run `enerdatasynth calibrate --run-id <run_id>` to add one to another checkpoint.
 
 ## Wind checkpoints
 

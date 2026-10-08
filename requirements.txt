@@ -14,7 +14,7 @@ requests==2.33.1
 tqdm==4.67.3
 pyarrow==24.0.0
 
-# wind_diffusion's own dependencies (src/wind_diffusion/, vendored from
+# wind_diffusion's own dependencies (src/enerdatasynth/resources/wind/, vendored from
 # Data-For-Good) -- seaborn was previously viz-extra-only (used by
 # research_history/eda_exploration.py); it's now also a hard dependency
 # of wind_diffusion.evaluate, so it moved up from "optional" here.

@@ -89,3 +89,21 @@ def test_report_defaults_to_pjm_load_resource():
     parser = cli.build_parser()
     args = parser.parse_args(["report"])
     assert args.resource == "pjm_load"
+
+
+def test_cmd_calibrate_passes_seed_through(monkeypatch):
+    # `calibrate` used to accept --seed and silently drop it, making the
+    # fitted offset irreproducible from the command line
+    import enerdatasynth.resources.pjm_load.evaluation.calibration as cal
+
+    seen = {}
+
+    def fake_calibrate_checkpoint(**kwargs):
+        seen.update(kwargs)
+        return {"scalar": 0.0, "path": "x"}
+
+    monkeypatch.setattr(cal, "calibrate_checkpoint", fake_calibrate_checkpoint)
+    args = cli.build_parser().parse_args(["calibrate", "--run-id", "r", "--seed", "42"])
+    cli.cmd_calibrate(args)
+    assert seen["seed"] == 42
+    assert seen["run_id"] == "r"

@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/evaluation/metrics.py
-==========================================
+src/enerdatasynth/resources/pjm_load/evaluation/metrics.py
+==========================================================
 Canonical numeric comparison metrics between real and generated load
 profiles.
 

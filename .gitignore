@@ -10,14 +10,31 @@ build/
 # OS
 .DS_Store
 
-# Editors
+# Editors / tooling
 .vscode/
 .idea/
+.claude/settings.local.json
 
 # Raw/cached source data -- not distributed with this repository, see
-# docs/data_card.md. Placeholder files (PUT_RAW_CSVS_HERE.txt, README.md)
-# are tracked; the real data they describe is not.
-data/raw_data/pjm_load_data/*.csv
-data/cache/*.parquet
-data/cache/isd-history.csv
-data/cache/resolved_ids.json
+# docs/data_card.md. Only the README.md placeholders in these folders are
+# tracked; the real data they describe is not. (Patterns cover every file
+# type a user is likely to drop in, not just the one we happened to ship.)
+data/raw/pjm_load/*
+!data/raw/pjm_load/README.md
+data/raw/wind/*
+!data/raw/wind/README.md
+data/cache/pjm_load/*
+!data/cache/pjm_load/README.md
+data/cache/wind/*
+!data/cache/wind/README.md
+
+# LaTeX build artifacts (paper/)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.log
+paper/*.out
+paper/*.toc
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.synctex.gz

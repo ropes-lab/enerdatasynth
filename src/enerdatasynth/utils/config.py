@@ -132,7 +132,7 @@ EXCLUDED_BY_DESIGN = [
 # ─────────────────────────────────────────────────────────────────────────────
 # "transformer": the Week-6 architecture-comparison winner, promoted
 #   to primary baseline in Week 7 (research_history/reports/week6/arch/,
-#   research_history/reports/week7/summary_report.md). model_dim=64,
+#   data/research_history/pjm_load/reports/week7/summary_report.md). model_dim=64,
 #   num_layers=2, num_heads=4, T=1000 are the exact hyperparameters
 #   that produced those validated results.
 # "mlp": the original simple baseline, kept as a legacy/research option.
@@ -167,6 +167,20 @@ EARLY_STOP_PATIENCE = 40     # matches week7.py --patience 40; set to None to di
 # silently keep using the stale default. Use `resolve_device(device)`
 # instead, called at call time, with `device: str | None = None`.
 DEVICE          = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+
+def project_relative(path: str | Path) -> str:
+    """`path` as a POSIX string relative to PROJECT_ROOT when it lives under it, else unchanged.
+
+    Used when recording file locations inside checkpoint metadata, so committed
+    `result.json`/`calibration.json` files don't embed one machine's home directory.
+    """
+    path = Path(path)
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return str(path)
 
 
 def resolve_device(device: str | None = None) -> str:

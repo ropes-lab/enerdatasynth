@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/sampling/generate.py
-=========================================
+src/enerdatasynth/resources/pjm_load/sampling/generate.py
+=========================================================
 After training: generate one synthetic sample for every real
 condition vector in the validation (or training) set.
 

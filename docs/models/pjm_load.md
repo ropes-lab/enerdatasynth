@@ -50,22 +50,24 @@ this is the single most important thing to know before quoting a result:**
 | Encoding | Compact raw values | month one-hot (12) + day-of-week one-hot (7) + holiday binary (1) + Tmax/Tmin/spread z-scored (3) |
 | Where it's used | Every Week 6/7 Transformer result | `enerdatasynth.model("pjm_load", ...).set(...)` today |
 
-**No checkpoint bridges the two.** The Transformer's validated results (§8) were
-produced with the 6-dimensional research conditioning; no Transformer checkpoint has
-been trained against the current 23-dimensional package conditioning. This is disclosed
-directly in the code (`src/enerdatasynth/resources/pjm_load/models/transformer.py`'s module docstring) and
-is not a documentation oversight — see [`docs/research_status.md`](../research_status.md) §C/§D.
+**The two give separate sets of results.** The Transformer's Week 6/7 results (§8) were
+produced with the 6-dimensional research conditioning. The Transformer that ships as the
+package default (`transformer_T1000_H64_L2`) was trained afterwards on the current
+23-dimensional conditioning, so it has its own measured results, reported separately in
+§8 under "Shipped default". Don't mix the two sets of numbers — see
+[`docs/research_status.md`](../research_status.md) §C/§D.
 
 ## 5. Generative Model
 
 A conditional DDPM (Denoising Diffusion Probabilistic Model). Two denoiser
 architectures exist:
 
-- **Transformer** (recommended, `DEFAULT_ARCHITECTURE`): per-hour tokenization, learned
-  positional embedding, sinusoidal timestep embedding, conditioning injected via a
-  2-layer SiLU MLP added to every token, standard `nn.TransformerEncoder`
-  (`model_dim=64, num_heads=4, num_layers=2` by default). 110,401 parameters in the
-  architecture-comparison configuration (6-dim conditioning).
+- **Transformer** (recommended, `DEFAULT_ARCHITECTURE`, and what ships): per-hour
+  tokenization, learned positional embedding, sinusoidal timestep embedding,
+  conditioning injected via a 2-layer SiLU MLP added to every token, standard
+  `nn.TransformerEncoder` (`model_dim=64, num_heads=4, num_layers=2` by default).
+  110,401 parameters in the architecture-comparison configuration (6-dim conditioning);
+  111,489 in the shipped checkpoint, whose input layer takes the 23-dim conditioning.
 - **MLP** (legacy baseline): 4 residual blocks, width 256, ~688,408 parameters in the
   same comparison; the specific bundled sweep checkpoint (`T100_H256_L4`) has 224,024
   parameters under different hyperparameters.
@@ -79,21 +81,26 @@ historical sampler bug (an earlier implementation reused a prediction across ste
 (`tests/pjm_load/test_diffusion.py`) guards against reintroducing that bug.
 
 **Which one does the package actually load?** `enerdatasynth.model("pjm_load", ...)`
-today resolves to the best available checkpoint by validation loss, preferring a
-`"transformer"`-tagged run if one exists. **None currently exists** — every bundled
-checkpoint predates the `architecture` field and is treated as `"mlp"` — so the package
-currently loads the **legacy MLP baseline**, not the Transformer described above as
-recommended. See §14 for how to close this gap.
+resolves to the best available checkpoint by validation loss, preferring a
+`"transformer"`-tagged run if one exists. One does: **`transformer_T1000_H64_L2`**, so the
+package loads the Transformer, with its scalar calibration applied automatically. The
+seven older checkpoints predate the `architecture` field, are treated as `"mlp"`, and
+stay bundled as the legacy baseline.
 
 ## 6. Training
 
 Standard DDPM training: AdamW, plain diffusion MSE loss (no auxiliary terms), best +
 latest checkpoint saving, per-epoch CSV logs, optional early stopping (patience=10).
-Config-driven via `RunConfig` / `data/configs/pjm_load/{transformer,mlp}.yaml`. The Transformer's
-validated training run (Week 7) trained to convergence against the 6-dim research
-conditioning; specific optimizer/LR/batch-size values for that exact run were not
-independently re-verified against the current `training/train.py` in this documentation
-pass. Runtime for the bundled MLP sweep's best config: 6.7s (`T100_H256_L4`, 50 epochs).
+Config-driven via `RunConfig` / `data/configs/pjm_load/{transformer,mlp}.yaml`. The
+Transformer's Week 7 run trained to convergence against the 6-dim research conditioning;
+specific optimizer/LR/batch-size values for that exact run were not independently
+re-verified against the current `training/train.py`.
+
+The shipped default was trained with `data/configs/pjm_load/transformer.yaml` (seed 42:
+`T=1000`, `hidden_dim=64`, `n_layers=2`, `n_heads=4`, `lr=3e-4`, `batch_size=64`) on CPU
+in 144s. It early-stopped at epoch 163 (patience 40) with best validation loss 0.00946 at
+epoch 123. Its calibration scalar is +0.02342, fit on 1,200 training days with seed 42.
+For comparison, the bundled MLP sweep's best config (`T100_H256_L4`) trained in 6.7s.
 
 ## 7. Evaluation
 
@@ -130,9 +137,29 @@ Seven metrics, all lower-is-better, implemented once in
 | **Transformer (new baseline)** | **0.0195** | **0.0089** | 0.1405 | **Yes, 7/7** |
 
 Transformer beats the MLP on 6 of 7 metrics at ~6× fewer parameters; the one metric it
-loses (`Energy`) is fixed by calibration (§12). Full tables, including the package's own
-live benchmark against its actual current default checkpoint (beats every classical
-baseline on 5 of 7 metrics under the current 23-dim conditioning): [`docs/results.md`](../results.md).
+loses (`Energy`) is fixed by calibration (§12). These are the Week 6/7 numbers, with the
+6-dim research conditioning.
+
+**Shipped default** (`transformer_T1000_H64_L2`, trained on the package's own 23-dim
+conditioning). Mean over 5 generation seeds on the 600 validation days, normalized units,
+lower is better. Each model was trained once, so the spread covers sampling noise only.
+Reproduce with `examples/compare_checkpoints.py` (writes
+`data/reports/pjm_load/checkpoint_comparison.csv`):
+
+| Model | Hourly | FirstDiff | ACF | RMSE | Peak | Energy | Ramp |
+|---|---|---|---|---|---|---|---|
+| Legacy MLP (`T100_H256_L4`) | 0.0586 | 0.0788 | 0.1363 | 0.0465 | 0.0404 | 0.7699 | 0.0646 |
+| Transformer, uncalibrated | 0.0486 | 0.0005 | 0.0307 | 0.0265 | 0.0358 | 0.5159 | 0.0008 |
+| **Transformer, calibrated (shipped)** | **0.0395** | **0.0005** | **0.0307** | **0.0156** | **0.0124** | **0.0462** | **0.0008** |
+
+The Transformer beats the MLP on all seven metrics in all five seeds, even before
+calibration. Against the classical baselines (AR/ARMA/ARIMA/SARIMA, single run,
+`data/reports/pjm_load/benchmark_comparison.csv`) the shipped model also wins on all
+seven: for example RMSE 0.0153 vs. the best classical 0.182, and ACF 0.0315 vs. 0.107.
+
+These shipped-model numbers are a different experiment from the Week 7 table above
+(different conditioning, one training run) and shouldn't be merged with it. Full tables:
+[`docs/results.md`](../results.md).
 
 ## 9. Actual vs. Generated Examples
 
@@ -141,14 +168,18 @@ baseline on 5 of 7 metrics under the current 23-dim conditioning): [`docs/result
 Six representative validation days (coldest, hottest, spring/fall/weekend near-median,
 and overall-median `Tmax`), each showing the **real** profile against a **generated**
 one sampled from the *exact same conditioning vector* — generated live, from the
-package's actual current default checkpoint (`T100_H256_L4`, MLP architecture; see §5)
-for this documentation pass, not a cherry-picked historical figure.
+package's shipped default checkpoint (`transformer_T1000_H64_L2`, calibrated; see §5),
+sampled once with a fixed seed. Reproduce with `examples/plot_real_vs_generated.py`. The
+days are chosen by a rule on `Tmax`, not by looking at the output.
 
-**Read honestly:** the model tracks the real daily shape well for mild-temperature days
-(spring, fall, weekend, median), and visibly struggles at both temperature extremes
-(coldest and — especially — hottest day), consistent with §10/§13's hot-day weakness
-finding. This figure shows the *current default* (MLP) checkpoint's real behavior, not
-the better-performing Transformer's (which has no compatible bundled checkpoint — §4).
+**Read honestly:** the model tracks the real shape well on the mild days (spring, fall,
+weekend, overall median) and on the coldest day, including the morning peak. The
+**hottest day is still clearly under-generated**, and its evening trend runs the wrong
+way. That day (102°F) is above anything in the training data: 8 of the 600 validation days
+have real load above the training maximum (normalized load up to 1.105), so extreme heat
+is an extrapolation case. This matches the hot-day weakness in §10/§13. The previous
+version of this figure, from the legacy MLP, was visibly jagged and missed the hottest
+day by about 0.4 in normalized load.
 
 ## 10. Conditional / Regime Evaluation
 
@@ -200,15 +231,23 @@ correction — one number added to every hour — fixes this:
   scalar is the validated choice, not the untested default.
 - **Train-fit, not independently re-validated** beyond the 1,200-day sample it was
   measured on.
-- **No bundled checkpoint currently ships a `calibration.json`** — default package
-  sampling is uncalibrated today.
+- **The shipped default carries one.** `transformer_T1000_H64_L2/calibration.json`
+  holds a scalar of +0.02342, fit on 1,200 training days with seed 42, and is applied
+  automatically at generation. On the 23-dim conditioning it cuts `Energy` error from
+  0.516 to 0.046 (5-seed means), alongside gains on `Peak` (0.036 to 0.012), `RMSE`
+  (0.027 to 0.016), and `Hourly` (0.049 to 0.040). The seven legacy MLP checkpoints have
+  none, so they sample uncalibrated.
 
 ## 13. Limitations
 
-1. Reported Transformer results use research conditioning (6-dim); the package's own
-   preprocessing (23-dim) has not been used to produce or verify any of them.
-2. The package currently defaults to the legacy MLP checkpoint, not the Transformer.
-3. Default sampling is uncalibrated (no bundled `calibration.json`).
+1. The Week 6/7 Transformer results use research conditioning (6-dim). The shipped
+   Transformer was trained on the package's 23-dim conditioning and measured separately
+   (§8), from a single training run with the validated-in-research hyperparameters, not a
+   from-scratch sweep.
+2. The shipped checkpoint's validation loss (0.00946, `T=1000`) is not comparable to the
+   legacy MLPs' (`T=100`); the choice of default rests on the generated-profile metrics.
+3. Extreme heat is under-generated (§9), and the uncalibrated winter mean runs about 11%
+   low before the calibration offset is applied.
 4. Only 1 of 17 researched zones is packaged; DOM fails badly among the 17.
 5. Hot-condition days are a measurable, unresolved weak point.
 6. Calibration's validation is limited to its own fitting sample.
@@ -231,8 +270,10 @@ enerdatasynth calibrate --run-id <the new run's run_id>
 enerdatasynth evaluate --run-id <the new run's run_id>
 ```
 
-This trains a Transformer against the **current package conditioning** — a genuinely
-new experiment, not an automatic reproduction of the Week 7 numbers in §8 (see §4).
+This is how the shipped default was produced: a Transformer trained against the
+**current package conditioning**, which makes it a new experiment rather than a
+reproduction of the Week 7 numbers in §8 (see §4). Re-running it with seed 42 should
+give a very similar model, though bit-exact reproduction across machines isn't promised.
 Reproducing the Week 7 numbers exactly would additionally require the research-lineage
 6-dimensional conditioning, which the current `enerdatasynth preprocess` does not
 produce. See [`docs/training.md`](../training.md) for the full workflow.

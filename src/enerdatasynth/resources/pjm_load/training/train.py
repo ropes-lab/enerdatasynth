@@ -1,6 +1,6 @@
 """
-src/enerdatasynth/training/train.py
-======================================
+src/enerdatasynth/resources/pjm_load/training/train.py
+======================================================
 Training loop for a single configuration. Implements:
   - model checkpoint saving (best + latest)
   - training logs (per-epoch loss to CSV)
@@ -21,7 +21,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-from enerdatasynth.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, ensure_dirs, resolve_device
+from enerdatasynth.utils.config import RunConfig, set_seed, CHECKPOINT_DIR, LOGS_DIR, ensure_dirs, resolve_device, project_relative
 from enerdatasynth.resources.pjm_load.models import build_denoiser
 from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
 
@@ -164,10 +164,10 @@ def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
         "final_val_loss": history["val_loss"][-1],
         "training_time_sec": training_time,
         "generation_time_sec_per_64": generation_time_per_batch,
-        "checkpoint_best": str(ckpt_dir / "best.pt"),
-        "checkpoint_latest": str(ckpt_dir / "latest.pt"),
-        "loss_curve_path": str(loss_curve_path),
-        "training_log_path": str(log_path),
+        "checkpoint_best": project_relative(ckpt_dir / "best.pt"),
+        "checkpoint_latest": project_relative(ckpt_dir / "latest.pt"),
+        "loss_curve_path": project_relative(loss_curve_path),
+        "training_log_path": project_relative(log_path),
     }
 
     with open(ckpt_dir / "result.json", "w") as f:
