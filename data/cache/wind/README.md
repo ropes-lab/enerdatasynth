@@ -1,5 +1,10 @@
 # `data/cache/wind/`
 
-Empty, and has no reason to be populated today. [`../pjm_load/`](../pjm_load/README.md)'s cache exists because `resources/pjm_load/data/temperature.py` fetches NOAA ISD data on demand and caches it station-year by station-year to avoid re-downloading; wind has no equivalent fetch step at all (see [`../raw/wind/README.md`](../../raw/wind/README.md)) — there's nothing to cache the result of.
+Empty. [`../pjm_load/`](../pjm_load/README.md) has a cache because
+`resources/pjm_load/data/temperature.py` downloads NOAA ISD weather data on demand and
+saves it by station and year. Wind has no download step (see
+[`../../raw/wind/README.md`](../../raw/wind/README.md)), so there's nothing to cache.
 
-If the original NREL WIND Toolkit / HSDS acquisition step (implied by the unused `h5pyd` dependency — see `../raw/wind/README.md`) is ever vendored into this package, a cache layer for it would plausibly live here, mirroring `pjm_load`'s pattern: keyed by whatever the source's natural unit is (station-year for NOAA; presumably grid-point/year for WIND Toolkit), safe to delete and rebuild given network access.
+If the original NREL WIND Toolkit download code is ever added, its cache would go here,
+following `pjm_load`'s pattern: keyed by the source's natural unit (probably grid point
+and year), and safe to delete and rebuild with network access.
