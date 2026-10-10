@@ -306,5 +306,5 @@ Generated data should be clearly labeled as synthetic in any downstream use.
 
 ## 17. Versioning
 
-Package version `0.5.0` (`enerdatasynth.__version__`). See `CHANGELOG.md` for the
-version history and `docs/release_audit.md` for the current release/PyPI status.
+The package version is `enerdatasynth.__version__`. Release history is in `MIGRATION.md`,
+and how releases are built and published is in `docs/packaging.md`.

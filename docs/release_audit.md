@@ -49,7 +49,7 @@ covered in `src/enerdatasynth/README.md`'s subpackage table instead, per the sta
 
 ## Test Status
 
-**252 / 252 passing** (230/230 at the time of this audit pass; the suite has grown since). Two new tests added specifically as a regression guard for the
+**All passing** (230/230 at the time of this audit pass; the suite has since grown to 261). Two new tests added specifically as a regression guard for the
 historical sampler bug (`tests/pjm_load/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step`,
 `::test_sampler_noise_prediction_differs_across_steps`) — both assert real behavior
 (call counts, prediction variation across steps), not constants. All 8 CLI subcommands'
