@@ -17,7 +17,7 @@ independently, on purpose:**
 
 | | PJM load | Wind |
 |---|---|---|
-| Implementation | Built for this project (`src/enerdatasynth/{models,diffusion,training,sampling,evaluation,data}/`) | Vendored from a separate, previously-published Data-For-Good research project (`src/enerdatasynth/resources/wind/`) |
+| Implementation | Built for this project (`src/enerdatasynth/resources/pjm_load/{models,diffusion,training,sampling,evaluation,data}/`) | Vendored from a separate, previously-published Data-For-Good research project (`src/enerdatasynth/resources/wind/`) |
 | Denoiser | Transformer / MLP, this project's own code | Its own Transformer-style denoiser, independent code |
 | Sampler | Corrected ancestral DDPM (this project's own fix — see below) | DDIM with classifier-free guidance, independent tuning |
 | Evaluation | This project's 7-metric suite | Its own fidelity-gate metric suite (`marginal_wasserstein`, `acf_rmse`, `regime_accuracy`, ...) |
@@ -119,7 +119,7 @@ to shape metrics. See `enerdatasynth.resources.pjm_load.evaluation.calibration` 
 per-preset `recommended_generation` settings serve a similar tuning
 role in a different way; see `docs/models/wind.md` §12.)
 
-## PJM load: conditioning — an open question, not silently resolved
+## PJM load: conditioning — two encodings, measured separately
 
 `enerdatasynth.resources.pjm_load.data.preprocess.build_conditioning_vector` produces a
 23-dimensional one-hot conditioning vector (month one-hot ×12, day-of-
@@ -128,8 +128,9 @@ validated result quoted above, however, was produced using a different,
 6-dimensional *raw* conditioning vector from the research lineage
 (month and day-of-week as plain integers). These encode the same
 underlying information differently and are not interchangeable at the
-checkpoint level. See `MIGRATION.md` §5 for the full reasoning — this
-package deliberately keeps the one-hot encoding (a defensible,
-documented choice) without claiming the transformer/calibration
-numbers above are proven under it; no pretrained checkpoint compatible
-with the current preprocessing exists yet.
+checkpoint level. See `MIGRATION.md` §5 for the full reasoning. This
+package deliberately keeps the one-hot encoding, so the research
+numbers above are not claimed for it. A Transformer has since been
+trained on the one-hot encoding (`transformer_T1000_H64_L2`, the shipped
+default) and measured separately, so the package now has its own
+validated numbers: see `docs/models/pjm_load.md` §8.
