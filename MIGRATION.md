@@ -171,7 +171,7 @@ artifacts. These were deliberately not built:
   or reconciling any AE-zone metric discrepancy** — these are research/
   debugging questions requiring actual compute and investigation, not
   something to resolve by editing code structure. They're recorded as
-  open items in `docs/research_notes.md` instead of silently "fixed"
+  open items in `docs/results.md` instead of silently "fixed"
   with a fabricated explanation.
 - **`assets/` figure regeneration** — would require rerunning full
   training; the existing figures under `reports/` and

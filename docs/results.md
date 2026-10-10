@@ -199,7 +199,7 @@ Source: `data/research_history/pjm_load/reports/phase2/summary_report.md`.
 ## 9. Limitations
 
 Consolidated from the sections above — see `docs/research_status.md` and
-`docs/model_card.md` for full discussion:
+`docs/models/pjm_load.md` for full discussion:
 
 1. **Conditioning mismatch (critical):** the Transformer results in §1–§7 above used the
    research-history 6-dimensional "Z5" conditioning, not the current package's

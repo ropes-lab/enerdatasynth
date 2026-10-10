@@ -34,7 +34,7 @@ install test is for — caught, not shipped.
 ## Documentation Status
 
 Complete for everything requested: `docs/research_status.md`, `docs/results.md`,
-`docs/data_card.md`, `docs/model_card.md`, `docs/experiments.md`,
+`docs/data_card.md`, `docs/models/pjm_load.md`, `docs/experiments.md`,
 `docs/model_report_card.md` + two report cards, `data/research_history/README.md`, plus
 folder READMEs for `docs/`, `src/enerdatasynth/` and its `data/`, `models/`,
 `diffusion/`, `training/` (+ `sampling/`), `evaluation/`, `generators/` subpackages,
@@ -49,7 +49,7 @@ covered in `src/enerdatasynth/README.md`'s subpackage table instead, per the sta
 
 ## Test Status
 
-**230 / 230 passing.** Two new tests added specifically as a regression guard for the
+**252 / 252 passing** (230/230 at the time of this audit pass; the suite has grown since). Two new tests added specifically as a regression guard for the
 historical sampler bug (`tests/pjm_load/test_diffusion.py::test_sampler_recomputes_noise_prediction_every_step`,
 `::test_sampler_noise_prediction_differs_across_steps`) — both assert real behavior
 (call counts, prediction variation across steps), not constants. All 8 CLI subcommands'
@@ -100,7 +100,7 @@ cited Week 7 Transformer numbers is not currently automated or verified** — se
 ## Claims That Are Historical Only (not re-verified against current code/data)
 
 - The exact optimizer/learning-rate/batch-size values used in the Week 7 Transformer
-  training run (cited in `docs/model_card.md`/`docs/report_cards/transformer.md` as "not
+  training run (cited in `docs/models/pjm_load.md`/`docs/report_cards/transformer.md` as "not
   independently re-verified").
 - The exact COVID-period date range excluded during preprocessing.
 - Whether the current `preprocess.py`'s per-hour MinMax / z-score / MinMax-spread
@@ -109,7 +109,7 @@ cited Week 7 Transformer numbers is not currently automated or verified** — se
   dataset exists in this repository to validate against (unchanged finding from the
   prior wind-specific audit this session).
 
-## Known Limitations (full list: `docs/research_status.md`, `docs/results.md` §9, `docs/model_card.md`)
+## Known Limitations (full list: `docs/research_status.md`, `docs/results.md` §9, `docs/models/pjm_load.md` §13)
 
 1. Conditioning mismatch between validated research results and the package's current
    preprocessing (critical).

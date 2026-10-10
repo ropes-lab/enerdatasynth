@@ -24,7 +24,6 @@ there for anything beyond basic usage.
 | [`research_status.md`](research_status.md) | Source of truth: what's established, and where the package diverges from it. |
 | [`results.md`](results.md) | Canonical, traceable results tables. |
 | [`data_card.md`](data_card.md) | Where the data comes from, cleaning, licensing status. |
-| [`model_card.md`](model_card.md) | Deeper model-card cross-check for `pjm_load` (the `models/` report is the primary read). |
 | [`experiments.md`](experiments.md) | Chronological map of the research program. |
 | [`model_report_card.md`](model_report_card.md) + [`report_cards/`](report_cards/) | PJM load's Transformer vs. MLP architecture comparison, plus wind's 1ch/2ch/3ch preset comparison. |
 | [`installation.md`](installation.md) | All install paths (PyPI, editable, wheel). |

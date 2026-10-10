@@ -54,7 +54,7 @@ The model generates conditioned on a 23-dimensional vector:
 
 ## Supported Zones
 
-Only **PS** (PSE&G, New Jersey). Requesting any other zone via `enerdatasynth.model("pjm_load", zone=...)` raises a clear error rather than silently returning wrong results. `data/research_history/pjm_load/scripts/zone_expansion.py` explored 17 PJM zones (best: AP, RMSE 0.0086; worst: DOM, RMSE 0.1998, cause undiagnosed) but that work was never promoted into this package's production pipeline — see [`docs/research_notes.md`](docs/research_notes.md) and [`MIGRATION.md`](MIGRATION.md) §4.
+Only **PS** (PSE&G, New Jersey). Requesting any other zone via `enerdatasynth.model("pjm_load", zone=...)` raises a clear error rather than silently returning wrong results. `data/research_history/pjm_load/scripts/zone_expansion.py` explored 17 PJM zones (best: AP, RMSE 0.0086; worst: DOM, RMSE 0.1998, cause undiagnosed) but that work was never promoted into this package's production pipeline — see [`docs/results.md`](docs/results.md) §8 and [`MIGRATION.md`](MIGRATION.md) §4.
 
 ## Evaluation
 
