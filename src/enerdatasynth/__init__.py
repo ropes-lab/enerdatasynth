@@ -51,7 +51,7 @@ from enerdatasynth.resources.pjm_load.evaluation.metrics import compute_metrics
 from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_checkpoint
 from enerdatasynth.generators import BaseGenerator, LoadDiffusionModel
 
-__version__ = "0.7.0"
+__version__ = "0.8.0"
 
 __all__ = [
     "__version__",

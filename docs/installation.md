@@ -5,11 +5,21 @@
 - Python >= 3.10
 - Disk for your own raw and processed data if you plan to train (the repository ships none), plus the checkpoints
 
-## Editable install (development)
+## Using the package
 
 ```bash
-git clone <this-repo>
-cd dfe_summer2026
+pip install enerdatasynth
+```
+
+That is enough to generate: the wheel includes the trained load Transformer and the three wind presets (about 13 MB). Use it from any folder.
+
+## Editable install (development)
+
+You need a clone only to train your own models, run the tests, or change the code.
+
+```bash
+git clone https://github.com/ropes-lab/enerdatasynth.git
+cd enerdatasynth
 pip install -e .
 ```
 
@@ -47,7 +57,7 @@ pip install -e . --no-deps
 
 ## Where does it look for data and checkpoints?
 
-Wherever you run it from: `data/`, `data/checkpoints/pjm_load/`, `data/outputs/pjm_load/`, `data/reports/pjm_load/`, and `data/configs/pjm_load/` are resolved relative to your current working directory (or `$ENERDATASYNTH_PROJECT_ROOT` if set) — **not** relative to wherever pip installed the code. Run `enerdatasynth ...` / `import enerdatasynth` from inside your project directory (e.g. this repo's root, which already has data and checkpoints committed), or set `ENERDATASYNTH_PROJECT_ROOT=/path/to/project` explicitly. See [`docs/packaging.md`](packaging.md) for why this matters for a real (non-editable) install specifically.
+Wherever you run it from: `data/`, `data/checkpoints/pjm_load/`, `data/outputs/pjm_load/`, `data/reports/pjm_load/`, and `data/configs/pjm_load/` are resolved relative to your current working directory (or `$ENERDATASYNTH_PROJECT_ROOT` if set) — **not** relative to wherever pip installed the code. If your project folder has none of these, generation falls back to the checkpoints bundled in the installed package, so a plain `pip install` works anywhere. Training, preprocessing and reports write into your project folder, so run those from inside your project directory (e.g. a clone of this repo), or set `ENERDATASYNTH_PROJECT_ROOT=/path/to/project` explicitly. See [`docs/packaging.md`](packaging.md) for why this matters for a real (non-editable) install specifically.
 
 ## GPU
 

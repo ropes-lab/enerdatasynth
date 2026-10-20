@@ -27,6 +27,8 @@ parity pieces `pjm_load` already had (`sampling/generate.py`,
 [`docs/api_reference.md`](docs/api_reference.md) and
 [`docs/report_cards/wind_presets.md`](docs/report_cards/wind_presets.md) for the detail.
 
+**Addendum (package v0.8.0):** the repository no longer contains any real data, and the wheel now bundles the shipped checkpoints (load Transformer plus the three wind presets, via `setup.py` and `MANIFEST.in`) so `pip install enerdatasynth` can generate from any folder. `enerdatasynth.utils.config` looks in the project's `data/` first and falls back to the bundled copy. See [`docs/packaging.md`](docs/packaging.md).
+
 **One structural event worth recording here specifically**: this v0.7.0 work was
 developed in a separate local clone whose git history shares no common ancestor with
 `ropes-lab/enerdatasynth`'s `main` at the time. Rather than force-push (which would have

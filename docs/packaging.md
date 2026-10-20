@@ -37,7 +37,7 @@ twine check dist/*             # validates PyPI metadata without uploading
 
 ## What's inside the built package (and what isn't)
 
-The wheel contains only `src/enerdatasynth/`'s Python files — no data, no checkpoints, no `data/research_history/pjm_load/`. Verified by inspecting the built wheel's contents directly (`python -m zipfile -l dist/*.whl`) as part of this project's packaging checks, not assumed.
+The wheel contains `src/enerdatasynth/`'s Python files plus `enerdatasynth/_bundled/`: the shipped load Transformer (`best.pt`, `result.json`, `calibration.json`), the three wind presets (`model_checkpoint.pt`, `norm_stats.json`) and `metadata.json`, about 13 MB in total. There is no real data, no legacy MLP runs and no `data/research_history/`. `setup.py` copies the files in at build time and `MANIFEST.in` keeps them in the sdist; both lists must be kept in sync. Check a built wheel with `python -m zipfile -l dist/*.whl | grep -E '_bundled|\.pt|\.npy|parquet'`: you should see exactly those ten files and nothing else.
 
 ## The `enerdatasynth` CLI
 
@@ -45,14 +45,16 @@ Installed via `[project.scripts] enerdatasynth = "enerdatasynth.cli:main"`. Subc
 
 ## `PROJECT_ROOT` and where data/checkpoints live
 
-`src/enerdatasynth/utils/config.py`'s `PROJECT_ROOT` comes from `$ENERDATASYNTH_PROJECT_ROOT` if set, otherwise the current working directory — **not** from the installed package's location. This is deliberate: a pip-installed package's code lives in site-packages, far from any project's `data/`/`data/checkpoints/pjm_load/`; the SDK operates on whatever project directory you `cd` into or point it at, independent of install mode. See [MIGRATION.md](../MIGRATION.md) for the bug this fixed and how it was caught.
+`src/enerdatasynth/utils/config.py`'s `PROJECT_ROOT` comes from `$ENERDATASYNTH_PROJECT_ROOT` if set, otherwise the current working directory — **not** from the installed package's location. This is deliberate: a pip-installed package's code lives in site-packages, far from any project's `data/`/`data/checkpoints/pjm_load/`; the SDK operates on whatever project directory you `cd` into or point it at, independent of install mode. The one exception is the bundled checkpoints: they are found relative to the installed package, as a fallback. If your project folder has its own `data/checkpoints/...` or `data/processed/pjm_load/metadata.json`, those are used first. See [MIGRATION.md](../MIGRATION.md) for the bug this fixed and how it was caught.
 
 ## Publishing
 
 Published on PyPI as `enerdatasynth`, first at 0.4.1 (load only), then
 0.5.0/0.6.0 (adds the `wind` resource and the resources-nested restructure
--- see MODEL_CARD.md), now at **0.7.0** (pjm_load/wind API parity, wind CLI
-support -- see `MIGRATION.md` for the full version history).
+-- see MODEL_CARD.md), 0.7.0 (pjm_load/wind API parity, wind CLI
+support), and now **0.8.0** (the shipped Transformer default, no real data in
+the repository, and the trained checkpoints bundled in the wheel -- see
+`MIGRATION.md` for the earlier version history).
 
 Releases go out via `.github/workflows/publish.yml`, triggered by pushing
 a `vX.Y.Z` tag (matching `__version__`) or manually via the Actions tab.
@@ -68,13 +70,9 @@ ever needs redoing (e.g. a renamed workflow file), the fallback is a
 manual `twine upload dist/*` from a machine that has a PyPI API token for
 this project.
 
-Note the gap this doesn't close: the wheel built here (see above) never
-includes `data/checkpoints/pjm_load/` or `data/processed/pjm_load/metadata.json`. A bare `pip install
-enerdatasynth` gets working code but no trained weights for either
-resource -- `enerdatasynth.model(...)` needs a git checkout of this repo
-(or `WIND_DIFFUSION_CHECKPOINTS`/an equivalent for load) to actually
-generate anything. True for `pjm_load` since 0.4.1, still true for `wind`
-at 0.7.0 -- not a regression, just not yet solved for either resource.
+Since 0.8.0 the wheel carries the shipped checkpoints (see above), so a plain `pip install enerdatasynth` can generate for both resources from any folder. Releases 0.4.1 to 0.7.0 shipped code only and needed a clone of this repository. Training your own checkpoints still needs a clone and your own data.
+
+Python 3.9 is not supported (`requires-python >= 3.10`). On 3.9, pip silently installs the last compatible release, 0.4.1, and a new release cannot change that.
 
 ## Before making the repository public
 

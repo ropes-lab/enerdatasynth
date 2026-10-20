@@ -14,7 +14,7 @@ samples = load.sample(n=100, seed=0)   # (100, 24) ndarray, MW
 
 That's it — no tensors, checkpoints, or architecture choices to think about. See [`docs/api_reference.md`](api_reference.md) for the full `.set()`/`.sample()` contract, and [`MODEL_CARD.md`](../MODEL_CARD.md) for what this model was trained on and its limitations.
 
-This repository has the trained checkpoints and the scaler file (`data/processed/pjm_load/metadata.json`) committed, but no real data, so the above works immediately after `pip install -e .` (or a real install — see [`docs/installation.md`](installation.md)). The rest of this page covers training a model from scratch, which needs your own copy of the data.
+The trained checkpoints and the scaler file (`data/processed/pjm_load/metadata.json`) are committed here and also bundled in the PyPI wheel. There is no real data, so the above works immediately after `pip install enerdatasynth` (see [`docs/installation.md`](installation.md)). The rest of this page covers training a model from scratch, which needs your own copy of the data.
 
 ## 1. Get raw data in place
 
