@@ -4,26 +4,24 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-[![Tests: 261 passing](https://img.shields.io/badge/tests-261%20passing-brightgreen.svg)](tests/)
+[![Tests: 266 passing](https://img.shields.io/badge/tests-266%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
+**PyPI: <https://pypi.org/project/enerdatasynth/>**
 
 </div>
 
-**enerdatasynth generates synthetic energy-resource profiles for electric load and wind, using trained conditional generative models behind one Python interface.** Describe the conditions you want (season, temperature, calendar type) and it returns a realistic profile.
+enerdatasynth generates synthetic energy profiles for electric load and wind. Trained conditional models sit behind one Python interface: you describe the conditions you want (season, temperature, day type) and get a profile back.
 
 ## Generators
 
-Two resources share one interface. `enerdatasynth.model(<name>, zone=...)` works the same way regardless of what's actually running underneath.
+Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 
-### PJM Electric Load
-Conditional diffusion model for 24-hour PJM load profiles (zone `PS`), conditioned on month, day-of-week, holiday, and temperature.
-→ [PJM Load model report](docs/models/pjm_load.md)
+**PJM electric load.** A conditional diffusion model for 24-hour load profiles in the PJM `PS` zone, conditioned on month, day of week, holiday and temperature. Report: [docs/models/pjm_load.md](docs/models/pjm_load.md).
 
-### Wind
-Conditional diffusion model for 24-hour wind profiles at 5-minute resolution, across three channel presets (`1ch`/`2ch`/`3ch`), conditioned on calendar, temperature, and wind regime.
-→ [Wind model report](docs/models/wind.md)
+**Wind.** A conditional diffusion model for 24-hour wind profiles at 5-minute resolution, with three channel presets (`1ch`, `2ch`, `3ch`), conditioned on calendar, temperature and wind regime. Report: [docs/models/wind.md](docs/models/wind.md).
 
-## Quick Start
+## Quick start
 
 ```bash
 pip install enerdatasynth
@@ -34,57 +32,56 @@ import enerdatasynth
 
 load = enerdatasynth.model("pjm_load", zone="PS")
 load.set(month=7, Tmax=86, Tmin=70, weekday=True)
-samples = load.sample(n=100, seed=0)     # (100, 24) ndarray, MW
+samples = load.sample(n=100, seed=0)     # (100, 24) array, MW
 
 wind = enerdatasynth.model("wind", zone="1ch")
 wind.set(wind_regime="mid", month=7, temp_min=10, temp_max=22)
-samples = wind.sample(n=10, seed=0)      # (10, 288, 2) ndarray, m/s + degrees
-# wind sampling is slow on CPU at larger n — see docs/models/wind.md
+samples = wind.sample(n=10, seed=0)      # (10, 288, 2) array, m/s and degrees
 ```
 
-`pip install enerdatasynth` gives you the library only, not trained checkpoints or data. The snippet above runs as-is if you clone this repo and work from its root, since the checkpoints (and the small scaler file they need) are bundled there. No real data is. See [`docs/installation.md`](docs/installation.md) for other install paths and [`docs/quickstart.md`](docs/quickstart.md) if you want to train your own checkpoint from scratch. PyPI is up to date as of `0.7.0`, which has full wind support, so a plain `pip install` gets you both resources' code — you'll still need `data/checkpoints/` from this repo to actually generate anything.
+Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md).
 
-## How It Works
+The PyPI package contains the code only. The trained checkpoints are not in the wheel, so after `pip install` you also need this repository: clone it and run Python from its root, where the checkpoints and the small scaler file (`data/processed/pjm_load/metadata.json`) live. The snippet above runs as written from there. [docs/installation.md](docs/installation.md) covers the other install options, and [docs/quickstart.md](docs/quickstart.md) shows how to train your own checkpoint.
+
+## How it works
 
 ```
-data → conditioning → generative model → synthetic profile → evaluation
+data -> conditioning -> generative model -> synthetic profile -> evaluation
 ```
 
-Raw data gets cleaned and reduced to a conditioning vector — calendar plus weather. A conditional diffusion model denoises pure noise into a profile matching that conditioning. Load and wind each have their own pipeline here, built independently, because the two are different enough scientifically that sharing one wouldn't make sense. Generated profiles get checked against real ones with a metric suite (again, a different suite per resource), plus a small bias correction for load. The interface stays the same across both; what happens underneath doesn't. Architecture, sampling, and conditioning details all live in the [architecture docs](docs/architecture.md) and the two model reports below.
+Source data is cleaned and reduced to a conditioning vector (calendar plus weather). A conditional diffusion model turns pure noise into a profile that matches that vector. Load and wind each have their own pipeline, because the two problems are different enough that forcing them into one would not help. Generated profiles are scored against real ones with a metric suite (a different one per resource), and load gets a small bias correction on top. The interface is the same for both; what runs underneath is not. Details are in the [architecture docs](docs/architecture.md) and the two model reports.
 
-## Model Reports
+## Model reports
 
-Each resource has a full report covering input data, representation, conditioning, architecture, training, evaluation, results, real-vs-generated comparisons, and known limitations:
+Each resource has a full report covering the input data, conditioning, architecture, training, evaluation, results and known limitations. They are the main scientific documentation for the project, so start there if you want more than basic usage:
 
-- [**PJM Load Model Report**](docs/models/pjm_load.md)
-- [**Wind Model Report**](docs/models/wind.md)
-
-Start there if you want more than basic usage — these are the primary scientific documentation for the project.
+- [PJM load model report](docs/models/pjm_load.md)
+- [Wind model report](docs/models/wind.md)
 
 ## Documentation
 
 | | |
 |---|---|
-| [Installation](docs/installation.md) | [Quick Start](docs/quickstart.md) |
-| [API Reference](docs/api_reference.md) | [Architecture](docs/architecture.md) |
+| [Installation](docs/installation.md) | [Quick start](docs/quickstart.md) |
+| [API reference](docs/api_reference.md) | [Architecture](docs/architecture.md) |
 | [Evaluation](docs/evaluation.md) | [Extending (add a resource)](docs/extending.md) |
-| [PJM Load Model Report](docs/models/pjm_load.md) | [Wind Model Report](docs/models/wind.md) |
-| [Model Card](MODEL_CARD.md) | [Data Card](docs/data_card.md) |
-| [Developer Guide](docs/developer_guide.md) | [FAQ](docs/faq.md) |
+| [PJM load model report](docs/models/pjm_load.md) | [Wind model report](docs/models/wind.md) |
+| [Model card](MODEL_CARD.md) | [Data card](docs/data_card.md) |
+| [Developer guide](docs/developer_guide.md) | [FAQ](docs/faq.md) |
 
-Full documentation map: [`docs/README.md`](docs/README.md).
+The full map is in [docs/README.md](docs/README.md).
 
-## Data & Reproducibility
+## Data and reproducibility
 
-No real data ships with this package or repository, raw or processed. What you get is trained checkpoints and the generation interface, not the underlying datasets.
+This repository contains no real data, raw or processed. You get trained checkpoints and the generation interface, not the datasets behind them.
 
-| Resource | Source |
+| Resource | Where the data comes from |
 |---|---|
-| PJM load | PJM hourly metered load (`hrl_load_metered`), via [PJM Data Miner 2](https://dataminer2.pjm.com/) |
-| Temperature (PJM load conditioning) | NOAA Integrated Surface Database (ISD), fetched per zone's constituent weather stations |
-| Wind | A separately-developed research pipeline (`wind_diffusion`) — see its [model report](docs/models/wind.md) for what's known (and not known) about its original data source |
+| PJM load | PJM hourly metered load (`hrl_load_metered`) from [PJM Data Miner 2](https://dataminer2.pjm.com/) |
+| Temperature (for load conditioning) | NOAA Integrated Surface Database, fetched for each zone's weather stations |
+| Wind | A separate research pipeline (`wind_diffusion`). Its [model report](docs/models/wind.md) says what is and isn't known about the original data source |
 
-PJM load's cleaning and conditioning steps are documented in its [model report](docs/models/pjm_load.md) and [data card](docs/data_card.md); bring your own copy of the source data to `data/raw/pjm_load/` if you want to reproduce preprocessing end to end (there's a placeholder file there explaining what's needed). Wind doesn't have a reproduction path in this repository at all right now — no raw data exists here for it, and its report says so directly. There's no separate public data archive for this project either.
+To reproduce load preprocessing end to end, download the PJM and NOAA files yourself, put them in `data/raw/pjm_load/` (the README there explains what is needed), and run `enerdatasynth preprocess`. Wind has no reproduction path here: the raw wind data was never part of this repository, and the wind report says so.
 
 ## Citation
 

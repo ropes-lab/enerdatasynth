@@ -1,23 +1,23 @@
 # `examples/`
 
-Runnable demonstrations of the package's public API, in increasing order of scope. Each script's own header explains exactly what it does — this file is just the map.
+Runnable demos of the public API, from smallest to largest. Each script's header explains what it does; this file is the map.
 
-| Script | What it demonstrates | Runtime |
+| Script | What it shows | Runtime |
 |---|---|---|
-| `exploratory_data_analysis.py` | Inspecting the processed dataset (`metadata.json`, mean daily shape); needs your own `enerdatasynth preprocess` output — a lightweight companion to the full historical EDA in `data/research_history/pjm_load/scripts/eda_exploration.py` | Seconds |
-| `generate_samples.py` | Loading a trained checkpoint via `LoadDiffusionModel` and generating profiles — the minimal Tier-2 usage pattern | Seconds |
-| `run_full_pipeline.py` | End-to-end walkthrough (preprocess, train one small model, generate, validate) in a couple of minutes, not the full sweep | Minutes |
-| `run_all.py` | The real top-level orchestrator: preprocess, full hyperparameter sweep, generate for the best config, validation plots, failure analysis, results summary | Hours (full sweep) |
-| `compare_checkpoints.py` | Multi-seed comparison of trained checkpoints on the validation set (the evidence for which one ships as the default); writes `data/reports/pjm_load/checkpoint_comparison.csv` | A few minutes |
-| `plot_real_vs_generated.py` | The six-day real-vs-generated figure in `docs/assets/`, for any checkpoint, with a fixed seed and a rule-based choice of days | Under a minute |
-| `run_benchmark.py` | Classical-vs-diffusion comparison (AR/ARMA/ARIMA/SARIMA vs. a trained checkpoint), built entirely from library code with no duplicated logic | Depends on data size |
+| `exploratory_data_analysis.py` | Inspects the processed dataset (`metadata.json`, mean daily shape). Needs your own `enerdatasynth preprocess` output. A light companion to the full historical EDA in `data/research_history/pjm_load/scripts/eda_exploration.py` | Seconds |
+| `generate_samples.py` | Loads a trained checkpoint through `LoadDiffusionModel` and generates profiles, the smallest Tier 2 example | Seconds |
+| `run_full_pipeline.py` | A quick end-to-end run: preprocess, train one small model, generate, validate. Not the full sweep | Minutes |
+| `run_all.py` | The full orchestrator: preprocess, hyperparameter sweep, generate for the best config, validation plots, failure analysis, results summary | Hours (full sweep) |
+| `compare_checkpoints.py` | Compares trained checkpoints over several seeds on the validation set (the evidence for which one ships as the default). Writes `data/reports/pjm_load/checkpoint_comparison.csv` | A few minutes |
+| `plot_real_vs_generated.py` | The six-day real vs. generated figure in `docs/assets/`, for any checkpoint, with a fixed seed and rule-based day selection | Under a minute |
+| `run_benchmark.py` | Classical vs. diffusion comparison (AR, ARMA, ARIMA, SARIMA vs. a trained checkpoint), built only from library code | Depends on data size |
 
-One naming quirk found during an earlier audit: `run_benchmark.py`'s own module docstring calls itself `benchmarks/run_benchmark.py` and describes itself as the "move to benchmarks/" successor to the research-history benchmark scripts. There's no top-level `benchmarks/` directory in this repository, though — the file just lives here in `examples/`. It wasn't moved, since that would change every path any external doc or script references; it's flagged in `docs/release_audit.md` as a low-priority inconsistency to fix deliberately rather than as a drive-by change.
+One oddity: the docstring in `run_benchmark.py` calls the file `benchmarks/run_benchmark.py` and describes it as the successor to the research-history benchmark scripts. There is no top-level `benchmarks/` folder; the file lives here. It wasn't moved because that would change every path other docs and scripts point to. `docs/release_audit.md` lists it as a low-priority inconsistency to fix on purpose, not in passing.
 
-## What a researcher should look at first
+## Where to start
 
-`generate_samples.py` if you just want to see output. `run_full_pipeline.py` if you want to see the whole pipeline connect without waiting hours.
+`generate_samples.py` if you just want to see output, `run_full_pipeline.py` if you want to watch the whole pipeline connect without waiting hours.
 
-## Assumptions these make
+## Assumptions
 
-All of these assume raw data is already present (`data/raw/pjm_load/`) or that preprocessing has already been run. None of them ship or download data themselves.
+All of them assume `enerdatasynth preprocess` has already run on your own copy of the data (raw files in `data/raw/pjm_load/`); even `generate_samples.py` reads the validation condition vectors from `data/processed/pjm_load/`. None of these scripts ship or download data. This repository has none, so get it from the sources in [`data/README.md`](../data/README.md#data-sources).

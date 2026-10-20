@@ -1,19 +1,22 @@
 # `enerdatasynth.resources.pjm_load.visualization`
 
-Validation plots comparing real and generated load profiles. Needs the optional `research` extra (`pip install enerdatasynth[research]`, mainly for matplotlib/statsmodels) since it's not on the `model().sample()` path — it's imported lazily wherever it's actually needed (`training/train.py`, `cli.py`), so a plain `import enerdatasynth` never pulls it in.
+Validation plots that compare real and generated load profiles. It needs the optional `research` extra (`pip install enerdatasynth[research]`, mainly for matplotlib and statsmodels) because it isn't on the `model().sample()` path. It is imported lazily where it's used (`training/train.py`, `cli.py`), so a plain `import enerdatasynth` never loads it.
 
 ## Files
 
-- **`plots.py`**:
-  - `plot_hourly_distribution_comparison` — boxplots per hour, real vs. generated. This is the figure behind `data/reports/pjm_load/figures/hourly_distribution_comparison_*.png`.
-  - `plot_first_difference_comparison`, `plot_autocorrelation_comparison` — the other two standard validation plots.
-  - `plot_loss_curve` — training loss curve, saved next to each checkpoint.
-  - `run_all_validation_plots(run_id)` — runs all three comparison plots for one run; backs `enerdatasynth evaluate`.
+**`plots.py`**:
 
-## Public API vs. internal
+- `plot_hourly_distribution_comparison`: a boxplot per hour, real vs. generated. This produces `data/reports/pjm_load/figures/hourly_distribution_comparison_*.png`.
+- `plot_first_difference_comparison` and `plot_autocorrelation_comparison`: the other two standard validation plots.
+- `plot_loss_curve`: the training loss curve, saved next to each checkpoint.
+- `run_all_validation_plots(run_id)`: runs the three comparison plots for one run. Behind `enerdatasynth evaluate`.
 
-Not re-exported at the top level. Import `enerdatasynth.resources.pjm_load.visualization.plots` directly, or just use the CLI (`enerdatasynth evaluate`) instead of calling these by hand.
+The comparison plots read the processed validation arrays, so you need your own `enerdatasynth preprocess` output first.
 
-## What should not be placed here
+## Public API
 
-Metric computation, which belongs in `evaluation/metrics.py`. This module only plots numbers that module already computed.
+Not re-exported at the top level. Import `enerdatasynth.resources.pjm_load.visualization.plots` directly, or use `enerdatasynth evaluate`.
+
+## What doesn't belong here
+
+Metric computation. That lives in `evaluation/metrics.py`; this module only plots numbers it has already computed.

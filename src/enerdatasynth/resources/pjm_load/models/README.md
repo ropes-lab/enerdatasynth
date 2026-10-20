@@ -1,18 +1,18 @@
 # `enerdatasynth.resources.pjm_load.models`
 
-PJM load's denoiser architectures specifically. Wind's denoiser is separate code, in [`src/enerdatasynth/resources/wind/models.py`](../../wind/README.md) — the two are deliberately independent implementations behind one shared interface. See [`docs/architecture.md`](../../../../../docs/architecture.md) for why.
+The denoiser architectures for PJM load. Wind's denoiser is separate code in [`resources/wind/models.py`](../../wind/README.md). The two are independent implementations behind one shared interface, for reasons given in [`docs/architecture.md`](../../../../../docs/architecture.md).
 
-Architectures get selected by name through `build_denoiser(architecture, ...)` rather than importing a specific class directly, so training, sampling, and the public API never need to special-case a constructor signature.
+Architectures are picked by name through `build_denoiser(architecture, ...)` instead of importing a class, so training, sampling and the public API never need to know a constructor's signature.
 
 ## Files
 
-- **`transformer.py`** — `TransformerDenoiser`, the Week 6 architecture-comparison winner and current `DEFAULT_ARCHITECTURE`. Per-hour tokenization, a learned positional embedding, and a standard `nn.TransformerEncoder`. Its module docstring has an honest caveat about which conditioning dimensionality it was actually validated against — read that before assuming a bundled checkpoint uses this architecture, because most don't (see `docs/research_status.md` §D).
-- **`denoiser.py`** — `SimpleMLPDenoiser`, the original baseline (`architecture="mlp"`), plus `SinusoidalTimeEmbedding`, shared by both architectures and has no learnable parameters.
+- **`transformer.py`**: `TransformerDenoiser`, the winner of the Week 6 architecture comparison and the current `DEFAULT_ARCHITECTURE`. It uses per-hour tokens, a learned positional embedding and a standard `nn.TransformerEncoder`. The module docstring is honest about which conditioning size it was validated against; read it before assuming a bundled checkpoint uses this architecture, because most don't (`docs/research_status.md` §D).
+- **`denoiser.py`**: `SimpleMLPDenoiser`, the original baseline (`architecture="mlp"`), and `SinusoidalTimeEmbedding`, which both architectures share and which has no learnable parameters.
 
-## Public API vs. internal
+## Public API
 
-`build_denoiser`, `TransformerDenoiser`, and `SimpleMLPDenoiser` are all re-exported at the top level. Instantiating either class directly is a Tier-2/research pattern — most callers should just go through `enerdatasynth.model(...)` (Tier 1).
+`build_denoiser`, `TransformerDenoiser` and `SimpleMLPDenoiser` are re-exported at the top level. Building either class directly is a Tier 2 (research) pattern. Most callers should use `enerdatasynth.model(...)` (Tier 1).
 
-## What should not be changed casually
+## Be careful with
 
-`TransformerDenoiser`'s submodule attribute names (`cond`, `val`, `pos`, `enc`, `out`) match the original research script exactly, so old checkpoints stay loadable via `load_state_dict`. Rename them and every existing checkpoint breaks silently — a shape-mismatch or missing-key error, not a helpful one.
+The submodule names in `TransformerDenoiser` (`cond`, `val`, `pos`, `enc`, `out`) match the original research script exactly, so old checkpoints still load through `load_state_dict`. Rename them and every existing checkpoint fails with a missing-key or shape error that doesn't say why.

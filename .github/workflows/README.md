@@ -1,12 +1,12 @@
 # `.github/workflows/`
 
-CI/CD automation, two workflows:
+Two workflows.
 
-- **`tests.yml`** — runs on every push/PR: installs the package (CPU-only PyTorch, pinned to match `requirements.txt` since tests load committed checkpoint `state_dict`s), then `pytest tests/ -v`. Matrix: Python 3.10 and 3.12.
-- **`publish.yml`** — builds the sdist/wheel and publishes to PyPI via Trusted Publishing (OIDC, no stored API token). It only triggers on pushing a version tag (`v*.*.*`) or a manual dispatch from the Actions tab, not on every push to `main`. It needs the PyPI project (`enerdatasynth`, owner `ropes-lab`) to have this workflow registered as a trusted publisher first — see the workflow file's own header comment for the exact PyPI settings URL.
+- **`tests.yml`**: runs on every push and pull request. It installs the package with CPU-only PyTorch, pinned to match `requirements.txt` because the tests load the committed checkpoint `state_dict`s, then runs `pytest tests/ -v`. The matrix is Python 3.10 and 3.12.
+- **`publish.yml`**: builds the sdist and wheel and publishes to PyPI through Trusted Publishing (OIDC, so no API token is stored). It runs only when a version tag (`v*.*.*`) is pushed or when started by hand from the Actions tab, never on an ordinary push to `main`. PyPI must already list this workflow as a trusted publisher for the `enerdatasynth` project (owner `ropes-lab`); the header comment in the workflow file gives the exact settings URL.
 
-## What should not be changed casually
+## Be careful with
 
-`tests.yml`'s pinned CPU-only torch install exists specifically because several tests load real checkpoint weights committed under `data/checkpoints/` — a mismatched torch version can fail to deserialize them. Bumping the pin means re-verifying checkpoint loading, not just checking that `pip install` succeeds.
+The pinned CPU-only torch in `tests.yml` is there because several tests load real checkpoint weights from `data/checkpoints/`, and a different torch version can fail to deserialize them. If you change the pin, re-check checkpoint loading, not just that `pip install` works.
 
-Any change to `publish.yml` that could make it upload to PyPI automatically should be treated as high-risk and reviewed carefully. 
+Treat any change to `publish.yml` that could upload to PyPI automatically as high-risk and review it carefully.
