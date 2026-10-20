@@ -13,14 +13,14 @@ import pytest
 from enerdatasynth import cli
 
 
-def test_build_parser_has_all_eight_subcommands():
+def test_build_parser_has_all_nine_subcommands():
     parser = cli.build_parser()
     subparsers_action = next(
         a for a in parser._actions if isinstance(a, __import__("argparse")._SubParsersAction)
     )
     assert set(subparsers_action.choices) == {
         "preprocess", "train", "sweep", "generate",
-        "calibrate", "evaluate", "report", "pipeline",
+        "calibrate", "evaluate", "report", "pipeline", "demo",
     }
 
 
@@ -107,3 +107,14 @@ def test_cmd_calibrate_passes_seed_through(monkeypatch):
     cli.cmd_calibrate(args)
     assert seen["seed"] == 42
     assert seen["run_id"] == "r"
+
+
+def test_demo_command_prints_both_resources(capsys, tmp_path):
+    from enerdatasynth.cli import main
+    out_png = tmp_path / "demo.png"
+    main(["demo", "--plot", str(out_png)])
+    out = capsys.readouterr().out
+    assert "PJM load, July weekday" in out
+    assert "Wind 1ch, high regime" in out
+    assert out_png.exists()
+

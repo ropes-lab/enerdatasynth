@@ -41,7 +41,7 @@ The wheel contains `src/enerdatasynth/`'s Python files plus `enerdatasynth/_bund
 
 ## The `enerdatasynth` CLI
 
-Installed via `[project.scripts] enerdatasynth = "enerdatasynth.cli:main"`. Subcommands: `preprocess`, `train`, `sweep`, `generate`, `calibrate`, `evaluate`, `report`, `pipeline`. Pure argparse dispatch to library functions — no logic lives in `cli.py` itself, so behavior matches calling the underlying functions directly.
+Installed via `[project.scripts] enerdatasynth = "enerdatasynth.cli:main"`. Subcommands: `preprocess`, `train`, `sweep`, `generate`, `calibrate`, `evaluate`, `report`, `pipeline`, `demo`. Pure argparse dispatch to library functions — no logic lives in `cli.py` itself, so behavior matches calling the underlying functions directly.
 
 ## `PROJECT_ROOT` and where data/checkpoints live
 
@@ -52,9 +52,9 @@ Installed via `[project.scripts] enerdatasynth = "enerdatasynth.cli:main"`. Subc
 Published on PyPI as `enerdatasynth`, first at 0.4.1 (load only), then
 0.5.0/0.6.0 (adds the `wind` resource and the resources-nested restructure
 -- see MODEL_CARD.md), 0.7.0 (pjm_load/wind API parity, wind CLI
-support), and now **0.8.0** (the shipped Transformer default, no real data in
+support), 0.8.0 (the shipped Transformer default, no real data in
 the repository, and the trained checkpoints bundled in the wheel -- see
-`MIGRATION.md` for the earlier version history).
+`MIGRATION.md` for the earlier version history), and **0.8.1** (adds `enerdatasynth demo`).
 
 Releases go out via `.github/workflows/publish.yml`, triggered by pushing
 a `vX.Y.Z` tag (matching `__version__`) or manually via the Actions tab.

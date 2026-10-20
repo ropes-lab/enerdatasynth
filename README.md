@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-[![Tests: 269 passing](https://img.shields.io/badge/tests-269%20passing-brightgreen.svg)](tests/)
+[![Tests: 270 passing](https://img.shields.io/badge/tests-270%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **PyPI: <https://pypi.org/project/enerdatasynth/>**
@@ -23,14 +23,16 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 
 ## Quick start
 
-You need Python 3.10 or newer.
+You need Python 3.10 or newer. Two commands:
 
 ```bash
-python3.11 -m venv .venv && source .venv/bin/activate   # any Python >= 3.10
 pip install enerdatasynth
+enerdatasynth demo
 ```
 
-Save this as `try_it.py` and run it with `python try_it.py`:
+`demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute while torch and pandas load.
+
+To use it from Python, save this as `try_it.py` and run `python try_it.py`:
 
 ```python
 import enerdatasynth
@@ -46,7 +48,7 @@ samples = wind.sample(n=10, seed=0)
 print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 ```
 
-The package ships the trained models (the PJM load Transformer and the three wind presets, about 13 MB), so this works from any folder with no clone. Don't paste the Python lines straight into your terminal prompt; the shell will try to run them as commands. Use the file above, or start `python` first and paste into its `>>>` prompt.
+Don't paste Python lines straight into your terminal prompt; the shell will try to run them as commands. Use a file, or start `python` first and paste into its `>>>` prompt.
 
 If `pip install` gives you version `0.4.1`, your Python is older than 3.10. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
