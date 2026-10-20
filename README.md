@@ -23,25 +23,40 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 
 ## Quick start
 
+You need Python 3.10 or newer and a clone of this repository. The package on PyPI contains the code only; the trained checkpoints live in the repo, and the library looks for them in the folder you run Python from.
+
 ```bash
+git clone https://github.com/ropes-lab/enerdatasynth.git
+cd enerdatasynth
+python3.11 -m venv .venv && source .venv/bin/activate   # any Python >= 3.10
 pip install enerdatasynth
 ```
+
+Save this as `try_it.py` in the repo root:
 
 ```python
 import enerdatasynth
 
 load = enerdatasynth.model("pjm_load", zone="PS")
 load.set(month=7, Tmax=86, Tmin=70, weekday=True)
-samples = load.sample(n=100, seed=0)     # (100, 24) array, MW
+samples = load.sample(n=100, seed=0)
+print("load:", samples.shape)            # (100, 24), MW
 
 wind = enerdatasynth.model("wind", zone="1ch")
 wind.set(wind_regime="mid", month=7, temp_min=10, temp_max=22)
-samples = wind.sample(n=10, seed=0)      # (10, 288, 2) array, m/s and degrees
+samples = wind.sample(n=10, seed=0)
+print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 ```
 
-Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md).
+Then run it:
 
-The PyPI package contains the code only. The trained checkpoints are not in the wheel, so after `pip install` you also need this repository: clone it and run Python from its root, where the checkpoints and the small scaler file (`data/processed/pjm_load/metadata.json`) live. The snippet above runs as written from there. [docs/installation.md](docs/installation.md) covers the other install options, and [docs/quickstart.md](docs/quickstart.md) shows how to train your own checkpoint.
+```bash
+python try_it.py
+```
+
+Don't paste the Python lines straight into your terminal prompt; the shell will try to run them as commands. Either use the file above, or start `python` first and paste into its `>>>` prompt.
+
+If `pip install` picks up an old version (`0.4.1`), your Python is older than 3.10. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). [docs/installation.md](docs/installation.md) covers other install options, and [docs/quickstart.md](docs/quickstart.md) shows how to train your own checkpoint.
 
 ## How it works
 
