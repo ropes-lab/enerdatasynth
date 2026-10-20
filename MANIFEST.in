@@ -1,0 +1,12 @@
+# Files the wheel build copies into enerdatasynth/_bundled/ (see setup.py).
+# Everything else under data/ stays out of the sdist.
+include data/processed/pjm_load/metadata.json
+include data/checkpoints/pjm_load/transformer_T1000_H64_L2/best.pt
+include data/checkpoints/pjm_load/transformer_T1000_H64_L2/result.json
+include data/checkpoints/pjm_load/transformer_T1000_H64_L2/calibration.json
+include data/checkpoints/wind/1ch/model_checkpoint.pt
+include data/checkpoints/wind/1ch/norm_stats.json
+include data/checkpoints/wind/2ch/model_checkpoint.pt
+include data/checkpoints/wind/2ch/norm_stats.json
+include data/checkpoints/wind/3ch/model_checkpoint.pt
+include data/checkpoints/wind/3ch/norm_stats.json

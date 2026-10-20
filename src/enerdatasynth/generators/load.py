@@ -37,7 +37,7 @@ import numpy as np
 import torch
 
 from enerdatasynth.utils.config import (
-    CHECKPOINT_DIR, X_DIM, COND_DIM,
+    find_checkpoint_dir, X_DIM, COND_DIM,
     DEFAULT_ARCHITECTURE, DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_N_HEADS,
     set_seed, resolve_device,
 )
@@ -87,7 +87,7 @@ class LoadDiffusionModel(BaseGenerator):
         self.calibration = load_calibration(calibration_path) if use_calibration else None
 
     @classmethod
-    def from_run_id(cls, run_id: str, checkpoint_root: str | Path = CHECKPOINT_DIR,
+    def from_run_id(cls, run_id: str, checkpoint_root: str | Path | None = None,
                      device: str | None = None, use_calibration: bool = True) -> "LoadDiffusionModel":
         """
         Construct from a run_id produced by `enerdatasynth train` /
@@ -105,7 +105,7 @@ class LoadDiffusionModel(BaseGenerator):
         here is "mlp", not `DEFAULT_ARCHITECTURE` — a deliberate
         historical default, not the current recommended one.
         """
-        ckpt_dir = Path(checkpoint_root) / run_id
+        ckpt_dir = Path(checkpoint_root) / run_id if checkpoint_root is not None else find_checkpoint_dir(run_id)
         result_path = ckpt_dir / "result.json"
         if not result_path.exists():
             raise CheckpointNotFoundError(

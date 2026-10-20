@@ -30,7 +30,7 @@ from enerdatasynth.generators.load_conditioning import (
     _discover_best_checkpoint,
 )
 from enerdatasynth.resources.pjm_load.exceptions import CheckpointNotFoundError, InvalidConditionError
-from enerdatasynth.utils.config import CHECKPOINT_DIR, PROCESSED_DIR, ZONE
+from enerdatasynth.utils.config import ZONE, processed_metadata_path
 
 
 # ---------------------------------------------------------------------------
@@ -123,10 +123,10 @@ def generate_load_profile(
     if units not in ("MW", "normalized"):
         raise InvalidConditionError(f"units must be 'MW' or 'normalized', got {units!r}")
 
-    metadata_path = PROCESSED_DIR / "metadata.json"
+    metadata_path = processed_metadata_path()
     if not metadata_path.exists():
         raise CheckpointNotFoundError(
-            f"No processed dataset found at {metadata_path}. "
+            f"No scaler file (metadata.json) found at {metadata_path}. "
             f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
         )
     with open(metadata_path) as f:

@@ -125,3 +125,50 @@ def test_processed_helpers_explain_how_to_get_missing_data(tmp_path, monkeypatch
 
     np.save(tmp_path / "X.npy", np.arange(3))
     assert config.load_processed("X.npy").tolist() == [0, 1, 2]
+
+
+def _make_run(root, run_id):
+    run = root / run_id
+    run.mkdir(parents=True)
+    (run / "result.json").write_text("{}")
+    return run
+
+
+def test_find_checkpoint_dir_prefers_project_then_bundled(tmp_path, monkeypatch):
+    from enerdatasynth.utils import config
+    project, bundled = tmp_path / "project", tmp_path / "bundled"
+    monkeypatch.setattr(config, "CHECKPOINT_DIR", project)
+    monkeypatch.setattr(config, "BUNDLED_CHECKPOINT_DIR", bundled)
+    only_bundled = _make_run(bundled, "shipped")
+    both_bundled, both_project = _make_run(bundled, "both"), _make_run(project, "both")
+    assert config.find_checkpoint_dir("shipped") == only_bundled
+    assert config.find_checkpoint_dir("both") == both_project != both_bundled
+    # unknown run: names the project location so the error message is sensible
+    assert config.find_checkpoint_dir("nope") == project / "nope"
+
+
+def test_processed_metadata_path_falls_back_to_bundled(tmp_path, monkeypatch):
+    from enerdatasynth.utils import config
+    project, bundled = tmp_path / "project", tmp_path / "bundled"
+    monkeypatch.setattr(config, "PROCESSED_DIR", project)
+    monkeypatch.setattr(config, "BUNDLED_PROCESSED_DIR", bundled)
+    assert config.processed_metadata_path() == bundled / "metadata.json"
+    project.mkdir()
+    (project / "metadata.json").write_text("{}")
+    assert config.processed_metadata_path() == project / "metadata.json"
+
+
+def test_discover_best_checkpoint_merges_project_and_bundled(tmp_path, monkeypatch):
+    import json
+    from enerdatasynth.utils import config
+    from enerdatasynth.generators.load_conditioning import _discover_best_checkpoint
+    project, bundled = tmp_path / "project", tmp_path / "bundled"
+    monkeypatch.setattr(config, "CHECKPOINT_DIR", project)
+    monkeypatch.setattr(config, "BUNDLED_CHECKPOINT_DIR", bundled)
+    for root, run_id, loss in ((bundled, "shipped", 0.1), (project, "mine_mlp", 0.01)):
+        (root / run_id).mkdir(parents=True)
+        (root / run_id / "result.json").write_text(json.dumps(
+            {"run_id": run_id, "best_val_loss": loss,
+             "architecture": "transformer" if run_id == "shipped" else "mlp"}))
+    assert _discover_best_checkpoint() == "shipped"   # transformer beats mlp across both roots
+

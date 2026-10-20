@@ -94,6 +94,39 @@ def ensure_dirs() -> None:
         d.mkdir(parents=True, exist_ok=True)
 
 
+# Files shipped inside the installed package (see setup.py): the default
+# trained checkpoints and the scaler file they need. This one path *is*
+# derived from `__file__`, because it locates package data, not the user's
+# project. The project's own data/ tree always wins; these are the fallback
+# that makes a plain `pip install` able to generate without a repo clone.
+BUNDLED_ROOT           = Path(__file__).resolve().parent.parent / "_bundled"
+BUNDLED_CHECKPOINT_DIR = BUNDLED_ROOT / "checkpoints" / "pjm_load"
+BUNDLED_WIND_DIR       = BUNDLED_ROOT / "checkpoints" / "wind"
+BUNDLED_PROCESSED_DIR  = BUNDLED_ROOT / "processed" / "pjm_load"
+
+
+def checkpoint_search_dirs() -> list[Path]:
+    """Where to look for trained load checkpoints, in priority order."""
+    return [CHECKPOINT_DIR, BUNDLED_CHECKPOINT_DIR]
+
+
+def find_checkpoint_dir(run_id: str) -> Path:
+    """Directory holding `run_id`'s files: the project's own copy if it has
+    one, otherwise the bundled one. Returns the project path when neither
+    exists, so the caller's "not found" message names a sensible location."""
+    for root in checkpoint_search_dirs():
+        if (root / run_id / "result.json").exists():
+            return root / run_id
+    return CHECKPOINT_DIR / run_id
+
+
+def processed_metadata_path() -> Path:
+    """`metadata.json` from the project's `data/processed/pjm_load/` if
+    present, else the copy bundled in the package."""
+    project = PROCESSED_DIR / "metadata.json"
+    return project if project.exists() else BUNDLED_PROCESSED_DIR / "metadata.json"
+
+
 ZONE = "PS"   # PSE&G / New Jersey
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -33,7 +33,9 @@ from enerdatasynth.conditioning import ConditionField, condition_dim
 from enerdatasynth.generators.load import LoadDiffusionModel
 from enerdatasynth.registry import ConstructResult, ResourceEntry, register_resource
 from enerdatasynth.resources.pjm_load.exceptions import CheckpointNotFoundError, InvalidConditionError
-from enerdatasynth.utils.config import N_DOW, N_MONTHS, COND_DIM, CHECKPOINT_DIR, PROCESSED_DIR
+from enerdatasynth.utils.config import (
+    N_DOW, N_MONTHS, COND_DIM, checkpoint_search_dirs, processed_metadata_path,
+)
 
 _DOW_NAMES = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 _WEEKDAY_INDICES = [0, 1, 2, 3, 4]
@@ -89,7 +91,7 @@ assert condition_dim(LOAD_CONDITION_SPEC) == COND_DIM, (
 )
 
 
-def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
+def _discover_best_checkpoint(checkpoint_root: Path | None = None) -> str:
     """
     Find the best available trained checkpoint: prefers any
     architecture="transformer" run (lowest best_val_loss among those),
@@ -107,19 +109,23 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     resolves checkpoints through `enerdatasynth.resources.wind.registry` instead --
     a different mechanism entirely, not something this function generalizes.
     """
-    checkpoint_root = Path(checkpoint_root)
-    candidates = []
-    if checkpoint_root.exists():
-        for run_dir in sorted(checkpoint_root.iterdir()):
-            result_path = run_dir / "result.json"
-            if not result_path.exists():
-                continue
-            with open(result_path) as f:
-                candidates.append(json.load(f))
+    # An explicit root searches only that folder. By default, search the
+    # project's data/checkpoints/pjm_load/ first, then the checkpoints
+    # bundled in the package; a run id in both is taken from the project.
+    roots = [Path(checkpoint_root)] if checkpoint_root is not None else checkpoint_search_dirs()
+    by_run = {}
+    for root in reversed(roots):
+        if root.exists():
+            for run_dir in sorted(root.iterdir()):
+                result_path = run_dir / "result.json"
+                if result_path.exists():
+                    with open(result_path) as f:
+                        by_run[run_dir.name] = json.load(f)
+    candidates = list(by_run.values())
 
     if not candidates:
         raise CheckpointNotFoundError(
-            f"No trained checkpoints found under {checkpoint_root}. "
+            f"No trained checkpoints found under {roots[0]} or in the installed package. "
             f"Run `enerdatasynth train` first (see docs/quickstart.md)."
         )
 
@@ -134,10 +140,10 @@ def _load_construct(zone: str) -> ConstructResult:
     logic `model()` used to run inline before construction became
     resource-delegated, moved here (from `sdk.py`) so `sdk.py` itself
     needs no per-resource edit; mirrors `wind_conditioning.wind_construct`."""
-    metadata_path = PROCESSED_DIR / "metadata.json"
+    metadata_path = processed_metadata_path()
     if not metadata_path.exists():
         raise CheckpointNotFoundError(
-            f"No processed dataset found at {metadata_path}. "
+            f"No scaler file (metadata.json) found at {metadata_path}. "
             f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
         )
     with open(metadata_path) as f:
@@ -155,7 +161,7 @@ def _load_construct(zone: str) -> ConstructResult:
 
 def _load_checkpoint_status() -> dict:
     """`describe_resource("pjm_load")`'s checkpoint-availability hook."""
-    status = {"processed_dataset_available": (PROCESSED_DIR / "metadata.json").exists()}
+    status = {"processed_dataset_available": processed_metadata_path().exists()}
     try:
         status["best_run_id"] = _discover_best_checkpoint()
         status["checkpoint_available"] = True

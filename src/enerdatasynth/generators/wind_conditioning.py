@@ -37,7 +37,7 @@ from enerdatasynth.resources.wind.evaluation.evaluate import build_condition_vec
 
 from enerdatasynth.generators.wind import WindDiffusionModel
 from enerdatasynth.registry import ConstructResult, ResourceEntry, register_resource
-from enerdatasynth.utils.config import DATA_ROOT
+from enerdatasynth.utils.config import BUNDLED_WIND_DIR, DATA_ROOT
 
 # enerdatasynth's own convention for a locally-bundled wind checkpoint --
 # checked before falling back to wind_diffusion's own resolution chain
@@ -53,6 +53,8 @@ from enerdatasynth.utils.config import DATA_ROOT
 # (data/checkpoints/pjm_load/) since the data/ layout is resource-nested
 # throughout; wind's checkpoint root is a sibling of that, not a child.
 _WIND_CHECKPOINT_ROOT = DATA_ROOT / "checkpoints" / "wind"
+# Fallback: the same files shipped inside the installed package (see setup.py).
+_WIND_BUNDLED_ROOT = BUNDLED_WIND_DIR
 
 # .set()-accepted keys, mirroring generate_wind_profile's human-facing
 # conditioning args (see the original repo's API_REVIEW.md "core" group)
@@ -137,7 +139,11 @@ def wind_construct(zone: str) -> ConstructResult:
     checkpoint is available anywhere for the requested preset (bundled,
     env dir, or manifest download).
     """
+    # The project's own data/checkpoints/wind/<preset>/ wins; the copy
+    # shipped inside the package is the fallback.
     bundled_dir = _WIND_CHECKPOINT_ROOT / zone
+    if not (bundled_dir / "model_checkpoint.pt").exists():
+        bundled_dir = _WIND_BUNDLED_ROOT / zone
     bundled_checkpoint = bundled_dir / "model_checkpoint.pt"
     bundled_norm_stats = bundled_dir / "norm_stats.json"
     env_override_set = bool(os.environ.get("WIND_DIFFUSION_CHECKPOINTS"))

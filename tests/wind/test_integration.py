@@ -88,6 +88,7 @@ def test_wind_no_checkpoint_raises_wind_diffusions_own_exception(tmp_path, monke
 
     from enerdatasynth.generators import wind_conditioning
     monkeypatch.setattr(wind_conditioning, "_WIND_CHECKPOINT_ROOT", tmp_path / "no_checkpoints_here")
+    monkeypatch.setattr(wind_conditioning, "_WIND_BUNDLED_ROOT", tmp_path / "no_bundled_here")
 
     import enerdatasynth
     with pytest.raises(CheckpointNotFoundError):
