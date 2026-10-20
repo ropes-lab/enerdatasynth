@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 
-from enerdatasynth.utils.config import PROCESSED_DIR, GENERATED_DIR, REPORTS_DIR, N_MONTHS, N_DOW, ensure_dirs
+from enerdatasynth.utils.config import load_processed, GENERATED_DIR, REPORTS_DIR, N_MONTHS, N_DOW, ensure_dirs
 
 
 # Thresholds for flagging an issue — simple, documented, adjustable.
@@ -28,9 +28,9 @@ SEASONAL_REL_ERROR_THRESHOLD = 0.10
 
 
 def analyze(run_id: str) -> dict:
-    X_real = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
+    X_real = load_processed("X_daily_profiles_val.npy")
     X_gen  = np.load(GENERATED_DIR / f"X_generated_{run_id}.npy")
-    Z      = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    Z      = load_processed("Z_conditions_val.npy")
 
     issues = []
 

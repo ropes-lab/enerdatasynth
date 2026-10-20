@@ -26,7 +26,7 @@ import json
 import numpy as np
 import torch
 
-from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, REPORTS_DIR, set_seed, ensure_dirs
+from enerdatasynth.utils.config import load_processed, CHECKPOINT_DIR, REPORTS_DIR, set_seed, ensure_dirs
 from enerdatasynth.resources.pjm_load.models import build_denoiser
 from enerdatasynth.resources.pjm_load.diffusion.ddpm import DDPM
 from enerdatasynth.resources.pjm_load.evaluation.calibration import apply_calibration, load_calibration
@@ -46,8 +46,8 @@ def _load_checkpoint(run_id: str):
 
 
 def compare(run_ids: list[str], seeds: list[int]) -> list[dict]:
-    real = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z = torch.tensor(np.load(PROCESSED_DIR / "Z_conditions_val.npy"), dtype=torch.float32)
+    real = load_processed("X_daily_profiles_val.npy")
+    Z = torch.tensor(load_processed("Z_conditions_val.npy"), dtype=torch.float32)
 
     scores: dict[str, list[dict]] = {}
     for run_id in run_ids:

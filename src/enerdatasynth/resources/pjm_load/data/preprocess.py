@@ -21,7 +21,7 @@ Steps (in order):
   10. Normalize X with per-hour MinMax (fit on train only).
   11. Save X_daily_profiles.npy, Z_conditions.npy, metadata.json, README.md
       to data/processed/, then duplicate the entire folder to
-      data/processed_backup/ so a corrupted re-run never destroys the
+      data/processed/pjm_load_backup/ so a corrupted re-run never destroys the
       only copy of the training data.
 
 Run directly:

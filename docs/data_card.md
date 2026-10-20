@@ -21,8 +21,9 @@ context?
 | Raw load CSVs | `data/raw/pjm_load/` | **Not bundled.** `data/raw/README.md` names the exact files and source; bring your own copy to reproduce preprocessing (§ below, "Reproducibility"). |
 | Raw temperature CSVs | `data/raw/pjm_load/` | Same as above — not bundled. |
 | Temperature cache | `data/cache/pjm_load/` | **Not bundled** (empty; `README.md` there explains it's a regenerable NOAA fetch cache, not source data). |
-| Processed tensors (current package) | `data/processed/pjm_load/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet`, `metadata.json` | **Bundled** — zone `PS` only, 23-dim conditioning, small (~1.3MB), required for `enerdatasynth.model("pjm_load", ...)` to construct at all |
-| Processed tensors (research history) | `data/research_history/pjm_load/outputs/week3_outputs/*.npy` (Z5/Z9 conditioning), `zone_outputs/<ZONE>/` (16 additional zones) | Bundled — 6-dim/9-dim conditioning, the representation the reported Transformer results actually used; frozen provenance, not the package |
+| Processed arrays (current package) | `data/processed/pjm_load/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet` | **Not bundled.** Built by `enerdatasynth preprocess` from your own copy of the raw files; git ignores them |
+| Scalers and condition spec | `data/processed/pjm_load/metadata.json` | **Bundled.** Summary statistics only (per-hour load min/max, temperature and spread mean/std, exclusion counts), zone `PS`, 23-dim conditioning. The shipped checkpoint needs it to build conditioning vectors and to convert output to MW |
+| Research-history datasets | `data/research_history/pjm_load/outputs/` | **Not bundled.** The Z5/Z9 tensors and per-zone tables were removed. What remains there is trained weights, scalers and calibration files |
 | Wind raw data | `data/raw/wind/` | **Empty — placeholder README only.** No wind dataset exists in this repository. See "Wind Data" below. |
 
 ## Source
@@ -117,9 +118,9 @@ current package's 23-dimensional one-hot representation.
 ## Train/Validation Split
 
 Chronological: **2016–2023 train / 2024–2025 validation** (`week3.py`, Step 6) — not a
-random split. The current package's bundled `PS`-zone processed dataset (2,785
-train / 600 validation days) is consistent with this chronological convention but was
-not independently re-derived in this audit.
+random split. The shipped checkpoint's `PS`-zone dataset (2,785 train / 600 validation
+days, recorded in `metadata.json`) is consistent with this chronological convention but
+was not independently re-derived in this audit.
 
 ## Known Limitations
 
@@ -177,32 +178,33 @@ sections above. Full narrative: `docs/models/wind.md` §2.
 
 ## Reproducibility
 
-`enerdatasynth preprocess` reproduces the current package's `PS`-zone processed dataset
-from raw CSVs, **which you must supply yourself** — see
-`data/raw/README.md` for exactly which files and where to
-get them. `pip install enerdatasynth` does not ship raw data or trained checkpoints, by
-design (`docs/packaging.md`), and — as of this update — **this repository no longer
-bundles raw or cached source data either**, for the same reason.
+`enerdatasynth preprocess` reproduces the `PS`-zone processed dataset from raw CSVs,
+**which you must supply yourself** — see `data/raw/pjm_load/README.md` for exactly which
+files and where to get them. `pip install enerdatasynth` does not ship raw data or trained
+checkpoints, by design (`docs/packaging.md`), and **this repository bundles no real data
+at all**: not the raw files, not the cache, and not the arrays and tables built from them.
+Generating from the shipped checkpoint needs none of it; training, calibrating and
+evaluating do, and stop with a message saying how to build it.
 
 ## Licensing / Redistribution
 
-**No raw PJM load data or NOAA ISD-derived temperature cache is distributed in this
-repository.** Both were removed (previously bundled under
-`data/raw/pjm_load/` and `data/cache/pjm_load/`) specifically so this project isn't
-redistributing third-party-sourced data whose terms of use were never independently
-verified. What remains:
+**No real PJM load or NOAA ISD data is distributed in this repository, in raw, cached or
+processed form.** All of it was removed (the raw files and cache earlier, then the
+processed arrays and the research-history datasets) so this project isn't redistributing
+third-party-sourced data whose terms of use were never independently verified. What
+remains:
 
 - Placeholder files at both locations point to the actual public sources (PJM Data
   Miner 2, NOAA ISD) so anyone reproducing this pipeline fetches the data themselves,
   under whatever terms those sources publish it.
-- `data/processed/pjm_load/` (small, derived tensors + scaler metadata) is still bundled — this
-  is the package's own cleaned/normalized representation, not a redistribution of the
-  raw source files, and is required for `enerdatasynth.model("pjm_load", ...)` to
-  construct at all.
+- `data/processed/pjm_load/metadata.json` is still bundled. It holds scaler parameters
+  and counts (summary statistics, not observations) that the shipped checkpoint needs in
+  order to run. The arrays and tables that held the actual daily profiles are gone.
 - The software license (`LICENSE`, MIT) covers the code in this repository only. It does
-  not and cannot grant redistribution rights to third-party datasets — moot now that
-  none are bundled, but the distinction still matters for `data/processed/pjm_load/`'s status if
-  that's ever questioned.
+  not and cannot grant redistribution rights to third-party datasets. None are bundled.
+- Git history is a separate matter: earlier commits contained the data that has since
+  been removed from the working tree. See `docs/packaging.md` before making the repository
+  public.
 
 This closes the redistribution-rights blocker previously flagged in
 `docs/release_audit.md` for the raw/cached directories specifically.

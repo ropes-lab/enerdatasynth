@@ -4,7 +4,7 @@ Runnable demonstrations of the package's public API, in increasing order of scop
 
 | Script | What it demonstrates | Runtime |
 |---|---|---|
-| `exploratory_data_analysis.py` | Inspecting the processed dataset (`metadata.json`, mean daily shape) — a lightweight companion to the full historical EDA in `data/research_history/pjm_load/scripts/eda_exploration.py` | Seconds |
+| `exploratory_data_analysis.py` | Inspecting the processed dataset (`metadata.json`, mean daily shape); needs your own `enerdatasynth preprocess` output — a lightweight companion to the full historical EDA in `data/research_history/pjm_load/scripts/eda_exploration.py` | Seconds |
 | `generate_samples.py` | Loading a trained checkpoint via `LoadDiffusionModel` and generating profiles — the minimal Tier-2 usage pattern | Seconds |
 | `run_full_pipeline.py` | End-to-end walkthrough (preprocess, train one small model, generate, validate) in a couple of minutes, not the full sweep | Minutes |
 | `run_all.py` | The real top-level orchestrator: preprocess, full hyperparameter sweep, generate for the best config, validation plots, failure analysis, results summary | Hours (full sweep) |

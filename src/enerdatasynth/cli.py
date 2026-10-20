@@ -40,7 +40,7 @@ import argparse
 import numpy as np
 
 from enerdatasynth.utils.config import (
-    RunConfig, PROCESSED_DIR, DEFAULT_ARCHITECTURE,
+    RunConfig, load_processed, DEFAULT_ARCHITECTURE,
     DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_N_HEADS,
 )
 
@@ -87,10 +87,10 @@ def cmd_preprocess(args: argparse.Namespace) -> None:
 def cmd_train(args: argparse.Namespace) -> None:
     from enerdatasynth.resources.pjm_load.training.train import train_one_config
     cfg = _run_config_from_args(args)
-    X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
-    Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
-    X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z_val   = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    X_train = load_processed("X_daily_profiles.npy")
+    Z_train = load_processed("Z_conditions.npy")
+    X_val   = load_processed("X_daily_profiles_val.npy")
+    Z_val   = load_processed("Z_conditions_val.npy")
     train_one_config(X_train, Z_train, X_val, Z_val, cfg)
 
 

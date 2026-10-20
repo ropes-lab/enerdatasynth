@@ -183,6 +183,29 @@ def project_relative(path: str | Path) -> str:
         return str(path)
 
 
+
+def processed_path(filename: str) -> Path:
+    """`PROCESSED_DIR / filename`, or an error explaining how to create it.
+
+    This repository ships no real PJM data (only `metadata.json`, the scalers the
+    shipped checkpoint needs). Anything that trains, evaluates, or calibrates needs
+    the processed files, which you build from your own copy of the source data.
+    """
+    path = PROCESSED_DIR / filename
+    if not path.exists():
+        raise FileNotFoundError(
+            f"{path} not found. This repository ships no real data: get the PJM load and "
+            f"NOAA temperature files yourself (see data/raw/pjm_load/README.md), put them in "
+            f"data/raw/pjm_load/, then run `enerdatasynth preprocess`."
+        )
+    return path
+
+
+def load_processed(filename: str) -> np.ndarray:
+    """Load one `.npy` array from `PROCESSED_DIR` (see `processed_path`)."""
+    return np.load(processed_path(filename))
+
+
 def resolve_device(device: str | None = None) -> str:
     """`device` if given, else "cuda"/"cpu" resolved fresh, at call time.
 

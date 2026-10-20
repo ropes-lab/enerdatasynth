@@ -94,7 +94,7 @@ def main():
     reports/future_experiments.md
     reports/figures/
     data/processed/README.md
-    data/processed_backup/   (frozen backup of training data)
+    data/processed/pjm_load_backup/   (backup written by preprocess; git-ignored)
 """)
 
 

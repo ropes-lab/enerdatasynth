@@ -19,7 +19,7 @@ import numpy as np
 import torch
 
 from enerdatasynth.utils.config import (
-    PROCESSED_DIR, GENERATED_DIR, CHECKPOINT_DIR,
+    load_processed, GENERATED_DIR, CHECKPOINT_DIR,
     DEFAULT_ARCHITECTURE, DEFAULT_N_HEADS, ensure_dirs, resolve_device,
 )
 from enerdatasynth.resources.pjm_load.models import build_denoiser
@@ -47,10 +47,10 @@ def generate_for_run(run_id: str, diffusion_steps: int, hidden_dim: int,
         from enerdatasynth.utils.config import set_seed
         set_seed(seed)
 
-    Z = np.load(PROCESSED_DIR / ("Z_conditions_val.npy" if use_val
-                                  else "Z_conditions.npy"))
-    X_real = np.load(PROCESSED_DIR / ("X_daily_profiles_val.npy" if use_val
-                                       else "X_daily_profiles.npy"))
+    Z = load_processed("Z_conditions_val.npy" if use_val
+                                  else "Z_conditions.npy")
+    X_real = load_processed("X_daily_profiles_val.npy" if use_val
+                                       else "X_daily_profiles.npy")
 
     x_dim    = X_real.shape[1]
     cond_dim = Z.shape[1]

@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 from enerdatasynth.utils.config import (
-    RunConfig, PROCESSED_DIR, REPORTS_DIR,
+    RunConfig, load_processed, REPORTS_DIR,
     SWEEP_DIFFUSION_STEPS, SWEEP_HIDDEN_DIM, SWEEP_N_LAYERS,
     DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_T,
     ensure_dirs,
@@ -64,10 +64,10 @@ def run_sweep(max_epochs: int = 60, full_grid: bool = False) -> pd.DataFrame:
                  axis independently.
     """
     ensure_dirs()
-    X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
-    Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
-    X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z_val   = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    X_train = load_processed("X_daily_profiles.npy")
+    Z_train = load_processed("Z_conditions.npy")
+    X_val   = load_processed("X_daily_profiles_val.npy")
+    Z_val   = load_processed("Z_conditions_val.npy")
 
     if full_grid:
         configs = [

@@ -3,7 +3,7 @@
 ## Requirements
 
 - Python >= 3.10
-- ~200MB disk for raw + processed data, more if you keep multiple checkpoints
+- Disk for your own raw and processed data if you plan to train (the repository ships none), plus the checkpoints
 
 ## Editable install (development)
 

@@ -10,6 +10,8 @@ readme = "README.md"
 license = { text = "MIT" }
 authors = [
     { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
+    { name = "Pranav Tikkawar" },
+    { name = "Robert Mieth" },
 ]
 requires-python = ">=3.10"
 keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy", "generative-model", "research-sdk"]

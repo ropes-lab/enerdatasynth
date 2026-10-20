@@ -12,7 +12,7 @@ and [`docs/api_reference.md`](api_reference.md) instead.
 enerdatasynth preprocess
 ```
 
-Builds `data/processed/pjm_load/{X_daily_profiles,Z_conditions}[_val].npy` and `metadata.json` from raw CSVs (`data/raw/pjm_load/`). Only needs to be re-run when raw data changes.
+Builds `data/processed/pjm_load/{X_daily_profiles,Z_conditions}[_val].npy` and `metadata.json` from raw CSVs (`data/raw/pjm_load/`), which you supply yourself (sources: [`data/README.md`](../data/README.md#data-sources)). Only needs to be re-run when raw data changes.
 
 ## Training a single configuration
 

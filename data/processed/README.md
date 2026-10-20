@@ -1,7 +1,8 @@
 # `data/processed/`
 
-Cleaned, model-ready tensors, one folder per resource:
+Cleaned, model-ready arrays, built by `enerdatasynth preprocess` from your own copy of the source files. They are not part of this repository and git ignores them.
 
-- [`pjm_load/`](pjm_load/README.md) — bundled, small (~1.3MB), required for `enerdatasynth.model("pjm_load", ...)` to construct.
-- `pjm_load_backup/` — a frozen backup copy of `pjm_load/`, same contents. Not nested further since it's PJM-load-specific by nature (a backup of one preprocessing run); wind has no equivalent because it has no preprocessing pipeline to back up.
-- [`wind/`](wind/README.md) — placeholder; wind has no preprocessing pipeline in this package.
+- [`pjm_load/`](pjm_load/README.md) — what `preprocess` produces. The one tracked file is `metadata.json`, the scalers and condition spec the shipped checkpoint needs to build model inputs and convert outputs back to MW.
+- [`wind/`](wind/README.md) — empty; wind has no preprocessing pipeline in this package.
+
+If you run `enerdatasynth preprocess`, it also keeps a backup copy of its output in `pjm_load_backup/`, which is ignored the same way.

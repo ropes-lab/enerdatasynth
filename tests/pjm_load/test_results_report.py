@@ -1,6 +1,6 @@
 """Tests for enerdatasynth.resources.pjm_load.evaluation.results_report.
 
-Mirrors tests/wind/test_results_report.py. Uses the real bundled dataset
+Mirrors tests/wind/test_results_report.py. Uses the shipped scaler
 metadata and the real sweep results CSV, writing to a temp dir so the
 tracked report in data/reports/pjm_load/ is left untouched.
 """

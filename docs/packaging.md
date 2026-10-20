@@ -69,9 +69,14 @@ manual `twine upload dist/*` from a machine that has a PyPI API token for
 this project.
 
 Note the gap this doesn't close: the wheel built here (see above) never
-includes `data/checkpoints/pjm_load/` or `data/processed/pjm_load/`. A bare `pip install
+includes `data/checkpoints/pjm_load/` or `data/processed/pjm_load/metadata.json`. A bare `pip install
 enerdatasynth` gets working code but no trained weights for either
 resource -- `enerdatasynth.model(...)` needs a git checkout of this repo
 (or `WIND_DIFFUSION_CHECKPOINTS`/an equivalent for load) to actually
 generate anything. True for `pjm_load` since 0.4.1, still true for `wind`
 at 0.7.0 -- not a regression, just not yet solved for either resource.
+
+## Before making the repository public
+
+The working tree contains no real data, but git history does. The pre-restructure history (`main-before-restructure`) holds hundreds of PJM/NOAA raw CSVs, parquet files and `.npy` arrays, and even `main` still has some in older commits. Making the repository public as-is publishes all of it. Either publish a fresh single-commit snapshot as a new repository (or a Zenodo archive), or rewrite history with `git filter-repo` after the whole team agrees. Do not rewrite shared history unilaterally.
+

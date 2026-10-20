@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from enerdatasynth.utils.config import PROCESSED_DIR, CHECKPOINT_DIR, PROJECT_ROOT
+from enerdatasynth.utils.config import load_processed, processed_path, CHECKPOINT_DIR, PROJECT_ROOT
 from enerdatasynth.generators import LoadDiffusionModel
 from enerdatasynth.generators.load_conditioning import _discover_best_checkpoint
 
@@ -53,9 +53,9 @@ def select_days(df: pd.DataFrame) -> list[tuple[str, int]]:
 
 
 def main(run_id: str, out_path: Path) -> None:
-    df = pd.read_parquet(PROCESSED_DIR / "df_val.parquet")
-    X_val = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z_val = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    df = pd.read_parquet(processed_path("df_val.parquet"))
+    X_val = load_processed("X_daily_profiles_val.npy")
+    Z_val = load_processed("Z_conditions_val.npy")
 
     days = select_days(df)
     rows = [i for _, i in days]

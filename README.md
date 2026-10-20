@@ -42,7 +42,7 @@ samples = wind.sample(n=10, seed=0)      # (10, 288, 2) ndarray, m/s + degrees
 # wind sampling is slow on CPU at larger n — see docs/models/wind.md
 ```
 
-`pip install enerdatasynth` gives you the library only, not trained checkpoints or data. The snippet above runs as-is if you clone this repo and work from its root, since the checkpoints are bundled there. See [`docs/installation.md`](docs/installation.md) for other install paths and [`docs/quickstart.md`](docs/quickstart.md) if you want to train your own checkpoint from scratch. PyPI is up to date as of `0.7.0`, which has full wind support, so a plain `pip install` gets you both resources' code — you'll still need `data/checkpoints/` from this repo to actually generate anything.
+`pip install enerdatasynth` gives you the library only, not trained checkpoints or data. The snippet above runs as-is if you clone this repo and work from its root, since the checkpoints (and the small scaler file they need) are bundled there. No real data is. See [`docs/installation.md`](docs/installation.md) for other install paths and [`docs/quickstart.md`](docs/quickstart.md) if you want to train your own checkpoint from scratch. PyPI is up to date as of `0.7.0`, which has full wind support, so a plain `pip install` gets you both resources' code — you'll still need `data/checkpoints/` from this repo to actually generate anything.
 
 ## How It Works
 
@@ -76,7 +76,7 @@ Full documentation map: [`docs/README.md`](docs/README.md).
 
 ## Data & Reproducibility
 
-No raw or source data ships with this package or repository. What you get is trained checkpoints and the generation interface, not the underlying datasets.
+No real data ships with this package or repository, raw or processed. What you get is trained checkpoints and the generation interface, not the underlying datasets.
 
 | Resource | Source |
 |---|---|

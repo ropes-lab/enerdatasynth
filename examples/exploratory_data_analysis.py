@@ -23,13 +23,13 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from enerdatasynth.utils.config import PROCESSED_DIR
+from enerdatasynth.utils.config import PROCESSED_DIR, load_processed
 from enerdatasynth.resources.pjm_load.visualization.plots import PRIMARY_COLOR, SECONDARY_COLOR
 
 
 def main():
-    X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
-    X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
+    X_train = load_processed("X_daily_profiles.npy")
+    X_val   = load_processed("X_daily_profiles_val.npy")
     with open(PROCESSED_DIR / "metadata.json") as f:
         meta = json.load(f)
 

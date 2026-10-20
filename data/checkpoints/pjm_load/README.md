@@ -1,6 +1,6 @@
 # `data/checkpoints/pjm_load/`
 
-Eight runs, all trained on the 23-dim one-hot conditioning in `data/processed/pjm_load/`. Each holds `best.pt`, `latest.pt`, `result.json`, and `loss_curve.png`.
+Eight runs, all trained on the 23-dim one-hot conditioning described by `data/processed/pjm_load/metadata.json` (the training data itself is not in this repository). Each holds `best.pt`, `latest.pt`, `result.json`, and `loss_curve.png`.
 
 ## The shipped default
 

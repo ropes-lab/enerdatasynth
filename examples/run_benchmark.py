@@ -18,16 +18,16 @@ import csv
 
 import numpy as np
 
-from enerdatasynth.utils.config import PROCESSED_DIR, REPORTS_DIR
+from enerdatasynth.utils.config import load_processed, REPORTS_DIR
 from enerdatasynth.generators import LoadDiffusionModel
 from enerdatasynth.resources.pjm_load.evaluation.baselines import generate_all_baselines
 from enerdatasynth.resources.pjm_load.evaluation.metrics import compute_metrics, METRIC_KEYS
 
 
 def run_benchmark(run_id: str, n_days: int | None = None) -> dict:
-    X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
-    X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z_val   = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    X_train = load_processed("X_daily_profiles.npy")
+    X_val   = load_processed("X_daily_profiles_val.npy")
+    Z_val   = load_processed("Z_conditions_val.npy")
 
     if n_days is not None:
         X_val, Z_val = X_val[:n_days], Z_val[:n_days]

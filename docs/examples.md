@@ -20,7 +20,7 @@ python examples/run_full_pipeline.py
 
 ## `examples/exploratory_data_analysis.py`
 
-A small demonstration of inspecting the processed dataset (`data/processed/pjm_load/`): mean daily load shape, per-hour spread, train/val split sizes. Intentionally lightweight — the original, more exhaustive EDA (zone correlations, load-duration curves, COVID-period visualization) is preserved as historical research in `data/research_history/pjm_load/scripts/eda_exploration.py`.
+A small demonstration of inspecting the processed dataset (`data/processed/pjm_load/`, built by `enerdatasynth preprocess` from your own data, since none ships): mean daily load shape, per-hour spread, train/val split sizes. Intentionally lightweight — the original, more exhaustive EDA (zone correlations, load-duration curves, COVID-period visualization) is preserved as historical research in `data/research_history/pjm_load/scripts/eda_exploration.py`.
 
 ```bash
 python examples/exploratory_data_analysis.py

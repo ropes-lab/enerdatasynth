@@ -110,3 +110,18 @@ def test_project_relative_strips_the_project_root_only():
     assert project_relative(inside) == "data/checkpoints/pjm_load/run/best.pt"
     # a path outside the project is returned untouched rather than mangled
     assert project_relative("/somewhere/else/best.pt") == "/somewhere/else/best.pt"
+
+
+def test_processed_helpers_explain_how_to_get_missing_data(tmp_path, monkeypatch):
+    # the repo ships no real data; a missing array must say how to build it
+    import pytest
+    import enerdatasynth.utils.config as config
+
+    monkeypatch.setattr(config, "PROCESSED_DIR", tmp_path)
+    with pytest.raises(FileNotFoundError, match="enerdatasynth preprocess"):
+        config.load_processed("X_daily_profiles.npy")
+    with pytest.raises(FileNotFoundError, match="data/raw/pjm_load/README.md"):
+        config.processed_path("df_val.parquet")
+
+    np.save(tmp_path / "X.npy", np.arange(3))
+    assert config.load_processed("X.npy").tolist() == [0, 1, 2]

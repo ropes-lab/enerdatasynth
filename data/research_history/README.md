@@ -26,11 +26,11 @@ If you want the results rather than the scripts, read [`docs/models/pjm_load.md`
 
 - **Sampler fix evidence:** `reports/week5_comparison_corrected.csv` (post-fix) vs. `reports/week5_comparison_table.csv` (pre-fix, invalid, kept for verifiability).
 - **Transformer / zone results:** `reports/week7/`, `reports/week6/arch/`, `reports/phase2/`.
-- **Trained artifacts:** `outputs/week3_outputs/`, `outputs/zone_outputs/<ZONE>/`.
+- **Trained artifacts:** `outputs/week3_outputs/`, `outputs/zone_outputs/<ZONE>/` hold the model weights, scalers and calibration files. The datasets these scripts used are not in the repository; see [`data/README.md`](../README.md#data-sources).
 
 ## The one place this diverges from the package
 
-No checkpoint compatible with the package's current 23-dimensional conditioning has been trained yet — see `docs/research_status.md` §D. The package (`src/enerdatasynth/`) is the maintained implementation; this directory is the evidence for why it's built the way it is, not a second copy of the product.
+The research runs used a 6-dimensional conditioning vector, not the package's 23-dimensional one. A Transformer trained on the 23-dimensional conditioning (`transformer_T1000_H64_L2`) has since been added and is the shipped default; see `docs/research_status.md` §D. The package (`src/enerdatasynth/`) is the maintained implementation; this directory is the evidence for why it's built the way it is, not a second copy of the product.
 
 ## Wind
 

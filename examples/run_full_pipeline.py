@@ -22,7 +22,7 @@ from enerdatasynth.resources.pjm_load.data.preprocess import run_preprocessing
 from enerdatasynth.resources.pjm_load.training.train import train_one_config
 from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
 from enerdatasynth.resources.pjm_load.visualization.plots import run_all_validation_plots
-from enerdatasynth.utils.config import RunConfig, PROCESSED_DIR
+from enerdatasynth.utils.config import RunConfig, PROCESSED_DIR, load_processed
 import numpy as np
 
 
@@ -31,10 +31,10 @@ def main():
         print("No processed data found — running preprocessing first...")
         run_preprocessing()
 
-    X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
-    Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
-    X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z_val   = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    X_train = load_processed("X_daily_profiles.npy")
+    Z_train = load_processed("Z_conditions.npy")
+    X_val   = load_processed("X_daily_profiles_val.npy")
+    Z_val   = load_processed("Z_conditions_val.npy")
 
     # A small, fast configuration — NOT the tuned baseline. See
     # reports/hyperparameter_summary.md for the actual best config

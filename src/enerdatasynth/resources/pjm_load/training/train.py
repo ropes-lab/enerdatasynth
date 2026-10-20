@@ -181,12 +181,12 @@ def train_one_config(X_train: np.ndarray, Z_train: np.ndarray,
 
 
 if __name__ == "__main__":
-    from enerdatasynth.utils.config import PROCESSED_DIR
+    from enerdatasynth.utils.config import load_processed
 
-    X_train = np.load(PROCESSED_DIR / "X_daily_profiles.npy")
-    Z_train = np.load(PROCESSED_DIR / "Z_conditions.npy")
-    X_val   = np.load(PROCESSED_DIR / "X_daily_profiles_val.npy")
-    Z_val   = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    X_train = load_processed("X_daily_profiles.npy")
+    Z_train = load_processed("Z_conditions.npy")
+    X_val   = load_processed("X_daily_profiles_val.npy")
+    Z_val   = load_processed("Z_conditions_val.npy")
 
     cfg = RunConfig()  # defaults: transformer, T=1000, model_dim=64, layers=2, heads=4
     train_one_config(X_train, Z_train, X_val, Z_val, cfg)

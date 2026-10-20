@@ -95,12 +95,11 @@ def _discover_best_checkpoint(checkpoint_root: Path = CHECKPOINT_DIR) -> str:
     architecture="transformer" run (lowest best_val_loss among those),
     since that's the validated-best architecture (see MIGRATION.md);
     falls back to the best "mlp" run if no transformer checkpoint has
-    been trained yet against the current preprocessing pipeline. As of
-    this package's last audit, no transformer checkpoint compatible
-    with the current one-hot conditioning existed — so today this
-    resolves to the best legacy MLP run, and will silently start
-    resolving to a transformer run automatically once one is trained
-    (`enerdatasynth train`), with no code changes needed here.
+    been trained against the current preprocessing pipeline. The shipped
+    default (`transformer_T1000_H64_L2`) is a transformer run, so this
+    resolves to it; the seven legacy MLP runs only matter if it is
+    removed. Training another transformer (`enerdatasynth train`) is
+    picked up automatically, with no code changes needed here.
 
     Load-specific: scans CHECKPOINT_DIR for result.json files, a
     convention only enerdatasynth's own training pipeline produces. Wind's

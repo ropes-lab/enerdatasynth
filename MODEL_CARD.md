@@ -31,7 +31,7 @@ This card describes the model behind `enerdatasynth.model("pjm_load", zone="PS")
 - **Train/validation split**: Chronological, not random — **2,785 days (2016–2023)** train, **600 days (2024–2025)** validation. This is a development split, not a forecasting evaluation; the task is unconditional-on-time generation given calendar/weather conditions, not forecasting future load from past load.
 - **Normalization**: Load values scaled per-hour with `MinMaxScaler`, fit on training data only. Temperature and load-spread conditioning scaled with `StandardScaler`, also fit on training data only.
 
-Regenerate this exact dataset with `enerdatasynth preprocess`; regenerating will refresh `data/processed/pjm_load/metadata.json`, which is the authoritative source for the exact numbers above (pulled directly from that file, generated 2026-06-22).
+The dataset itself is not part of this repository; see [`data/README.md`](data/README.md#data-sources) for where to get the PJM and NOAA files. With your own copy, `enerdatasynth preprocess` rebuilds the arrays. The tracked `data/processed/pjm_load/metadata.json` holds the scalers and split sizes the numbers above come from (generated 2026-06-22), and the shipped checkpoint needs it to turn conditions into model inputs and outputs back into MW.
 
 ## Conditioning Variables
 

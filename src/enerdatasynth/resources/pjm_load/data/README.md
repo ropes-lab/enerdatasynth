@@ -6,7 +6,7 @@ In short: raw CSVs in, cleaned and normalized daily tensors out, ready for train
 
 ## Files
 
-- **`preprocess.py`** — `run_preprocessing()` runs the full pipeline: pivot to daily rows, detect and remove DST days, drop missing-load/missing-weather/COVID days, normalize, then save `X_daily_profiles.npy`, `Z_conditions.npy`, `metadata.json`, and train/val parquet files to `data/processed/pjm_load/`. `docs/data_card.md` has the exact rules.
+- **`preprocess.py`** — `run_preprocessing()` runs the full pipeline: pivot to daily rows, detect and remove DST days, drop missing-load/missing-weather/COVID days, normalize, then save `X_daily_profiles.npy`, `Z_conditions.npy`, `metadata.json`, and train/val parquet files to `data/processed/pjm_load/` (git ignores everything there except `metadata.json`). `docs/data_card.md` has the exact rules.
 - **`temperature.py`** — NOAA ISD fetch, per-station-year Parquet caching (`data/cache/pjm_load/`), and zone-level averaging across each zone's constituent stations (`ZONE_STATIONS`), weighted equally.
 
 ## Public API vs. internal

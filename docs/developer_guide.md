@@ -40,9 +40,9 @@ docs/                              this documentation set
 examples/run_benchmark.py       classical-vs-diffusion comparison, built on library code only
 
 data/
-├── raw/                          raw CSVs (load + temperature)
-├── processed/                    X, Z tensors + metadata + README (working copy)
-└── processed_backup/             FROZEN duplicate — restore from here if corrupted
+├── raw/                          your raw CSVs (load + temperature); not in the repo
+├── processed/pjm_load/           arrays built by preprocess (git-ignored); metadata.json is tracked
+└── processed/pjm_load_backup/    copy written by preprocess (git-ignored)
 
 data/checkpoints/pjm_load/<run_id>/             best.pt, latest.pt, loss_curve.png, result.json, calibration.json
 data/outputs/pjm_load/
@@ -82,14 +82,13 @@ See [`docs/api_reference.md`](api_reference.md) for how `.set()` maps human-read
 
 ## Restoring `data/processed/pjm_load/` from Backup
 
-If `data/processed/pjm_load/` ever gets corrupted by a bad re-run:
+If `data/processed/pjm_load/` ever gets corrupted by a bad re-run, restore it from the backup that `enerdatasynth preprocess` wrote (this only exists once you've run it on your own data):
 
 ```bash
-rm -rf data/processed
-cp -r data/processed_backup data/processed
+cp -r data/processed/pjm_load_backup/. data/processed/pjm_load/
 ```
 
-The backup is written once, immediately after preprocessing completes (`enerdatasynth preprocess`), and is never touched again by any other script — see `data/preprocess.py`'s `duplicate_processed_dir`.
+The backup is written once, immediately after preprocessing completes, and is never touched again by any other script — see `data/preprocess.py`'s `duplicate_processed_dir`.
 
 ## Development Setup
 
@@ -105,7 +104,7 @@ pytest tests/ -v                     # full suite, ~2-20s
 pytest tests/test_public_api.py -v   # just the fluent SDK
 ```
 
-Most tests use small synthetic arrays and run in ~2s with no dependency on the real dataset. A few (sampling, public API, one config regression test) exercise real artifacts already in this repo — real checkpoints, real processed data, real subprocess installs — and are marked to skip gracefully if those aren't present (e.g. a fresh clone before `enerdatasynth preprocess`/`train` has been run).
+Most tests use small synthetic arrays and run in ~2s with no dependency on the real dataset. A few (public API, one config regression test) exercise real artifacts already in this repo — the shipped checkpoints, the scaler file, real subprocess installs — and skip gracefully if those aren't present. No real data ships, so tests that need arrays (sampling, failure analysis) build small synthetic ones.
 
 ## Before Submitting a Change
 

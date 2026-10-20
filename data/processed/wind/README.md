@@ -1,9 +1,8 @@
 # `data/processed/wind/`
 
-Empty. [`../pjm_load/`](../pjm_load/README.md) holds `X_daily_profiles.npy`,
-`Z_conditions.npy` and `metadata.json`, made by `enerdatasynth preprocess`. Wind has no
-preprocessing step in this package; it ships trained checkpoints
-(`data/checkpoints/wind/`) instead.
+Empty. [`../pjm_load/`](../pjm_load/README.md) is where `enerdatasynth preprocess` writes
+its arrays and `metadata.json`. Wind has no preprocessing step in this package; it ships
+trained checkpoints (`data/checkpoints/wind/`) instead.
 
 The upstream training command appears in error messages from
 `resources/wind/registry.py`: `wind-diffusion-train --preset <preset> --data-path <csv> --output-dir <dir>`.

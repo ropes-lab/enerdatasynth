@@ -43,7 +43,7 @@ a point forecast, and not validated for any forecasting, dispatch, or control us
 | Hourly resolution | 24 values/day, fixed-width | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` |
 | Zones with full Phase-2 research validation | 17 zones: AP, DAY, PL, DEOK, CE, PN, DPL, BC, PS, RECO, JC, ME, DUQ, PE, AE, EKPC, DOM | `data/research_history/pjm_load/reports/phase2/summary_report.md` |
 | Zones exposed by the installed package today | **`PS` only** | `src/enerdatasynth/generators/load_conditioning.py`: `register_resource(..., zones=["PS"], ...)` |
-| Training/validation split used for the current bundled dataset | 2,785 train / 600 validation days (zone PS), from 3,653 raw days before cleaning | `data/reports/pjm_load/results_summary.md` |
+| Training/validation split of the dataset the shipped checkpoint was trained on | 2,785 train / 600 validation days (zone PS), from 3,653 raw days before cleaning | `data/reports/pjm_load/results_summary.md` |
 | DST handling | Days with 23 or 25 hourly rows (detected pre-pivot via `detect_dst_days`) are flagged and removed — a fixed 24-column output can't represent them | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`detect_dst_days`, `is_dst` flag) |
 | Missing-load handling | Days with any NaN among the 24 hourly load columns (excluding days already flagged DST) are removed | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`missing_load` flag) |
 | Missing-weather handling | Days with NaN `Tmax` or `Tmin` after the zone temperature merge are removed | `src/enerdatasynth/resources/pjm_load/data/preprocess.py` (`missing_weather` flag) |
@@ -57,8 +57,9 @@ interchangeable:**
 
 1. **Research-history conditioning ("Z5"/"Z9")** — the raw, lower-dimensional
    representation used to produce the reported Week 6/Week 7 Transformer results
-   (`cond_dim=6` for "Z5"). See `data/research_history/pjm_load/outputs/week3_outputs/Z5_train.npy`
-   / `Z9_train.npy` and the Week 6/7 scripts under `data/research_history/pjm_load/scripts/`.
+   (`cond_dim=6` for "Z5"). The Week 6/7 scripts under `data/research_history/pjm_load/scripts/`
+   show how it was built. The `Z5_train.npy` / `Z9_train.npy` tensors themselves were removed
+   from the repository along with the rest of the data.
 
 2. **Current package conditioning** — `src/enerdatasynth/utils/config.py`'s
    `COND_DIM = N_MONTHS + N_DOW + 1 + 1 + 1 + 1 = 23`:
@@ -85,8 +86,8 @@ See section D and `docs/results.md`'s "Critical Scientific Integrity Note".
 actual data:** `week3.py`'s own header labels its baseline conditioning vector "Z5 matrix
 (N_days × 5)" (implying 5 dimensions), while `src/enerdatasynth/resources/pjm_load/models/transformer.py`'s
 docstring states the validated Transformer checkpoint used `cond_dim=6`. Loading
-`data/research_history/pjm_load/outputs/week3_outputs/Z5_train.npy` directly confirms shape
-`(2785, 6)` — **6 columns, not 5.** "Z5" is a research-era name referring to 5 conceptual
+`data/research_history/pjm_load/outputs/week3_outputs/Z5_train.npy` directly confirmed shape
+`(2785, 6)` (when that file was still in the repository; it has since been removed) — **6 columns, not 5.** "Z5" is a research-era name referring to 5 conceptual
 input fields (month, day-of-week, holiday, temperature, spread) packed compactly into 6
 numeric columns — not a one-hot scheme like the current package's 23-dimensional
 conditioning. `transformer.py`'s `cond_dim=6` claim is correct; `week3.py`'s header

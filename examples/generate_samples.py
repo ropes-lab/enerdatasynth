@@ -16,7 +16,7 @@ from __future__ import annotations
 import numpy as np
 
 from enerdatasynth import LoadDiffusionModel, RunConfig
-from enerdatasynth.utils.config import PROCESSED_DIR
+from enerdatasynth.utils.config import load_processed
 
 if __name__ == "__main__":
     cfg = RunConfig()  # default: transformer, T=1000, model_dim=64, layers=2, heads=4
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # Use the validation set's real condition vectors as an example —
     # any (N, cond_dim) array built by enerdatasynth.resources.pjm_load.data.preprocess
     # works here.
-    Z_val = np.load(PROCESSED_DIR / "Z_conditions_val.npy")
+    Z_val = load_processed("Z_conditions_val.npy")
     samples = model.sample(Z_val[:10], seed=0)
     print(f"Generated {samples.shape[0]} synthetic profiles, shape={samples.shape}")
 

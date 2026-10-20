@@ -28,6 +28,16 @@ data/cache/pjm_load/*
 data/cache/wind/*
 !data/cache/wind/README.md
 
+# Real PJM data, however processed. `enerdatasynth preprocess` builds these from
+# your own copy of the source files; only metadata.json (the scalers the shipped
+# checkpoint needs) and the README are tracked.
+data/processed/pjm_load/*
+!data/processed/pjm_load/README.md
+!data/processed/pjm_load/metadata.json
+data/processed/pjm_load_backup/
+data/research_history/**/*.npy
+data/research_history/**/*.parquet
+
 # LaTeX build artifacts (paper/)
 paper/*.aux
 paper/*.bbl
