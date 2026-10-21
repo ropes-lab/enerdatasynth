@@ -3,7 +3,7 @@
 # ⚡ enerdatasynth
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+[![Python 3.10-3.14](https://img.shields.io/badge/python-3.10%20to%203.14-blue.svg)](pyproject.toml)
 [![Tests: 271 passing](https://img.shields.io/badge/tests-271%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
@@ -29,7 +29,7 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 python3 --version
 ```
 
-It must say 3.10 or newer. If it says 3.9 or lower (the default on many Macs), install the current Python from [python.org/downloads](https://www.python.org/downloads/) first and open a new terminal. Without this step, pip installs an old 0.4.1 release that doesn't have what's described below.
+It must say 3.10, 3.11, 3.12, 3.13 or 3.14. If it says 3.9 or lower (the default on many Macs), install Python 3.12 from [python.org/downloads](https://www.python.org/downloads/) and open a new terminal. Without this step, pip installs an old 0.4.1 release that doesn't have what's described below. Don't pick a brand-new release such as 3.15: PyTorch, which this package needs, doesn't publish builds for it yet, and the install will fail.
 
 **2. Install and run the demo.**
 
@@ -58,7 +58,7 @@ print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 
 Don't paste Python lines straight into your terminal prompt; the shell will try to run them as commands. Use a file, or start `python` first and paste into its `>>>` prompt.
 
-If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
+If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). If the install fails on a `torch` error, your Python is newer than 3.14. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
 ## How it works
 
