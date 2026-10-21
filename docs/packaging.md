@@ -54,7 +54,7 @@ Published on PyPI as `enerdatasynth`, first at 0.4.1 (load only), then
 -- see MODEL_CARD.md), 0.7.0 (pjm_load/wind API parity, wind CLI
 support), 0.8.0 (the shipped Transformer default, no real data in
 the repository, and the trained checkpoints bundled in the wheel -- see
-`MIGRATION.md` for the earlier version history), and **0.8.1** (adds `enerdatasynth demo`).
+`MIGRATION.md` for the earlier version history), **0.8.1** (adds `enerdatasynth demo`) and **0.8.2** (adds `python3 -m enerdatasynth`).
 
 Releases go out via `.github/workflows/publish.yml`, triggered by pushing
 a `vX.Y.Z` tag (matching `__version__`) or manually via the Actions tab.

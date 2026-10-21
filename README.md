@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
-[![Tests: 270 passing](https://img.shields.io/badge/tests-270%20passing-brightgreen.svg)](tests/)
+[![Tests: 271 passing](https://img.shields.io/badge/tests-271%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **PyPI: <https://pypi.org/project/enerdatasynth/>**
@@ -23,16 +23,24 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 
 ## Quick start
 
-You need Python 3.10 or newer. Two commands:
+**1. Check your Python.** Open a terminal and run:
 
 ```bash
-pip install enerdatasynth
-enerdatasynth demo
+python3 --version
 ```
 
-`demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute while torch and pandas load.
+It must say 3.10 or newer. If it says 3.9 or lower (the default on many Macs), install the current Python from [python.org/downloads](https://www.python.org/downloads/) first and open a new terminal. Without this step, pip installs an old 0.4.1 release that doesn't have what's described below.
 
-To use it from Python, save this as `try_it.py` and run `python try_it.py`:
+**2. Install and run the demo.**
+
+```bash
+python3 -m pip install enerdatasynth
+python3 -m enerdatasynth demo
+```
+
+`demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C. We write `python3 -m pip` instead of `pip` because on many machines there is no plain `pip` command.
+
+To use it from Python, save this as `try_it.py` and run `python3 try_it.py`:
 
 ```python
 import enerdatasynth
@@ -50,7 +58,7 @@ print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 
 Don't paste Python lines straight into your terminal prompt; the shell will try to run them as commands. Use a file, or start `python` first and paste into its `>>>` prompt.
 
-If `pip install` gives you version `0.4.1`, your Python is older than 3.10. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
+If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
 ## How it works
 

@@ -118,3 +118,7 @@ def test_demo_command_prints_both_resources(capsys, tmp_path):
     assert "Wind 1ch, high regime" in out
     assert out_png.exists()
 
+
+def test_python_dash_m_entry_point_exists():
+    import importlib.util
+    assert importlib.util.find_spec("enerdatasynth.__main__") is not None

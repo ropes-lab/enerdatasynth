@@ -1,6 +1,6 @@
 # `tests/`
 
-270 tests, all passing (`pytest tests/`, about 30 seconds). No test needs the raw dataset; the ones that need data-shaped inputs build small synthetic ones.
+271 tests, all passing (`pytest tests/`, about 30 seconds). No test needs the raw dataset; the ones that need data-shaped inputs build small synthetic ones.
 
 ## Layout
 

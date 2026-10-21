@@ -8,10 +8,10 @@
 ## Using the package
 
 ```bash
-pip install enerdatasynth
+python3 -m pip install enerdatasynth
 ```
 
-That is enough to generate: the wheel includes the trained load Transformer and the three wind presets (about 13 MB). Use it from any folder. To see it work, run `enerdatasynth demo`.
+Check first that `python3 --version` says 3.10 or newer. That is enough to generate: the wheel includes the trained load Transformer and the three wind presets (about 13 MB). Use it from any folder. To see it work, run `python3 -m enerdatasynth demo` (or `enerdatasynth demo` if pip's script folder is on your PATH).
 
 ## Editable install (development)
 
