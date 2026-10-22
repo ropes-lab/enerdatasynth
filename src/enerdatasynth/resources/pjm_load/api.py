@@ -87,8 +87,8 @@ def generate_load_profile(
     zone: str = ZONE,
     *,
     month: int,
-    Tmax: float,
-    Tmin: float,
+    Tmax: float | None = None,
+    Tmin: float | None = None,
     day_of_week: int | str | None = None,
     weekday: bool = True,
     holiday: bool = False,
@@ -106,9 +106,9 @@ def generate_load_profile(
     without the fluent SDK layer (same relationship `generate_wind_profile` has to
     `enerdatasynth.model("wind", ...)`).
 
-    `month`/`Tmax`/`Tmin` are required, matching `LOAD_CONDITION_SPEC`'s own
-    `required=True` fields — there's no defensible default for them (see
-    `docs/api_reference.md`'s "Not silently resolved" notes).
+    `month` is required. `Tmax`/`Tmin` (degrees Fahrenheit) are optional: left out,
+    the model uses the training-set average temperature (see
+    `docs/api_reference.md`).
 
     `run_id`: which bundled checkpoint to use. `None` (default) resolves to
     `_discover_best_checkpoint()` — the same "best transformer, else best mlp"
@@ -136,7 +136,11 @@ def generate_load_profile(
     resolved_run_id = run_id or _discover_best_checkpoint()
     model = LoadDiffusionModel.from_run_id(resolved_run_id, device=device)
 
-    conditions: dict[str, Any] = {"month": month, "Tmax": Tmax, "Tmin": Tmin, "weekday": weekday, "holiday": holiday}
+    conditions: dict[str, Any] = {"month": month, "weekday": weekday, "holiday": holiday}
+    if Tmax is not None:
+        conditions["Tmax"] = Tmax
+    if Tmin is not None:
+        conditions["Tmin"] = Tmin
     if day_of_week is not None:
         conditions["day_of_week"] = day_of_week
     if spread is not None:

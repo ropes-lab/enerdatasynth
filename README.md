@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
-[![Tests: 273 passing](https://img.shields.io/badge/tests-273%20passing-brightgreen.svg)](tests/)
+[![Tests: 274 passing](https://img.shields.io/badge/tests-274%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **PyPI: <https://pypi.org/project/enerdatasynth/>**
@@ -29,19 +29,19 @@ pip install enerdatasynth
 
 Then copy a whole block below into your terminal and press Enter. Each one imports the package, sets conditions, generates a day and prints its 24-hour profile.
 
-**PJM electric load** (temperatures in °F):
+**PJM electric load:**
 
 ```bash
 python3 - <<'EOF'
 import enerdatasynth
 load = enerdatasynth.model("pjm_load", zone="PS")
-load.set(month=7, Tmax=86, Tmin=70, weekday=True)
+load.set(month=7, weekday=True)
 samples = load.sample(n=1, seed=0)
 enerdatasynth.show(samples)
 EOF
 ```
 
-**Wind** (temperatures in °C; `zone` is the preset: `"1ch"` speed only, `"2ch"` or `"3ch"` speed and direction):
+**Wind** (`zone` is the preset: `"1ch"` speed only, `"2ch"` or `"3ch"` speed and direction):
 
 ```bash
 python3 - <<'EOF'
@@ -53,7 +53,7 @@ enerdatasynth.show(samples)
 EOF
 ```
 
-You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the numbers in `.set(...)` to ask for a different day. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
+You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the values in `.set(...)` to ask for a different day. For load, only `month` is required; everything else is optional. Add `Tmax=` and `Tmin=` (the day's highest and lowest temperature, in °F) for a hotter or colder day, for example `Tmax=95, Tmin=78`; leave them out and you get a day with average temperatures. For wind, every setting is optional; `temp_min` and `temp_max` are in °C. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
 
 It works on Python 3.9 and newer. If `pip install` gives you version `0.4.1`, your Python is older than 3.9. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). Typing the same lines inside `python3` works too. To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 

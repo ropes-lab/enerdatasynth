@@ -52,20 +52,26 @@ def show(samples) -> None:
         print(row)
 
 
-def load(month: int, Tmax: float, Tmin: float, *, seed: int = 0, **conditions) -> np.ndarray:
+def load(month: int, Tmax: float | None = None, Tmin: float | None = None, *, seed: int = 0, **conditions) -> np.ndarray:
     """Generate and print one day of PJM load (zone PS).
 
-    `month` is 1-12; `Tmax` and `Tmin` are the day's temperatures in degrees
-    Fahrenheit. Optional conditions: `weekday` (True/False), `holiday`,
+    `month` is 1-12. Optional: `Tmax` and `Tmin`, the day's highest and lowest
+    temperature in degrees Fahrenheit (left out, an average-temperature day is
+    used). Other optional conditions: `weekday` (True/False), `holiday`,
     `day_of_week` (0=Mon..6=Sun), `spread`. Prints 24 hourly values in MW and
     returns them as a (24,) array. The same `seed` gives the same day.
     """
     import enerdatasynth
 
     m = enerdatasynth.model("pjm_load", zone="PS")
-    m.set(month=month, Tmax=Tmax, Tmin=Tmin, **conditions)
+    if Tmax is not None:
+        conditions["Tmax"] = Tmax
+    if Tmin is not None:
+        conditions["Tmin"] = Tmin
+    m.set(month=month, **conditions)
     day = np.asarray(m.sample(n=1, seed=seed))[0]
-    print(f"PJM load, one generated day (zone PS, month {month}, Tmax {Tmax} F, Tmin {Tmin} F)\n")
+    temps = f"Tmax {Tmax} F, Tmin {Tmin} F" if Tmax is not None or Tmin is not None else "average temperature"
+    print(f"PJM load, one generated day (zone PS, month {month}, {temps})\n")
     print("hour   load (MW)")
     for h, v in enumerate(day):
         print(f"{h:4d}   {v:9.0f}")

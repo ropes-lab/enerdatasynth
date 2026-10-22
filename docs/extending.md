@@ -108,7 +108,7 @@ override: a resource can provide a full custom
 directly — no new logic, just translation. `ResourceModel._missing_required()`
 also had to special-case this: a `condition_builder` resource reports
 nothing as hard-required, since wind's own defaults (unlike load's
-`month`/`Tmax`/`Tmin`) mean there's nothing that must be set before
+`month`) mean there's nothing that must be set before
 `.sample()`.
 
 **If you're adding a third resource**: try the `condition_spec`
