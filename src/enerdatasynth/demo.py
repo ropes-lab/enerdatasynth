@@ -15,48 +15,38 @@ import numpy as np
 
 
 def show(samples) -> None:
-    """Print the 24-hour profile of what `.sample()` returned, for load or wind.
+    """Print the 24-hour profile of the first day in what `.sample()` returned.
 
-        samples = enerdatasynth.model("pjm_load", zone="PS").set(...).sample(n=100)
+        samples = enerdatasynth.model("pjm_load", zone="PS").set(...).sample(n=1)
         enerdatasynth.show(samples)
 
-    Load samples are (n, 24) in MW. Wind samples are (n, 288, 2) 5-minute
-    values; they are averaged to hourly wind speed in m/s (plus direction in
-    degrees when the preset has it). With more than one sample the table shows
-    the mean across samples and the 5th to 95th percentile range.
+    Load samples are (n, 24) in MW: prints the 24 hourly values. Wind samples
+    are (n, 288, 2) 5-minute values: prints the hourly average wind speed in
+    m/s (plus direction in degrees when the preset has it). If you generated
+    more than one day, the first one is shown; the rest stay in `samples`.
     """
     a = np.asarray(samples, dtype=float)
     if a.ndim == 1:
         a = a[None, :]
+    direction = None
     if a.ndim == 2 and a.shape[1] == 24:
-        values, name, unit, fmt = a, "load", "MW", "{:9.0f}"
-        direction = None
+        values, label, fmt = a[0], "load (MW)", "{:.0f}"
     elif a.ndim == 3 and a.shape[1] == 288:
-        values = a[:, :, 0].reshape(a.shape[0], 24, 12).mean(axis=2)
-        name, unit, fmt = "wind speed", "m/s", "{:9.2f}"
-        direction = None
-        if a.shape[2] > 1 and np.any(a[:, :, 1] != 0):
-            rad = np.radians(a[:, :, 1]).reshape(a.shape[0], 24, 12)
-            direction = np.degrees(np.arctan2(np.sin(rad).mean(axis=(0, 2)), np.cos(rad).mean(axis=(0, 2)))) % 360
+        values = a[0, :, 0].reshape(24, 12).mean(axis=1)
+        label, fmt = "wind speed (m/s)", "{:.2f}"
+        if a.shape[2] > 1 and np.any(a[0, :, 1] != 0):
+            rad = np.radians(a[0, :, 1]).reshape(24, 12)
+            direction = np.degrees(np.arctan2(np.sin(rad).mean(axis=1), np.cos(rad).mean(axis=1))) % 360
     else:
         raise ValueError(
             f"show() expects load samples of shape (n, 24) or wind samples of shape (n, 288, 2); got {a.shape}."
         )
-    n = values.shape[0]
-    mean = values.mean(axis=0)
-    label = f"{name} ({unit})"
-    head = f"{'hour':>4}   {label:>16}"
-    if n > 1:
-        lo, hi = np.percentile(values, 5, axis=0), np.percentile(values, 95, axis=0)
-        head += f"   {'5th pct':>9}   {'95th pct':>9}"
-    if direction is not None:
-        head += f"   {'direction (deg)':>15}"
-    print(f"{n} generated day{'s' if n != 1 else ''}, hourly {'mean' if n > 1 else 'values'}\n")
+    note = f" (first of {a.shape[0]} generated days)" if a.shape[0] > 1 else ""
+    print(f"24-hour profile{note}\n")
+    head = f"{'hour':>4}   {label:>16}" + (f"   {'direction (deg)':>15}" if direction is not None else "")
     print(head)
     for h in range(24):
-        row = f"{h:4d}   " + fmt.format(mean[h]).rjust(16)
-        if n > 1:
-            row += "   " + fmt.format(lo[h]).rjust(9) + "   " + fmt.format(hi[h]).rjust(9)
+        row = f"{h:4d}   " + fmt.format(values[h]).rjust(16)
         if direction is not None:
             row += f"   {direction[h]:15.0f}"
         print(row)

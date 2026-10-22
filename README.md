@@ -27,7 +27,7 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 pip install enerdatasynth
 ```
 
-Then copy a whole block below into your terminal and press Enter. Each one imports the package, sets conditions, generates days and prints the 24-hour profile.
+Then copy a whole block below into your terminal and press Enter. Each one imports the package, sets conditions, generates a day and prints its 24-hour profile.
 
 **PJM electric load** (temperatures in °F):
 
@@ -36,7 +36,7 @@ python3 - <<'EOF'
 import enerdatasynth
 load = enerdatasynth.model("pjm_load", zone="PS")
 load.set(month=7, Tmax=86, Tmin=70, weekday=True)
-samples = load.sample(n=100, seed=0)
+samples = load.sample(n=1, seed=0)
 enerdatasynth.show(samples)
 EOF
 ```
@@ -48,12 +48,12 @@ python3 - <<'EOF'
 import enerdatasynth
 wind = enerdatasynth.model("wind", zone="1ch")
 wind.set(wind_regime="high", month=7, temp_min=10, temp_max=22)
-samples = wind.sample(n=10, seed=0)
+samples = wind.sample(n=1, seed=0)
 enerdatasynth.show(samples)
 EOF
 ```
 
-You get a table with one row per hour: the mean across the generated days and the 5th to 95th percentile range, in MW for load and m/s for wind. Change the numbers in `.set(...)` to ask for a different day. `samples` is a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind), so you can use it however you like. The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
+You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the numbers in `.set(...)` to ask for a different day. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
 
 It works on Python 3.9 and newer. If `pip install` gives you version `0.4.1`, your Python is older than 3.9. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). Typing the same lines inside `python3` works too. To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
