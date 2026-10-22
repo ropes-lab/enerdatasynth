@@ -34,11 +34,12 @@ It must say 3.10, 3.11, 3.12, 3.13 or 3.14. If it says 3.9 or lower (the default
 **2. Install and run the demo.**
 
 ```bash
+python3 -m pip install --upgrade pip
 python3 -m pip install enerdatasynth
 python3 -m enerdatasynth demo
 ```
 
-`demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C. We write `python3 -m pip` instead of `pip` because on many machines there is no plain `pip` command.
+`demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C. We write `python3 -m pip` instead of `pip` because on many machines there is no plain `pip` command, and the first line is there because the pip that comes with a fresh Python install is often too old to resolve PyTorch (you'd see "conflicting dependencies" and a `torch` error).
 
 To use it from Python, save this as `try_it.py` and run `python3 try_it.py`:
 
