@@ -27,7 +27,7 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 pip install enerdatasynth
 ```
 
-Then copy a whole block below into your terminal and press Enter. Each one imports the package, sets conditions, generates a day and prints its 24-hour profile.
+Then copy a whole block below into your terminal and press Enter. It generates a day and prints its 24-hour profile.
 
 **PJM electric load:**
 
@@ -35,27 +35,27 @@ Then copy a whole block below into your terminal and press Enter. Each one impor
 python3 - <<'EOF'
 import enerdatasynth
 load = enerdatasynth.model("pjm_load", zone="PS")
-load.set(month=7, weekday=True)
-samples = load.sample(n=1, seed=0)
+load.set(month=7)
+samples = load.sample(n=1)
 enerdatasynth.show(samples)
 EOF
 ```
 
-**Wind** (`zone` is the preset: `"1ch"` speed only, `"2ch"` or `"3ch"` speed and direction):
+**Wind:**
 
 ```bash
 python3 - <<'EOF'
 import enerdatasynth
 wind = enerdatasynth.model("wind", zone="1ch")
-wind.set(wind_regime="high", month=7, temp_min=10, temp_max=22)
-samples = wind.sample(n=1, seed=0)
+wind.set(month=7)
+samples = wind.sample(n=1)
 enerdatasynth.show(samples)
 EOF
 ```
 
-You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the values in `.set(...)` to ask for a different day. For load, only `month` is required; everything else is optional. Add `Tmax=` and `Tmin=` (the day's highest and lowest temperature, in °F) for a hotter or colder day, for example `Tmax=95, Tmin=78`; leave them out and you get a day with average temperatures. For wind, every setting is optional; `temp_min` and `temp_max` are in °C. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
+You get a table with one row per hour (MW for load, m/s for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads. It works on Python 3.9 and newer.
 
-It works on Python 3.9 and newer. If `pip install` gives you version `0.4.1`, your Python is older than 3.9. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). Typing the same lines inside `python3` works too. To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
+Every setting you can pass to `.set(...)`, such as temperature or day type, is listed in the [API reference](docs/api_reference.md). To train your own models you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
 ## How it works
 
