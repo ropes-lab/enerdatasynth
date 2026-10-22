@@ -54,7 +54,7 @@ Published on PyPI as `enerdatasynth`, first at 0.4.1 (load only), then
 -- see MODEL_CARD.md), 0.7.0 (pjm_load/wind API parity, wind CLI
 support), 0.8.0 (the shipped Transformer default, no real data in
 the repository, and the trained checkpoints bundled in the wheel -- see
-`MIGRATION.md` for the earlier version history), **0.8.1** (adds `enerdatasynth demo`) and **0.8.2** (adds `python3 -m enerdatasynth` and the one-call `enerdatasynth.load(...)` and `enerdatasynth.wind(...)`).
+`MIGRATION.md` for the earlier version history), **0.8.1** (adds `enerdatasynth demo`) **0.8.2** (adds `python3 -m enerdatasynth` and the one-call `enerdatasynth.load(...)` and `enerdatasynth.wind(...)`) and **0.8.3** (Python 3.9 and newer, loose torch requirement, `enerdatasynth.show(samples)`).
 
 Releases go out via `.github/workflows/publish.yml`, triggered by pushing
 a `vX.Y.Z` tag (matching `__version__`) or manually via the Actions tab.
@@ -72,7 +72,7 @@ this project.
 
 Since 0.8.0 the wheel carries the shipped checkpoints (see above), so a plain `pip install enerdatasynth` can generate for both resources from any folder. Releases 0.4.1 to 0.7.0 shipped code only and needed a clone of this repository. Training your own checkpoints still needs a clone and your own data.
 
-Python 3.9 is not supported (`requires-python >= 3.10`). On 3.9, pip silently installs the last compatible release, 0.4.1, and a new release cannot change that.
+From 0.8.3, `requires-python >= 3.9` and `torch>=2.5` (before: `>=3.10` and `torch>=2.11,<2.12`). On older Python, pip silently installs 0.4.1. The exact torch that produced the checkpoints, 2.11.0, stays pinned in `requirements.txt` and in CI for the 3.10 and 3.12 jobs; the 3.9 job uses torch 2.8.0, the newest torch that installs on 3.9.
 
 ## Before making the repository public
 

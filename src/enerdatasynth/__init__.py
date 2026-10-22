@@ -50,9 +50,9 @@ from enerdatasynth.resources.pjm_load.sampling.generate import generate_for_run
 from enerdatasynth.resources.pjm_load.evaluation.metrics import compute_metrics
 from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_checkpoint
 from enerdatasynth.generators import BaseGenerator, LoadDiffusionModel
-from enerdatasynth.demo import demo, load, wind
+from enerdatasynth.demo import demo, load, show, wind
 
-__version__ = "0.8.2"
+__version__ = "0.8.3"
 
 __all__ = [
     "__version__",
@@ -60,6 +60,7 @@ __all__ = [
     "ResourceModel",
     "list_resources",
     "describe_resource",
+    "show",
     "demo",
     "load",
     "wind",

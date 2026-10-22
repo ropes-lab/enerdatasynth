@@ -133,3 +133,16 @@ def test_load_and_wind_print_one_day(capsys):
     out = capsys.readouterr().out
     assert w.shape == (288, 2) and "wind speed (m/s)" in out
 
+
+def test_show_prints_24_hour_profile_for_load_and_wind(capsys):
+    import numpy as np
+    import enerdatasynth
+    enerdatasynth.show(np.linspace(4000, 6000, 24)[None, :].repeat(10, axis=0))
+    out = capsys.readouterr().out
+    assert "load (MW)" in out and "5th pct" in out and out.count("\n") >= 26
+    enerdatasynth.show(np.ones((2, 288, 2)))
+    assert "wind speed (m/s)" in capsys.readouterr().out
+    import pytest
+    with pytest.raises(ValueError):
+        enerdatasynth.show(np.ones((3, 5)))
+

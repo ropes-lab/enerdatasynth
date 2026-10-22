@@ -13,37 +13,37 @@ authors = [
     { name = "Pranav Tikkawar" },
     { name = "Robert Mieth" },
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 keywords = ["diffusion-model", "synthetic-data", "electric-load", "pjm", "time-series", "energy", "generative-model", "research-sdk"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
 dependencies = [
     "numpy",
     "pandas",
-    "torch>=2.11.0,<2.12.0",
+    "torch>=2.5",
     "scikit-learn",
     "holidays",
     "requests",
     "tqdm",
     "pyarrow",
     "pyyaml",
-    # Below: wind_diffusion's own dependencies (src/enerdatasynth/resources/wind/, vendored
-    # from Data-For-Good) that weren't already covered above. torch's pin
-    # is likewise wind_diffusion's -- see the comment in the original repo's
-    # pyproject.toml: torch==2.12.0+cpu segfaults during the autograd-tracked
-    # forward pass through nn.TransformerEncoder on at least one real CPU;
-    # inference is unaffected, only training crashes. Reproduced directly,
-    # confirmed fixed on 2.11.0. This is now the whole package's pin, not
-    # just wind's, since there's one shared torch install either way.
+    # Below: wind_diffusion's own dependencies (src/enerdatasynth/resources/wind/,
+    # vendored from Data-For-Good). torch is deliberately a loose lower bound so
+    # `pip install enerdatasynth` works on any Python that torch supports. One
+    # known issue: torch 2.12.0 (CPU) can segfault during *training* through
+    # nn.TransformerEncoder on at least one real CPU; generating (inference) is
+    # unaffected. requirements.txt pins torch==2.11.0 for exact reproduction.
     "h5py",
     "h5pyd",
     "scipy",

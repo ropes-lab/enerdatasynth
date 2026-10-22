@@ -2,17 +2,16 @@
 
 ## Requirements
 
-- Python 3.10 to 3.14 (3.12 is a safe choice). Newer releases fail until PyTorch publishes builds for them. On Python 3.9 or older, pip silently installs the old 0.4.1 release.
+- Python 3.9 or newer. On older Python, pip silently installs the old 0.4.1 release.
 - Disk for your own raw and processed data if you plan to train (the repository ships none), plus the checkpoints
 
 ## Using the package
 
 ```bash
-python3 -m pip install --upgrade pip
-python3 -m pip install enerdatasynth
+pip install enerdatasynth
 ```
 
-Check first that `python3 --version` says 3.10 to 3.14. That is enough to generate: the wheel includes the trained load Transformer and the three wind presets (about 13 MB). Use it from any folder. To see it work, run `python3 -m enerdatasynth demo` (or `enerdatasynth demo` if pip's script folder is on your PATH).
+That is enough to generate: the wheel includes the trained load Transformer and the three wind presets (about 13 MB). Use it from any folder. To see it work, use the blocks in the README, or run `python3 -m enerdatasynth demo`.
 
 ## Editable install (development)
 

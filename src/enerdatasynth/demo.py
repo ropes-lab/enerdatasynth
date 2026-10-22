@@ -14,6 +14,54 @@ from __future__ import annotations
 import numpy as np
 
 
+def show(samples) -> None:
+    """Print the 24-hour profile of what `.sample()` returned, for load or wind.
+
+        samples = enerdatasynth.model("pjm_load", zone="PS").set(...).sample(n=100)
+        enerdatasynth.show(samples)
+
+    Load samples are (n, 24) in MW. Wind samples are (n, 288, 2) 5-minute
+    values; they are averaged to hourly wind speed in m/s (plus direction in
+    degrees when the preset has it). With more than one sample the table shows
+    the mean across samples and the 5th to 95th percentile range.
+    """
+    a = np.asarray(samples, dtype=float)
+    if a.ndim == 1:
+        a = a[None, :]
+    if a.ndim == 2 and a.shape[1] == 24:
+        values, name, unit, fmt = a, "load", "MW", "{:9.0f}"
+        direction = None
+    elif a.ndim == 3 and a.shape[1] == 288:
+        values = a[:, :, 0].reshape(a.shape[0], 24, 12).mean(axis=2)
+        name, unit, fmt = "wind speed", "m/s", "{:9.2f}"
+        direction = None
+        if a.shape[2] > 1 and np.any(a[:, :, 1] != 0):
+            rad = np.radians(a[:, :, 1]).reshape(a.shape[0], 24, 12)
+            direction = np.degrees(np.arctan2(np.sin(rad).mean(axis=(0, 2)), np.cos(rad).mean(axis=(0, 2)))) % 360
+    else:
+        raise ValueError(
+            f"show() expects load samples of shape (n, 24) or wind samples of shape (n, 288, 2); got {a.shape}."
+        )
+    n = values.shape[0]
+    mean = values.mean(axis=0)
+    label = f"{name} ({unit})"
+    head = f"{'hour':>4}   {label:>16}"
+    if n > 1:
+        lo, hi = np.percentile(values, 5, axis=0), np.percentile(values, 95, axis=0)
+        head += f"   {'5th pct':>9}   {'95th pct':>9}"
+    if direction is not None:
+        head += f"   {'direction (deg)':>15}"
+    print(f"{n} generated day{'s' if n != 1 else ''}, hourly {'mean' if n > 1 else 'values'}\n")
+    print(head)
+    for h in range(24):
+        row = f"{h:4d}   " + fmt.format(mean[h]).rjust(16)
+        if n > 1:
+            row += "   " + fmt.format(lo[h]).rjust(9) + "   " + fmt.format(hi[h]).rjust(9)
+        if direction is not None:
+            row += f"   {direction[h]:15.0f}"
+        print(row)
+
+
 def load(month: int, Tmax: float, Tmin: float, *, seed: int = 0, **conditions) -> np.ndarray:
     """Generate and print one day of PJM load (zone PS).
 
