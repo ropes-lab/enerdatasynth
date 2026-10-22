@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.10-3.14](https://img.shields.io/badge/python-3.10%20to%203.14-blue.svg)](pyproject.toml)
-[![Tests: 271 passing](https://img.shields.io/badge/tests-271%20passing-brightgreen.svg)](tests/)
+[![Tests: 272 passing](https://img.shields.io/badge/tests-272%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **PyPI: <https://pypi.org/project/enerdatasynth/>**
@@ -23,40 +23,34 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 
 ## Quick start
 
-**1. Check your Python.** Open a terminal and run:
+**1. Check your Python.** In a terminal, run `python3 --version`. It must say 3.10, 3.11, 3.12, 3.13 or 3.14. If it says 3.9 or lower (the default on many Macs), install Python 3.12 from [python.org/downloads](https://www.python.org/downloads/) and open a new terminal. Without this, pip installs an old 0.4.1 release that doesn't work as described here. Don't pick a brand-new release such as 3.15; PyTorch doesn't publish builds for it yet and the install fails.
 
-```bash
-python3 --version
-```
-
-It must say 3.10, 3.11, 3.12, 3.13 or 3.14. If it says 3.9 or lower (the default on many Macs), install Python 3.12 from [python.org/downloads](https://www.python.org/downloads/) and open a new terminal. Without this step, pip installs an old 0.4.1 release that doesn't have what's described below. Don't pick a brand-new release such as 3.15: PyTorch, which this package needs, doesn't publish builds for it yet, and the install will fail.
-
-**2. Install and run the demo.**
+**2. Install.**
 
 ```bash
 python3 -m pip install --upgrade pip
 python3 -m pip install enerdatasynth
-python3 -m enerdatasynth demo
 ```
 
-`demo` prints one generated day, hour by hour: PJM load in MW next to wind speed in m/s, using the trained models that ship inside the package. It works from any folder with no clone. Add `--plot demo.png` to also save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C.
+We write `python3 -m pip` because many machines have no plain `pip` command. The first line is there because the pip that comes with a fresh Python is often too old to install PyTorch (you'd see "conflicting dependencies" and a `torch` error).
 
-We write `python3 -m pip` instead of `pip` because many machines have no plain `pip` command. The first line is there because the pip that comes with a fresh Python is often too old to install PyTorch (you'd see "conflicting dependencies" and a `torch` error).
-
-If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). If the install fails on a `torch` error, your Python is newer than 3.14. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
-
-## Using it from Python
-
-Your terminal prompt (`%`) only understands shell commands, not Python. Type `python3` and press Enter. The prompt changes to `>>>`. Then type these two lines, pressing Enter after each:
+**3. Use it.** Type `python3` and press Enter. The prompt changes to `>>>`. Then type these lines, pressing Enter after each:
 
 ```python
 import enerdatasynth
-enerdatasynth.demo()
+enerdatasynth.load(month=7, Tmax=90, Tmin=74)
+enerdatasynth.wind(month=7, wind_regime="high")
 ```
 
-That prints the same table as `python3 -m enerdatasynth demo`. Type `exit()` to leave Python. Avoid pasting several lines at once into the `>>>` prompt; some Python versions run them together and give a `SyntaxError`.
+`load` prints one generated day of PJM load, hour by hour, in MW. `wind` prints one generated day of wind speed in m/s. Call either one on its own with the conditions you want. The models ship inside the package, so this works from any folder. The first call takes about a minute while torch loads. Type `exit()` to leave Python.
 
-To set your own conditions, save the following as `try_it.py` and run `python3 try_it.py`:
+Conditions for `load`: `month` (1 to 12), `Tmax` and `Tmin` in degrees Fahrenheit, and optionally `weekday=True/False`, `holiday=True/False` or `day_of_week` (0 is Monday). Conditions for `wind`: `preset` (`"1ch"` for speed only, `"2ch"` or `"3ch"` for speed and direction), `wind_regime` (`"low"`, `"mid"` or `"high"`), `month`, and `temp_min` and `temp_max` in degrees Celsius. Both return the numbers as a numpy array, and the same `seed=` gives the same day.
+
+Type the lines one at a time. Pasting several lines at once into `>>>` can run them together and give a `SyntaxError` on some Python versions.
+
+## More control
+
+For many samples at once, use the fuller interface. Save this as `try_it.py` and run `python3 try_it.py`:
 
 ```python
 import enerdatasynth
@@ -71,6 +65,8 @@ wind.set(wind_regime="high", month=7, temp_min=10, temp_max=22)
 samples = wind.sample(n=10, seed=0)
 print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 ```
+
+If you end up with version `0.4.1`, your `python3` is older than 3.10. If the install fails on a `torch` error, your Python is newer than 3.14. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
 ## How it works
 

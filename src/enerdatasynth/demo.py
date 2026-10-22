@@ -1,14 +1,70 @@
-"""One-call demo: print a generated day of PJM load and wind side by side.
+"""The simplest way in: one call, one printed day.
 
-    python3 -m enerdatasynth demo
-    python3 -c "import enerdatasynth; enerdatasynth.demo()"
+    import enerdatasynth
+    enerdatasynth.load(month=7, Tmax=90, Tmin=74)   # PJM load, one day, MW
+    enerdatasynth.wind(month=7, wind_regime="high") # wind, one day, m/s
 
-Uses the models shipped inside the package, so it works from any folder.
+Each call generates one day with the models shipped inside the package,
+prints it hour by hour and returns the numbers as a numpy array. For many
+samples, or more control, use `enerdatasynth.model(...)`.
 """
 
 from __future__ import annotations
 
 import numpy as np
+
+
+def load(month: int, Tmax: float, Tmin: float, *, seed: int = 0, **conditions) -> np.ndarray:
+    """Generate and print one day of PJM load (zone PS).
+
+    `month` is 1-12; `Tmax` and `Tmin` are the day's temperatures in degrees
+    Fahrenheit. Optional conditions: `weekday` (True/False), `holiday`,
+    `day_of_week` (0=Mon..6=Sun), `spread`. Prints 24 hourly values in MW and
+    returns them as a (24,) array. The same `seed` gives the same day.
+    """
+    import enerdatasynth
+
+    m = enerdatasynth.model("pjm_load", zone="PS")
+    m.set(month=month, Tmax=Tmax, Tmin=Tmin, **conditions)
+    day = np.asarray(m.sample(n=1, seed=seed))[0]
+    print(f"PJM load, one generated day (zone PS, month {month}, Tmax {Tmax} F, Tmin {Tmin} F)\n")
+    print("hour   load (MW)")
+    for h, v in enumerate(day):
+        print(f"{h:4d}   {v:9.0f}")
+    print(f"\nRange {day.min():.0f} to {day.max():.0f} MW.")
+    return day
+
+
+def wind(preset: str = "1ch", *, seed: int = 0, **conditions) -> np.ndarray:
+    """Generate and print one day of wind.
+
+    `preset` is "1ch" (wind speed only), "2ch" or "3ch" (speed and direction).
+    Optional conditions: `wind_regime` ("low", "mid" or "high"), `month` (1-12),
+    `day_of_week` (0=Mon..6=Sun), `temp_min` and `temp_max` (degrees Celsius).
+    Prints the hourly average speed in m/s (and direction in degrees for 2ch
+    and 3ch) and returns the full (288, 2) array of 5-minute values
+    ([:, 0] speed, [:, 1] direction). The same `seed` gives the same day.
+    """
+    import enerdatasynth
+
+    m = enerdatasynth.model("wind", zone=preset)
+    if conditions:
+        m.set(**conditions)
+    day = np.asarray(m.sample(n=1, seed=seed))[0]                      # (288, 2)
+    speed = day[:, 0].reshape(24, 12).mean(axis=1)
+    shown = ", ".join(f"{k} {v}" for k, v in conditions.items()) or "default conditions"
+    print(f"Wind {preset}, one generated day ({shown})\n")
+    if preset == "1ch":
+        print("hour   wind speed (m/s)")
+        for h in range(24):
+            print(f"{h:4d}   {speed[h]:16.2f}")
+    else:
+        direction = np.degrees(np.angle(np.exp(1j * np.radians(day[:, 1])).reshape(24, 12).mean(axis=1))) % 360
+        print("hour   wind speed (m/s)   direction (deg)")
+        for h in range(24):
+            print(f"{h:4d}   {speed[h]:16.2f}   {direction[h]:15.0f}")
+    print(f"\nAverage {day[:, 0].mean():.1f} m/s, max {day[:, 0].max():.1f} m/s.")
+    return day
 
 
 def demo(plot: str | None = None, seed: int = 0) -> None:

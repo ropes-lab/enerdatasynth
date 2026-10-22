@@ -122,3 +122,14 @@ def test_demo_command_prints_both_resources(capsys, tmp_path):
 def test_python_dash_m_entry_point_exists():
     import importlib.util
     assert importlib.util.find_spec("enerdatasynth.__main__") is not None
+
+
+def test_load_and_wind_print_one_day(capsys):
+    import enerdatasynth
+    day = enerdatasynth.load(month=7, Tmax=90, Tmin=74, weekday=True)
+    out = capsys.readouterr().out
+    assert day.shape == (24,) and "load (MW)" in out and out.count("\n") > 24
+    w = enerdatasynth.wind("1ch", wind_regime="high", month=7)
+    out = capsys.readouterr().out
+    assert w.shape == (288, 2) and "wind speed (m/s)" in out
+
