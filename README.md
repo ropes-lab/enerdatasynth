@@ -41,7 +41,11 @@ python3 -m enerdatasynth demo
 
 `demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C. We write `python3 -m pip` instead of `pip` because on many machines there is no plain `pip` command, and the first line is there because the pip that comes with a fresh Python install is often too old to resolve PyTorch (you'd see "conflicting dependencies" and a `torch` error).
 
-To use it from Python, save this as `try_it.py` and run `python3 try_it.py`:
+If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). If the install fails on a `torch` error, your Python is newer than 3.14. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
+
+## Using it from Python
+
+Your terminal prompt (`%`) only understands shell commands, not Python. Type `python3` and press Enter first. The prompt changes to `>>>`, and now you can paste Python:
 
 ```python
 import enerdatasynth
@@ -52,14 +56,12 @@ samples = load.sample(n=100, seed=0)
 print("load:", samples.shape)            # (100, 24), MW
 
 wind = enerdatasynth.model("wind", zone="1ch")
-wind.set(wind_regime="mid", month=7, temp_min=10, temp_max=22)
+wind.set(wind_regime="high", month=7, temp_min=10, temp_max=22)
 samples = wind.sample(n=10, seed=0)
 print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 ```
 
-Don't paste Python lines straight into your terminal prompt; the shell will try to run them as commands. Use a file, or start `python` first and paste into its `>>>` prompt.
-
-If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). If the install fails on a `torch` error, your Python is newer than 3.14. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
+It prints `load: (100, 24)` and then `wind: (10, 288, 2)`. Type `exit()` to go back to the normal prompt. Alternatively, save the lines in a file called `try_it.py` and run `python3 try_it.py`. The first run takes a minute while torch loads.
 
 ## How it works
 
