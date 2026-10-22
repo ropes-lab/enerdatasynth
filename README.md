@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
-[![Tests: 274 passing](https://img.shields.io/badge/tests-274%20passing-brightgreen.svg)](tests/)
+[![Tests: 273 passing](https://img.shields.io/badge/tests-273%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **PyPI: <https://pypi.org/project/enerdatasynth/>**

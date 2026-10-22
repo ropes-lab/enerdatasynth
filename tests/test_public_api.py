@@ -185,19 +185,3 @@ def test_repr_does_not_leak_internals():
     # Must not expose implementation details like tensor dtypes, torch, etc.
     assert "torch" not in text.lower()
     assert "tensor" not in text.lower()
-
-
-def test_load_temperatures_are_optional():
-    import numpy as np
-    import enerdatasynth
-    m = enerdatasynth.model("pjm_load", zone="PS")
-    m.set(month=7)                      # no Tmax / Tmin
-    out = m.sample(n=3, seed=0)
-    assert out.shape == (3, 24) and np.isfinite(out).all()
-    # giving temperatures still changes the result
-    hot = enerdatasynth.model("pjm_load").set(month=7, Tmax=95, Tmin=78).sample(n=3, seed=0)
-    assert not np.allclose(out, hot)
-    # month is still required
-    with pytest.raises(ValueError, match="month"):
-        enerdatasynth.model("pjm_load").set(Tmax=90).sample(n=1)
-

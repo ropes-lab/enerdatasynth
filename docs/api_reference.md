@@ -25,8 +25,8 @@ Set conditioning variables. Chainable (`load.set(month=7).set(Tmax=86, Tmin=70)`
 | Parameter | Type | Required | Default | Notes |
 |---|---|---|---|---|
 | `month` | `int` (1–12) | **Yes** | — | No sensible default exists; must be set before `.sample()`. |
-| `Tmax` | `float` | No | training-set average (about 65 °F) | The day's highest temperature, in degrees **Fahrenheit** — matches the training data's units. Not silently converted from Celsius; see "Why Fahrenheit?" below. Left out, the model sees an average-temperature day over all seasons, not a typical temperature for `month`. |
-| `Tmin` | `float` | No | training-set average (about 49 °F) | The day's lowest temperature, same units as `Tmax`. |
+| `Tmax` | `float` | **Yes** | — | Degrees **Fahrenheit** — matches the training data's units. Not silently converted from Celsius; see "Why Fahrenheit?" below. |
+| `Tmin` | `float` | **Yes** | — | Same units as `Tmax`. |
 | `weekday` | `bool` | No | `True` | See "Weekday semantics" below. |
 | `day_of_week` | `int` (0=Mon..6=Sun) or `str` (`"Monday"`, `"Mon"`, ...) | No | — | Exact override; takes precedence over `weekday` when both are set. |
 | `holiday` | `bool` | No | `False` | US federal holiday flag. |
@@ -124,7 +124,7 @@ from enerdatasynth.resources.pjm_load.api import generate_load_profile, list_mod
 from enerdatasynth.resources.wind.api import generate_wind_profile, list_models, describe_model
 ```
 
-- `generate_load_profile(zone="PS", *, month, Tmax=None, Tmin=None, day_of_week=None, weekday=True, holiday=False, spread=None, n_realizations=100, run_id=None, seed=None, units="MW", apply_calibration=None, device=None) -> LoadProfile` — same underlying model as `.set()`/`.sample()`, but returns a `LoadProfile` dataclass (`.hours`, `.load`, `.condition`, `.metadata`, plus `.to_dataframe()`, `.mean()`, `.percentile_envelope(percentiles=(2.5, 97.5))`) instead of a bare array. Raises `enerdatasynth.resources.pjm_load.exceptions.CheckpointNotFoundError` if no processed dataset/checkpoint is available, or `InvalidConditionError` for a bad `day_of_week`.
+- `generate_load_profile(zone="PS", *, month, Tmax, Tmin, day_of_week=None, weekday=True, holiday=False, spread=None, n_realizations=100, run_id=None, seed=None, units="MW", apply_calibration=None, device=None) -> LoadProfile` — same underlying model as `.set()`/`.sample()`, but returns a `LoadProfile` dataclass (`.hours`, `.load`, `.condition`, `.metadata`, plus `.to_dataframe()`, `.mean()`, `.percentile_envelope(percentiles=(2.5, 97.5))`) instead of a bare array. Raises `enerdatasynth.resources.pjm_load.exceptions.CheckpointNotFoundError` if no processed dataset/checkpoint is available, or `InvalidConditionError` for a bad `day_of_week`.
 - `generate_wind_profile(channel_method, ...) -> WindProfile` — wind's equivalent, added first; `pjm_load`'s `api.py` mirrors it for parity. Same `enerdatasynth.resources.wind.exceptions.CheckpointNotFoundError`/`InvalidConditionError` hierarchy.
 - `list_models()` / `describe_model(run_id)` — read each resource's bundled `manifest.json` (real, aggregated per-checkpoint metadata: architecture, params, best validation loss, epochs trained, recommended generation settings) via `importlib.resources`, without constructing a model. `describe_model` raises `CheckpointNotFoundError` for an unrecognized `run_id`/preset. **The two `list_models()` return different shapes, not just different content** — wind's is a flat `{preset: metadata}` dict (`"1ch"`, `"2ch"`, `"3ch"` as keys); pjm_load's wraps its checkpoints under provenance fields instead (`{"checkpoints": {run_id: metadata}, "default_run_id": ..., "transformer_runs_available": [...], ...}`) since its manifest is auto-aggregated from `result.json` files rather than hand-curated. Index into `["checkpoints"]` for pjm_load; iterate the dict directly for wind.
 

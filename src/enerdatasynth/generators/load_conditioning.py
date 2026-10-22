@@ -73,11 +73,8 @@ LOAD_CONDITION_SPEC = [
     ConditionField(name="month", dim=N_MONTHS, encoding="onehot", required=True, values=list(range(1, 13))),
     ConditionField(name="day_of_week", dim=N_DOW, encoding="onehot", values=list(range(7)), resolve=_resolve_dow),
     ConditionField(name="holiday", dim=1, encoding="binary", default=False),
-    # Optional. Left out, a temperature is the training-set average (z-score 0.0),
-    # the same way `spread` works below. That is an average day over all seasons
-    # (about 65 F high / 49 F low), not a typical temperature for `month`.
-    ConditionField(name="Tmax", dim=1, encoding="zscore", scaler_key="temp_scaler", scaler_index=0, default=0.0),
-    ConditionField(name="Tmin", dim=1, encoding="zscore", scaler_key="temp_scaler", scaler_index=1, default=0.0),
+    ConditionField(name="Tmax", dim=1, encoding="zscore", required=True, scaler_key="temp_scaler", scaler_index=0),
+    ConditionField(name="Tmin", dim=1, encoding="zscore", required=True, scaler_key="temp_scaler", scaler_index=1),
     ConditionField(name="spread", dim=1, encoding="zscore", scaler_key="spread_scaler", scaler_index=0, default=0.0),
 ]
 
