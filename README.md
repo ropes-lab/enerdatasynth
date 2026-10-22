@@ -39,13 +39,24 @@ python3 -m pip install enerdatasynth
 python3 -m enerdatasynth demo
 ```
 
-`demo` generates a day of PJM load (100 profiles, with the hourly mean and 5th to 95th percentile printed) and a few wind samples, using the trained models that ship inside the package, so it works from any folder with no clone. Add `--plot demo.png` to save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C. We write `python3 -m pip` instead of `pip` because on many machines there is no plain `pip` command, and the first line is there because the pip that comes with a fresh Python install is often too old to resolve PyTorch (you'd see "conflicting dependencies" and a `torch` error).
+`demo` prints one generated day, hour by hour: PJM load in MW next to wind speed in m/s, using the trained models that ship inside the package. It works from any folder with no clone. Add `--plot demo.png` to also save a picture. The first run takes about a minute with no output while torch and pandas load, so don't press Ctrl-C.
+
+We write `python3 -m pip` instead of `pip` because many machines have no plain `pip` command. The first line is there because the pip that comes with a fresh Python is often too old to install PyTorch (you'd see "conflicting dependencies" and a `torch` error).
 
 If you end up with version `0.4.1`, your `python3` is older than 3.10 (step 1). If the install fails on a `torch` error, your Python is newer than 3.14. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
 ## Using it from Python
 
-Your terminal prompt (`%`) only understands shell commands, not Python. Type `python3` and press Enter first. The prompt changes to `>>>`, and now you can paste Python:
+Your terminal prompt (`%`) only understands shell commands, not Python. Type `python3` and press Enter. The prompt changes to `>>>`. Then type these two lines, pressing Enter after each:
+
+```python
+import enerdatasynth
+enerdatasynth.demo()
+```
+
+That prints the same table as `python3 -m enerdatasynth demo`. Type `exit()` to leave Python. Avoid pasting several lines at once into the `>>>` prompt; some Python versions run them together and give a `SyntaxError`.
+
+To set your own conditions, save the following as `try_it.py` and run `python3 try_it.py`:
 
 ```python
 import enerdatasynth
@@ -60,8 +71,6 @@ wind.set(wind_regime="high", month=7, temp_min=10, temp_max=22)
 samples = wind.sample(n=10, seed=0)
 print("wind:", samples.shape)            # (10, 288, 2), m/s and degrees
 ```
-
-It prints `load: (100, 24)` and then `wind: (10, 288, 2)`. Type `exit()` to go back to the normal prompt. Alternatively, save the lines in a file called `try_it.py` and run `python3 try_it.py`. The first run takes a minute while torch loads.
 
 ## How it works
 

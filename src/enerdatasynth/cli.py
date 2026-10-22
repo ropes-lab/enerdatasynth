@@ -211,46 +211,9 @@ def cmd_pipeline(args: argparse.Namespace) -> None:
 
 
 def cmd_demo(args: argparse.Namespace) -> None:
-    """Generate a few profiles from the bundled models and print them.
-
-    Works straight after `pip install enerdatasynth`, from any folder:
-    the shipped checkpoints are inside the package."""
-    import enerdatasynth
-
-    print(f"enerdatasynth {enerdatasynth.__version__}")
-
-    load = enerdatasynth.model("pjm_load", zone="PS")
-    load.set(month=7, Tmax=90, Tmin=74, weekday=True)
-    x = load.sample(n=100, seed=0)
-    print(f"\nPJM load, July weekday, Tmax 90 / Tmin 74 F: {x.shape[0]} profiles x {x.shape[1]} hours, MW")
-    print("hour   mean MW   5th pct   95th pct")
-    for h in range(x.shape[1]):
-        print(f"{h:4d}  {x[:, h].mean():8.0f}  {np.percentile(x[:, h], 5):8.0f}  {np.percentile(x[:, h], 95):8.0f}")
-
-    wind = enerdatasynth.model("wind", zone="1ch")
-    wind.set(wind_regime="high", month=7, temp_min=10, temp_max=22)
-    w = np.asarray(wind.sample(n=3, seed=0))
-    print(f"\nWind 1ch, high regime: {w.shape[0]} samples x {w.shape[1]} five-minute steps (speed in m/s)")
-    print("sample   mean m/s   max m/s")
-    for i in range(w.shape[0]):
-        print(f"{i:6d}  {w[i, :, 0].mean():9.2f}  {w[i, :, 0].max():8.2f}")
-
-    if args.plot:
-        import matplotlib
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots(1, 2, figsize=(11, 4))
-        for row in x[:20]:
-            ax[0].plot(range(24), row, color="tab:blue", alpha=0.25)
-        ax[0].plot(range(24), x.mean(axis=0), color="black", lw=2, label="mean")
-        ax[0].set(title="PJM load, July weekday", xlabel="hour", ylabel="MW")
-        ax[0].legend()
-        for i in range(w.shape[0]):
-            ax[1].plot(np.arange(w.shape[1]) * 5 / 60, w[i, :, 0], alpha=0.8)
-        ax[1].set(title="Wind speed (1ch, high regime)", xlabel="hour", ylabel="m/s")
-        plt.tight_layout()
-        plt.savefig(args.plot, dpi=120)
-        print(f"\nSaved plot: {args.plot}")
+    """Print one generated day of PJM load and wind (see enerdatasynth.demo)."""
+    from enerdatasynth.demo import demo
+    demo(plot=args.plot)
 
 
 def build_parser() -> argparse.ArgumentParser:

@@ -114,8 +114,8 @@ def test_demo_command_prints_both_resources(capsys, tmp_path):
     out_png = tmp_path / "demo.png"
     main(["demo", "--plot", str(out_png)])
     out = capsys.readouterr().out
-    assert "PJM load, July weekday" in out
-    assert "Wind 1ch, high regime" in out
+    assert "hour   load (MW)   wind speed (m/s)" in out
+    assert out.count("\n") > 24
     assert out_png.exists()
 
 
