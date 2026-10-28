@@ -33,7 +33,7 @@ numbers here are directly comparable to the historical reports.
 `enerdatasynth.resources.pjm_load.evaluation.baselines` fits AR/ARMA/ARIMA/SARIMA models
 to the mean training profile and simulates synthetic days from each,
 for benchmarking the diffusion model against non-deep-learning
-alternatives. See `examples/run_benchmark.py` for a runnable
+alternatives. See `examples/pjm_load/run_benchmark.py` for a runnable
 comparison script.
 
 ## Calibration

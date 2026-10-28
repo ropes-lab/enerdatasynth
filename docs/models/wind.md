@@ -184,6 +184,26 @@ How to read them:
 These plots should be replaced with a figure generated from this package's own
 checkpoint at its recommended settings once real wind data is available here.
 
+### Generated examples from this package
+
+This package's own representative output: five generated July days for each requested
+regime, from the bundled `1ch` checkpoint, with one fixed seed (not a best-of-N pick).
+It shows generated days only, because there is no real wind data here to put next to
+them. The regime is a request, not a guarantee; §8 reports how often it is met.
+
+![Generated wind days for the low, mid and high regimes](../assets/wind_generated_examples.png)
+
+**To reproduce this figure** (no data needed; the checkpoints ship in the package):
+
+```bash
+pip install enerdatasynth        # or `pip install -e .` from a clone
+python examples/wind/plot_generated_samples.py
+```
+
+It takes about a minute on a CPU and writes `docs/assets/wind_generated_examples.png`.
+The upstream real-vs-synthetic plots above cannot be reproduced from this repository;
+they need the original `wind_diffusion` dataset (§14).
+
 ## 10. Conditional / Regime Evaluation
 
 The per-regime tables in §8 cover this. Wind regime (low, mid, high) is the main slice
@@ -242,4 +262,41 @@ Retraining would need the original `wind_diffusion` dataset and the training cod
 (`resources/wind/registry.py`). That command is not installed by this package; only
 `enerdatasynth` is registered in `pyproject.toml`. It is how the upstream project runs
 `enerdatasynth.resources.wind.training.train`. For generation parameters, see
-[`docs/api_reference.md`](../api_reference.md).
+[`docs/api_reference.md`](../api_reference.md). Runnable examples are in
+[`examples/wind/`](../../examples/wind/README.md).
+
+## 15. Intended Use and Out-of-Scope Uses
+
+**Intended**: generating synthetic daily wind profiles at 5-minute resolution for
+research on conditional generative modeling, scenario analysis, or data augmentation
+where real wind measurements are limited. The conditions it responds to are the channel
+preset, month, day of week, a temperature range, and the wind-regime bucket (§4).
+
+**Out of scope**:
+
+- **Not a forecasting model.** It does not predict wind at a real place and time (§1).
+- **Not a resource-assessment, siting or bankability tool.** Nothing here has been
+  checked against measurements at a real site, and this repository holds no real wind
+  data to check against (§2, §13).
+- **Not an operational system.** No output should inform grid operations, dispatch or
+  trading.
+- **Not a reliable regime controller for `mid`.** For `1ch` and `3ch` the `mid`
+  request stays near chance (§8, §13). Treat the regime as a request, not a guarantee.
+- **Not validated to the same standard across presets.** `2ch` has improved but is not
+  equivalent to `1ch` and `3ch` (§13).
+- **Not evaluated for privacy.** No re-identification analysis was done; don't treat
+  generated profiles as certified anonymized data.
+
+## 16. Ethical / Operational Considerations
+
+Label generated profiles as synthetic in any downstream use, and don't present them as
+measurements. The quantitative results in §8 are upstream-measured numbers read from
+the model's manifest, not results this repository reproduced, so cite them that way.
+
+## 17. Versioning
+
+The package version is `enerdatasynth.__version__`. Release history is in `MIGRATION.md`,
+and how releases are built and published is in `docs/packaging.md`. The wind checkpoints
+are bundled in the package; their provenance is in §6 and
+[`data/checkpoints/wind/README.md`](../../data/checkpoints/wind/README.md).
+

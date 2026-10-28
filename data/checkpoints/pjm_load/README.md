@@ -6,7 +6,7 @@ Eight runs, all trained on the 23-dim one-hot conditioning described by `data/pr
 
 **`transformer_T1000_H64_L2`** is what `enerdatasynth.model("pjm_load")` loads. It's a Transformer denoiser with 111,489 parameters, trained with `data/configs/pjm_load/transformer.yaml` (seed 42) in 144 seconds on CPU. It early-stopped at epoch 163, with best validation loss 0.00946 at epoch 123. `calibration.json` holds a scalar offset of +0.02342, fit on 1,200 training days and applied automatically at generation.
 
-On the 600 validation days it beats the legacy MLP below on all seven metrics in every one of 5 generation seeds, before and after calibration (`data/reports/pjm_load/checkpoint_comparison.csv`, reproduce with `examples/compare_checkpoints.py`). It was trained once, with research-validated hyperparameters rather than a from-scratch sweep.
+On the 600 validation days it beats the legacy MLP below on all seven metrics in every one of 5 generation seeds, before and after calibration (`data/reports/pjm_load/checkpoint_comparison.csv`, reproduce with `examples/pjm_load/compare_checkpoints.py`). It was trained once, with research-validated hyperparameters rather than a from-scratch sweep.
 
 ## Legacy MLP sweep runs
 

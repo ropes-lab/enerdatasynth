@@ -274,8 +274,8 @@ locations are:
 | `reports/` | `data/reports/pjm_load/` |
 | `configs/` | `data/configs/pjm_load/` |
 | `research_history/` | `data/research_history/pjm_load/` |
-| `scripts/run_all.py` | `examples/run_all.py` |
-| `benchmarks/run_benchmark.py` | `examples/run_benchmark.py` |
+| `scripts/run_all.py` | `examples/pjm_load/run_all.py` |
+| `benchmarks/run_benchmark.py` | `examples/pjm_load/run_benchmark.py` |
 
 Root is now exactly 5 folders: `src/`, `tests/`, `docs/`, `examples/`,
 `data/`. `data/` holds everything that isn't source code, tests, docs,

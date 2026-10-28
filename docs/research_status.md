@@ -145,7 +145,7 @@ loads the calibrated Transformer**; `tests/pjm_load/test_api.py` checks that the
 and the selection logic agree. On the 600 validation days it beats the legacy MLP on all
 seven metrics in every one of 5 generation seeds, before and after calibration
 (`data/reports/pjm_load/checkpoint_comparison.csv`; reproduce with
-`examples/compare_checkpoints.py`).
+`examples/pjm_load/compare_checkpoints.py`).
 
 **What this does not do.** The Week 7 numbers (RMSE 0.0195, Peak 0.0089, ...) are still
 research-conditioning results; the shipped model's own numbers differ and are reported

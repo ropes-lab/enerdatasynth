@@ -1,15 +1,23 @@
 """
-benchmarks/run_benchmark.py
-=============================
+examples/pjm_load/run_benchmark.py
+==================================
 Reproducible classical-vs-diffusion comparison, built entirely from
 `enerdatasynth` library code (`evaluation.baselines`,
 `evaluation.metrics`, `generators.LoadDiffusionModel`) — no logic is
 duplicated here beyond argument parsing and table formatting. This is
-the "move to benchmarks/" successor to the research lineage's
-`week5_benchmark.py` / `week7.py --task evaluate` head-to-head.
+the successor to the research lineage's `week5_benchmark.py` /
+`week7.py --task evaluate` head-to-head.
 
 Usage:
-    python benchmarks/run_benchmark.py --run-id transformer_T1000_H64_L2
+    python examples/pjm_load/run_benchmark.py --run-id transformer_T1000_H64_L2
+
+Reproduce:
+    1. From a clone of this repository: `pip install -e ".[research]"`.
+    2. Get the PJM and NOAA source files yourself (sources: data/README.md) and put
+       them in data/raw/pjm_load/. The repository ships no real data.
+    3. `enerdatasynth preprocess`
+    4. `python examples/pjm_load/run_benchmark.py --run-id transformer_T1000_H64_L2`
+    Output: data/reports/pjm_load/benchmark_comparison.csv (needs `pip install -e ".[research]"` for statsmodels).
 """
 
 from __future__ import annotations

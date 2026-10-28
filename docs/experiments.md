@@ -21,7 +21,7 @@ today. Source files are under `data/research_history/pjm_load/` unless noted.
   conditioning on both.
 - **Still scientifically relevant:** Yes, as motivation — not as a quantitative result.
 - **Source files:** `scripts/eda_exploration.py`, `reports/eda_figures/*.png`.
-- **Part of the public package:** No (see `examples/exploratory_data_analysis.py` for a
+- **Part of the public package:** No (see `examples/pjm_load/exploratory_data_analysis.py` for a
   small demo against the processed dataset instead).
 - **Paper-worthy:** As background/motivation figures, potentially yes.
 

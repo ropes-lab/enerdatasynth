@@ -136,7 +136,7 @@ cited Week 7 Transformer numbers is not currently automated or verified** — se
 | No calibration bundled for any checkpoint | MEDIUM | Default sampling is uncalibrated; run `enerdatasynth calibrate --run-id <run>` once a checkpoint exists. |
 | Only 1 of 17 zones packaged | MEDIUM | `generators/load_conditioning.py`'s `zones=["PS"]` would need extending, plus per-zone checkpoints/scalers bundled or trainable. |
 | DOM zone failure undiagnosed | MEDIUM (scientific, not a release blocker) | Worth a dedicated investigation before any paper claims "17/17" or omits DOM. |
-| `run_benchmark.py` docstring claims a `benchmarks/` location that doesn't exist | LOW | Cosmetic inconsistency; not moved during this audit (see `examples/README.md`). |
+| `run_benchmark.py` docstring claims a `benchmarks/` location that doesn't exist | LOW | Fixed: the docstring now names its real path, `examples/pjm_load/run_benchmark.py`. |
 | CNN 118-minute training anomaly unexplained | LOW (documentation completeness) | Not re-investigated; flagged rather than hidden. |
 | Full Part 17 test-expansion list not exhaustively implemented | LOW | Sampler regression test (the explicitly critical one) is done; broader coverage is a reasonable follow-up, not a blocker. |
 

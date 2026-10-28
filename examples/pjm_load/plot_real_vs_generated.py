@@ -1,5 +1,5 @@
 """
-examples/plot_real_vs_generated.py
+examples/pjm_load/plot_real_vs_generated.py
 ===================================
 Six representative validation days, each showing the real daily load profile
 against ONE generated profile sampled from that day's exact conditioning
@@ -12,8 +12,16 @@ fall (Sep-Nov), weekends, and overall. The sampling seed is fixed, so the
 figure is reproducible and not a best-of-N pick.
 
 Usage:
-    python examples/plot_real_vs_generated.py                  # shipped default
-    python examples/plot_real_vs_generated.py --run-id T100_H256_L4
+    python examples/pjm_load/plot_real_vs_generated.py                  # shipped default
+    python examples/pjm_load/plot_real_vs_generated.py --run-id T100_H256_L4
+
+Reproduce:
+    1. From a clone of this repository: `pip install -e ".[research]"`.
+    2. Get the PJM and NOAA source files yourself (sources: data/README.md) and put
+       them in data/raw/pjm_load/. The repository ships no real data.
+    3. `enerdatasynth preprocess`
+    4. `python examples/pjm_load/plot_real_vs_generated.py`
+    Output: docs/assets/pjm_load_real_vs_generated.png. Same seed, same days, same figure.
 """
 
 from __future__ import annotations

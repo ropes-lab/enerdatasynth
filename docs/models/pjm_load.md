@@ -143,7 +143,7 @@ loses (`Energy`) is fixed by calibration (§12). These are the Week 6/7 numbers,
 **Shipped default** (`transformer_T1000_H64_L2`, trained on the package's own 23-dim
 conditioning). Mean over 5 generation seeds on the 600 validation days, normalized units,
 lower is better. Each model was trained once, so the spread covers sampling noise only.
-Reproduce with `examples/compare_checkpoints.py` (writes
+Reproduce with `examples/pjm_load/compare_checkpoints.py` (writes
 `data/reports/pjm_load/checkpoint_comparison.csv`):
 
 | Model | Hourly | FirstDiff | ACF | RMSE | Peak | Energy | Ramp |
@@ -169,7 +169,7 @@ Six representative validation days (coldest, hottest, spring/fall/weekend near-m
 and overall-median `Tmax`), each showing the **real** profile against a **generated**
 one sampled from the *exact same conditioning vector* — generated live, from the
 package's shipped default checkpoint (`transformer_T1000_H64_L2`, calibrated; see §5),
-sampled once with a fixed seed. Reproduce with `examples/plot_real_vs_generated.py`. The
+sampled once with a fixed seed. Reproduce with `examples/pjm_load/plot_real_vs_generated.py`. The
 days are chosen by a rule on `Tmax`, not by looking at the output.
 
 **Read honestly:** the model tracks the real shape well on the mild days (spring, fall,
@@ -180,6 +180,17 @@ have real load above the training maximum (normalized load up to 1.105), so extr
 is an extrapolation case. This matches the hot-day weakness in §10/§13. The previous
 version of this figure, from the legacy MLP, was visibly jagged and missed the hottest
 day by about 0.4 in normalized load.
+
+**To reproduce this figure:** get the PJM and NOAA source files yourself (§2), put them in
+`data/raw/pjm_load/`, then run
+
+```bash
+enerdatasynth preprocess
+python examples/pjm_load/plot_real_vs_generated.py
+```
+
+It writes `docs/assets/pjm_load_real_vs_generated.png`. The seed and the day-selection
+rule are fixed, so the same data gives the same figure.
 
 ## 10. Conditional / Regime Evaluation
 

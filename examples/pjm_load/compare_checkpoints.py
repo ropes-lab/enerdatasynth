@@ -1,5 +1,5 @@
 """
-examples/compare_checkpoints.py
+examples/pjm_load/compare_checkpoints.py
 ================================
 Multi-seed comparison of trained PJM load checkpoints on the validation
 set, using the package's 7-metric suite. This is the evidence behind
@@ -12,10 +12,18 @@ uncalibrated and calibrated. Only generation noise varies across seeds;
 each checkpoint was trained once.
 
 Usage:
-    python examples/compare_checkpoints.py \\
+    python examples/pjm_load/compare_checkpoints.py \\
         --run-ids T100_H256_L4 transformer_T1000_H64_L2 --seeds 101 102 103 104 105
 
 Writes data/reports/pjm_load/checkpoint_comparison.csv.
+
+Reproduce:
+    1. From a clone of this repository: `pip install -e ".[research]"`.
+    2. Get the PJM and NOAA source files yourself (sources: data/README.md) and put
+       them in data/raw/pjm_load/. The repository ships no real data.
+    3. `enerdatasynth preprocess`
+    4. `python examples/pjm_load/compare_checkpoints.py --run-ids T100_H256_L4 transformer_T1000_H64_L2 --seeds 101 102 103 104 105`
+    Output: data/reports/pjm_load/checkpoint_comparison.csv (mean and std over the seeds).
 """
 
 from __future__ import annotations

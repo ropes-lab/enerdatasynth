@@ -60,7 +60,7 @@ Fits the scalar bias correction (see [`docs/evaluation.md`](evaluation.md)) and 
 enerdatasynth generate --diffusion-steps 1000 --hidden-dim 64 --n-layers 2
 ```
 
-One synthetic sample per real validation-set condition vector — used by `enerdatasynth evaluate` and `examples/run_benchmark.py`.
+One synthetic sample per real validation-set condition vector — used by `enerdatasynth evaluate` and `examples/pjm_load/run_benchmark.py`.
 
 ## Reproducibility
 
@@ -72,4 +72,4 @@ Every training run seeds `random`/`numpy`/`torch` via `RunConfig.seed` (default 
 enerdatasynth pipeline   # preprocess -> sweep -> generate -> calibrate -> validate -> report
 ```
 
-Equivalent to `examples/run_all.py`.
+Equivalent to `examples/pjm_load/run_all.py`.

@@ -1,9 +1,9 @@
 """
-examples/run_full_pipeline.py
+examples/pjm_load/run_full_pipeline.py
 ===============================
 Small, fast walkthrough of the pipeline's building blocks — this is a
 demonstration, not the production entry point. For the real sweep
-(9-27 configurations, up to 200 epochs each), use `scripts/run_all.py`.
+(9-27 configurations, up to 200 epochs each), use `examples/pjm_load/run_all.py`.
 
 This example runs preprocessing (if needed), trains ONE small model
 for a handful of epochs, generates synthetic profiles from it, and
@@ -13,7 +13,16 @@ hours.
 
 Usage (from the project root, with `src/` on PYTHONPATH or the
 package installed):
-    python examples/run_full_pipeline.py
+    python examples/pjm_load/run_full_pipeline.py
+
+Reproduce:
+    1. From a clone of this repository: `pip install -e ".[research]"`.
+    2. Get the PJM and NOAA source files yourself (sources: data/README.md) and put
+       them in data/raw/pjm_load/. The repository ships no real data.
+    3. `python examples/pjm_load/run_full_pipeline.py` (a couple of minutes; it runs the
+       preprocessing step itself).
+    Output: a small new run under data/checkpoints/pjm_load/ and plots under
+    data/reports/pjm_load/figures/.
 """
 
 from __future__ import annotations

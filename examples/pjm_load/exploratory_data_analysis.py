@@ -1,5 +1,5 @@
 """
-examples/exploratory_data_analysis.py
+examples/pjm_load/exploratory_data_analysis.py
 =======================================
 Small demonstration of inspecting the processed dataset that
 `enerdatasynth.resources.pjm_load.data.preprocess` produces: mean daily load shape,
@@ -12,7 +12,15 @@ curves, COVID-period visualization, temperature-vs-load V-curves) is
 preserved as historical research in research_history/eda_exploration.py.
 
 Usage:
-    python examples/exploratory_data_analysis.py
+    python examples/pjm_load/exploratory_data_analysis.py
+
+Reproduce:
+    1. From a clone of this repository: `pip install -e ".[research]"`.
+    2. Get the PJM and NOAA source files yourself (sources: data/README.md) and put
+       them in data/raw/pjm_load/. The repository ships no real data.
+    3. `enerdatasynth preprocess`
+    4. `python examples/pjm_load/exploratory_data_analysis.py`
+    Output: printed (mean daily shape, per-hour spread, split sizes).
 """
 
 from __future__ import annotations

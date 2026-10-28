@@ -86,4 +86,4 @@ Writes the three validation plots, `data/reports/pjm_load/failure_analysis.md`, 
 enerdatasynth pipeline   # preprocess -> sweep -> generate -> calibrate -> validate -> report
 ```
 
-See `examples/run_all.py` for the equivalent as a plain script, [`docs/examples.md`](examples.md) for runnable example scripts, and [`docs/training.md`](training.md) for the full training reference.
+See `examples/pjm_load/run_all.py` for the equivalent as a plain script, [`docs/examples.md`](examples.md) for runnable example scripts, and [`docs/training.md`](training.md) for the full training reference.

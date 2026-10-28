@@ -1,6 +1,6 @@
 """
-scripts/run_all.py
-====================
+examples/pjm_load/run_all.py
+===========================
 Top-level orchestrator. Runs the entire pipeline end-to-end:
 
   1. Preprocess raw data -> data/processed/ (+ frozen backup)
@@ -13,9 +13,17 @@ Top-level orchestrator. Runs the entire pipeline end-to-end:
 
 Usage (from the project root, with the package installed or
 `src/` on PYTHONPATH):
-    python scripts/run_all.py                  # quick sweep (9 configs, 60 epochs each)
-    python scripts/run_all.py --full-grid      # full 27-config grid
-    python scripts/run_all.py --epochs 200     # more epochs per config
+    python examples/pjm_load/run_all.py                  # quick sweep (9 configs, 60 epochs each)
+    python examples/pjm_load/run_all.py --full-grid      # full 27-config grid
+    python examples/pjm_load/run_all.py --epochs 200     # more epochs per config
+
+Reproduce:
+    1. From a clone of this repository: `pip install -e ".[research]"`.
+    2. Get the PJM and NOAA source files yourself (sources: data/README.md) and put
+       them in data/raw/pjm_load/. The repository ships no real data.
+    3. `python examples/pjm_load/run_all.py` (takes hours with --full-grid; the quick
+       sweep is shorter). It runs the preprocessing step itself.
+    Output: data/processed/pjm_load/, data/checkpoints/pjm_load/, data/reports/pjm_load/.
 """
 
 from __future__ import annotations

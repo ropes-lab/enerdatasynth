@@ -1,6 +1,6 @@
 # `tests/`
 
-273 tests, all passing (`pytest tests/`, about 30 seconds). No test needs the raw dataset; the ones that need data-shaped inputs build small synthetic ones.
+283 tests, all passing (`pytest tests/`, about 30 seconds). No test needs the raw dataset; the ones that need data-shaped inputs build small synthetic ones.
 
 ## Layout
 
@@ -12,6 +12,7 @@ The folders follow `src/enerdatasynth/resources/`. `pjm_load/` and `wind/` hold 
 | `test_generators.py` | The `BaseGenerator` contract (any resource) plus `LoadDiffusionModel` specifics |
 | `test_public_api.py` | The fluent `enerdatasynth.model().set().sample()` contract |
 | `test_cli.py` | `--resource {pjm_load,wind}` dispatch for `generate`, `evaluate` and `report`, and the parser shape. It doesn't test the body of each load-only command; those are covered by the tests for the modules they call |
+| `test_examples.py` | `examples/` is nested per resource, and every example script's docstring ends with a `Reproduce:` block |
 | `conftest.py` | Shared fixtures, picked up by `pjm_load/` and `wind/` automatically |
 | [`pjm_load/`](pjm_load/README.md) | Load's pipeline, architectures, sampler (including the sampler-bug regression tests), calibration, metrics and standalone `api.py` |
 | [`wind/`](wind/README.md) | The wind bridge plus the vendored wind pipeline's own internals: API, evaluation reporting, sampling, registry, transforms and more |

@@ -7,7 +7,7 @@ Auto-generated reports from the current package's own hyperparameter sweep and e
 | `results_summary.md` | `enerdatasynth report` (`evaluation/results_report.py`) |
 | `hyperparameter_results.csv`, `hyperparameter_summary.md` | `enerdatasynth sweep` (`training/sweep.py`) |
 | `failure_analysis.md` | `enerdatasynth evaluate` (`evaluation/failure_analysis.py`) |
-| `benchmark_comparison.csv` | `examples/run_benchmark.py` |
+| `benchmark_comparison.csv` | `examples/pjm_load/run_benchmark.py` |
 | `future_experiments.md` | Hand-written — recommended next experiments, not yet implemented |
 | `figures/` | Validation plots (`enerdatasynth evaluate`) |
 
