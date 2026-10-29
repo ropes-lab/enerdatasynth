@@ -4,7 +4,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/enerdatasynth.svg)](https://pypi.org/project/enerdatasynth/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](pyproject.toml)
-[![Tests: 283 passing](https://img.shields.io/badge/tests-283%20passing-brightgreen.svg)](tests/)
+[![Tests: 335 passing](https://img.shields.io/badge/tests-335%20passing-brightgreen.svg)](tests/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **PyPI: <https://pypi.org/project/enerdatasynth/>**
@@ -17,7 +17,7 @@ enerdatasynth generates synthetic energy profiles for electric load and wind. Tr
 
 Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 
-**PJM electric load.** A conditional diffusion model for 24-hour load profiles in the PJM `PS` zone, conditioned on month, day of week, holiday and temperature. Report: [docs/models/pjm_load.md](docs/models/pjm_load.md).
+**PJM electric load.** A conditional diffusion model for 24-hour load profiles, conditioned on month, day of week, holiday and temperature. Every one of the 17 PJM zones has its own trained model (`PS` is the default; the rest are `AE`, `AP`, `BC`, `CE`, `DAY`, `DEOK`, `DOM`, `DPL`, `DUQ`, `EKPC`, `JC`, `ME`, `PE`, `PL`, `PN`, `RECO`). Report: [docs/models/pjm_load.md](docs/models/pjm_load.md).
 
 **Wind.** A conditional diffusion model for 24-hour wind profiles at 5-minute resolution, with three channel presets (`1ch`, `2ch`, `3ch`), conditioned on calendar, temperature and wind regime. Report: [docs/models/wind.md](docs/models/wind.md).
 
@@ -53,7 +53,7 @@ enerdatasynth.show(samples)
 EOF
 ```
 
-You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the numbers in `.set(...)` to ask for a different day. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
+To get a different PJM zone, change `zone="PS"` to its code (for example `zone="DOM"`); everything else stays the same. You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the numbers in `.set(...)` to ask for a different day. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
 
 It works on Python 3.9 and newer. If `pip install` gives you version `0.4.1`, your Python is older than 3.9. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). Typing the same lines inside `python3` works too. To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
@@ -95,7 +95,7 @@ This repository contains no real data, raw or processed. You get trained checkpo
 | Temperature (for load conditioning) | NOAA Integrated Surface Database, fetched for each zone's weather stations |
 | Wind | A separate research pipeline (`wind_diffusion`). Its [model report](docs/models/wind.md) says what is and isn't known about the original data source |
 
-To reproduce load preprocessing end to end, download the PJM and NOAA files yourself, put them in `data/raw/pjm_load/` (the README there explains what is needed), and run `enerdatasynth preprocess`. Wind has no reproduction path here: the raw wind data was never part of this repository, and the wind report says so.
+To reproduce load preprocessing end to end, download the PJM and NOAA files yourself, put them in `data/raw/pjm_load/` (the README there explains what is needed), and run `enerdatasynth preprocess`. For a zone other than `PS`, add `--zone`, for example `enerdatasynth preprocess --zone DOM`; `examples/pjm_load/train_all_zones.py` does all 17. Wind has no reproduction path here: the raw wind data was never part of this repository, and the wind report says so.
 
 ## Citation
 
