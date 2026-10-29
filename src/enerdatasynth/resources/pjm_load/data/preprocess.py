@@ -56,8 +56,39 @@ LOAD_COLS = [f"h{i:02d}" for i in range(24)]
 # STEP-BY-STEP PREPROCESSING FUNCTIONS
 # ═════════════════════════════════════════════════════════════════════════════
 
+def sum_load_areas(zone_df: pd.DataFrame) -> pd.DataFrame:
+    """One row per hour for a zone: the sum of its load areas.
+
+    Most PJM zones report a single load area (e.g. `PS`). A few report several that
+    together make up the zone: AE (AECO + VMEU; before 2017 reported whole as `AE`),
+    DPL (DPLCO + EASTON) and PL (PLCO + UGI). The zone's load is their sum. An hour
+    is kept only if it has every area that year's hours normally have, so a zone whose
+    reporting changed mid-series (AE gained VMEU on 2017-06-01) loses the hours that
+    would understate it. Daylight-saving days keep their 23 or 25 rows (the repeated
+    fall-back hour is aggregated against its own repeat, not merged), so
+    `detect_dst_days` still finds them.
+
+    For a single-area zone this returns the rows unchanged apart from column order.
+    """
+    df = zone_df.copy()
+    if "load_area" not in df.columns or df["load_area"].nunique() <= 1:
+        return df
+    df["_occ"] = df.groupby(["dt", "load_area"]).cumcount()
+    g = df.groupby(["dt", "_occ"], sort=True)
+    hourly = g["mw"].sum(min_count=1).rename("mw").to_frame()
+    hourly["n_areas"] = g["load_area"].nunique()
+    hourly = hourly.reset_index()
+    expected = hourly.groupby(hourly["dt"].dt.year)["n_areas"].transform("max")
+    hourly = hourly[hourly["n_areas"] == expected]
+    out = hourly[["dt", "mw"]].copy()
+    out["hour"] = out["dt"].dt.hour
+    out["year"] = out["dt"].dt.year
+    return out.reset_index(drop=True)
+
+
 def load_raw_load_data(raw_dir: Path, zone: str) -> pd.DataFrame:
-    """Load all hrl_load_metered_*.csv files and filter to one zone."""
+    """Load all hrl_load_metered_*.csv files and filter to one zone (summing its
+    load areas, see `sum_load_areas`)."""
     dfs = []
     for yr in range(2016, 2026):
         fp = raw_dir / f"hrl_load_metered_{yr}.csv"
@@ -73,7 +104,7 @@ def load_raw_load_data(raw_dir: Path, zone: str) -> pd.DataFrame:
     all_load["dt"]   = pd.to_datetime(all_load["datetime_beginning_ept"], format="mixed")
     all_load["hour"] = all_load["dt"].dt.hour
 
-    zone_df = all_load[all_load["zone"] == zone].copy()
+    zone_df = sum_load_areas(all_load[all_load["zone"] == zone])
     zone_df = zone_df.sort_values("dt").reset_index(drop=True)
     zone_df["date"] = zone_df["dt"].dt.normalize()
     return zone_df

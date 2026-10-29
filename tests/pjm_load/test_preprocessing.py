@@ -11,7 +11,7 @@ import pytest
 
 from enerdatasynth.resources.pjm_load.data.preprocess import (
     build_daily_pivot, apply_exclusions, detect_dst_days,
-    build_conditioning_vector, LOAD_COLS,
+    build_conditioning_vector, sum_load_areas, LOAD_COLS,
 )
 from enerdatasynth.utils.config import COND_DIM, N_MONTHS, N_DOW
 
@@ -129,3 +129,45 @@ def test_build_conditioning_vector_val_uses_train_fitted_scalers():
     assert scaler_temp_out is scaler_temp
     assert scaler_spread_out is scaler_spread
     assert Z_val.shape == (1, COND_DIM)
+
+
+# ---- zones made of several load areas (AE, DPL, PL) ---------------------------------
+
+def _area_rows(area: str, start: str, hours: int, mw: float) -> pd.DataFrame:
+    dt = pd.date_range(start, periods=hours, freq="h")
+    return pd.DataFrame({"dt": dt, "load_area": area, "mw": mw})
+
+
+def test_single_area_zone_passes_through_unchanged():
+    df = _area_rows("PS", "2023-01-01", 48, 5000.0)
+    out = sum_load_areas(df)
+    assert len(out) == 48 and (out["mw"] == 5000.0).all()
+
+
+def test_load_areas_are_summed_not_averaged():
+    df = pd.concat([_area_rows("DPLCO", "2023-01-01", 48, 2000.0),
+                    _area_rows("EASTON", "2023-01-01", 48, 30.0)])
+    out = sum_load_areas(df)
+    assert len(out) == 48
+    assert (out["mw"] == 2030.0).all()
+
+
+def test_hours_missing_an_area_that_year_are_dropped():
+    # AE-style: a second area starts partway through the year; earlier hours would understate the zone.
+    df = pd.concat([_area_rows("AECO", "2017-05-31", 48, 1000.0),
+                    _area_rows("VMEU", "2017-06-01", 24, 80.0)])
+    out = sum_load_areas(df)
+    assert len(out) == 24
+    assert out["dt"].min() == pd.Timestamp("2017-06-01") and (out["mw"] == 1080.0).all()
+
+
+def test_area_sum_keeps_the_25_hour_fall_back_day():
+    base = pd.date_range("2023-11-05", periods=24, freq="h")
+    dt = base.append(pd.DatetimeIndex([base[1]]))      # the repeated 01:00
+    rows = []
+    for area, mw in (("PLCO", 4500.0), ("UGI", 120.0)):
+        rows.append(pd.DataFrame({"dt": dt, "load_area": area, "mw": mw}))
+    out = sum_load_areas(pd.concat(rows))
+    out["date"] = out["dt"].dt.normalize()
+    assert len(out) == 25 and (out["mw"] == 4620.0).all()
+    assert detect_dst_days(out)["n_dst_days_detected"] == 1
