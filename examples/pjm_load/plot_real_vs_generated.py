@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from enerdatasynth.utils.config import load_processed, processed_path, CHECKPOINT_DIR, PROJECT_ROOT
+from enerdatasynth.utils.config import load_processed, processed_path, CHECKPOINT_DIR, PROJECT_ROOT, ZONE
 from enerdatasynth.generators import LoadDiffusionModel
 from enerdatasynth.generators.load_conditioning import _discover_best_checkpoint
 
@@ -87,7 +87,7 @@ def main(run_id: str, out_path: Path) -> None:
     fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.94))
     arch = model.architecture
     cal = ", calibrated" if calibrated else ", uncalibrated"
-    fig.suptitle(f"PJM Load (zone PS) — real vs. generated, {arch} checkpoint “{run_id}”{cal}", fontsize=12)
+    fig.suptitle(f"PJM Load (zone {ZONE}) — real vs. generated, {arch} checkpoint “{run_id}”{cal}", fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.92))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150)
