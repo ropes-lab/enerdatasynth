@@ -102,5 +102,178 @@
       "training_time_sec": 143.98609328269958,
       "calibrated": true
     }
-  }
+  },
+  "zones": {
+    "PS": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.009455992840230465,
+      "epochs_trained": 163,
+      "best_epoch": 123,
+      "calibration_scalar": 0.02341938018798828,
+      "train_days": 2785,
+      "val_days": 600
+    },
+    "AE": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.009020797908306122,
+      "epochs_trained": 221,
+      "best_epoch": 181,
+      "calibration_scalar": 0.004586219787597656,
+      "train_days": 2628,
+      "val_days": 600
+    },
+    "AP": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.008512978442013264,
+      "epochs_trained": 196,
+      "best_epoch": 156,
+      "calibration_scalar": 0.008766889572143555,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "BC": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.0148776238784194,
+      "epochs_trained": 86,
+      "best_epoch": 46,
+      "calibration_scalar": 0.02085605263710022,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "CE": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.008759844116866589,
+      "epochs_trained": 117,
+      "best_epoch": 77,
+      "calibration_scalar": 0.011640071868896484,
+      "train_days": 2785,
+      "val_days": 600
+    },
+    "DAY": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.00913291797041893,
+      "epochs_trained": 174,
+      "best_epoch": 134,
+      "calibration_scalar": -0.0056671202182769775,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "DEOK": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.008425075560808182,
+      "epochs_trained": 210,
+      "best_epoch": 170,
+      "calibration_scalar": 0.026139408349990845,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "DOM": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.026917044073343277,
+      "epochs_trained": 75,
+      "best_epoch": 35,
+      "calibration_scalar": 0.002382725477218628,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "DPL": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.00809625256806612,
+      "epochs_trained": 282,
+      "best_epoch": 242,
+      "calibration_scalar": 0.017541825771331787,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "DUQ": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.010797158814966679,
+      "epochs_trained": 145,
+      "best_epoch": 105,
+      "calibration_scalar": 0.012777149677276611,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "EKPC": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.01301354169845581,
+      "epochs_trained": 123,
+      "best_epoch": 83,
+      "calibration_scalar": -0.009893253445625305,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "JC": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.009583443403244019,
+      "epochs_trained": 163,
+      "best_epoch": 123,
+      "calibration_scalar": 0.02465265989303589,
+      "train_days": 2785,
+      "val_days": 600
+    },
+    "ME": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.008213293738663197,
+      "epochs_trained": 228,
+      "best_epoch": 188,
+      "calibration_scalar": 0.020632892847061157,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "PE": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.008002806454896927,
+      "epochs_trained": 196,
+      "best_epoch": 156,
+      "calibration_scalar": 0.011790245771408081,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "PL": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.007404915057122707,
+      "epochs_trained": 197,
+      "best_epoch": 157,
+      "calibration_scalar": -0.0005475282669067383,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "PN": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.00857605505734682,
+      "epochs_trained": 210,
+      "best_epoch": 170,
+      "calibration_scalar": 0.022823750972747803,
+      "train_days": 2785,
+      "val_days": 602
+    },
+    "RECO": {
+      "run_id": "transformer_T1000_H64_L2",
+      "n_params": 111489,
+      "best_val_loss": 0.007115531712770462,
+      "epochs_trained": 209,
+      "best_epoch": 169,
+      "calibration_scalar": -0.005039036273956299,
+      "train_days": 2785,
+      "val_days": 600
+    }
+  },
+  "_zones_note": "One Transformer per PJM zone, all the same configuration (data/configs/pjm_load/transformer.yaml), each trained on its own zone's 2016-2023 days and calibrated. PS lives in the flat checkpoints/pjm_load/ folder; the others in checkpoints/pjm_load/zones/<ZONE>/. Scores per zone: data/reports/pjm_load/zone_results.csv."
 }

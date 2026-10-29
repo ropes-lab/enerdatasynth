@@ -1,0 +1,22 @@
+{
+  "run_id": "transformer_T1000_H64_L2",
+  "architecture": "transformer",
+  "x_dim": 24,
+  "cond_dim": 23,
+  "diffusion_steps": 1000,
+  "hidden_dim": 64,
+  "n_layers": 2,
+  "n_heads": 4,
+  "n_params": 111489,
+  "epochs_trained": 86,
+  "best_epoch": 46,
+  "best_val_loss": 0.0148776238784194,
+  "final_train_loss": 0.014373635716173191,
+  "final_val_loss": 0.018852150067687035,
+  "training_time_sec": 57.840429067611694,
+  "generation_time_sec_per_64": 5.823631048202515,
+  "checkpoint_best": "data/checkpoints/pjm_load/zones/BC/transformer_T1000_H64_L2/best.pt",
+  "checkpoint_latest": "data/checkpoints/pjm_load/zones/BC/transformer_T1000_H64_L2/latest.pt",
+  "loss_curve_path": "data/checkpoints/pjm_load/zones/BC/transformer_T1000_H64_L2/loss_curve.png",
+  "training_log_path": "data/outputs/pjm_load/zones/BC/logs/transformer_T1000_H64_L2_training_log.csv"
+}

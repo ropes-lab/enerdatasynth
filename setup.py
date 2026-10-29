@@ -1,8 +1,8 @@
 """Copies the shipped default checkpoints into the wheel.
 
 All metadata lives in pyproject.toml. This file only adds one build step:
-the files listed in BUNDLED below (the shipped Transformer, the three wind
-presets, and the scaler file they need) are copied from the repository's
+the files listed in BUNDLED below (the shipped Transformer for each of the 17
+PJM zones with its scaler file and calibration, and the three wind presets) are copied from the repository's
 data/ folder into `enerdatasynth/_bundled/` inside the built package, so a
 plain `pip install enerdatasynth` can generate without a repo checkout.
 `enerdatasynth.utils.config` reads them from there when the project folder
@@ -16,12 +16,28 @@ from setuptools.command.build_py import build_py
 
 HERE = Path(__file__).resolve().parent
 
+RUN_ID = "transformer_T1000_H64_L2"
+# One trained model per PJM zone. PS keeps the original flat folders; every other
+# zone lives in zones/<ZONE>/ next to them. Keep in sync with PJM_ZONES in
+# src/enerdatasynth/utils/config.py.
+PJM_ZONES = ["PS", "AE", "AP", "BC", "CE", "DAY", "DEOK", "DOM", "DPL", "DUQ",
+             "EKPC", "JC", "ME", "PE", "PL", "PN", "RECO"]
+
+
+def _zone_dir(category: str, zone: str) -> str:
+    base = f"{category}/pjm_load"
+    return base if zone == "PS" else f"{base}/zones/{zone}"
+
+
 # (source under data/, destination under enerdatasynth/_bundled/)
 BUNDLED = [
-    ("processed/pjm_load/metadata.json", "processed/pjm_load/metadata.json"),
     *[
-        (f"checkpoints/pjm_load/transformer_T1000_H64_L2/{name}",
-         f"checkpoints/pjm_load/transformer_T1000_H64_L2/{name}")
+        (f"{_zone_dir('processed', zone)}/metadata.json", f"{_zone_dir('processed', zone)}/metadata.json")
+        for zone in PJM_ZONES
+    ],
+    *[
+        (f"{_zone_dir('checkpoints', zone)}/{RUN_ID}/{name}", f"{_zone_dir('checkpoints', zone)}/{RUN_ID}/{name}")
+        for zone in PJM_ZONES
         for name in ("best.pt", "result.json", "calibration.json")
     ],
     *[

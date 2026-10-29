@@ -34,6 +34,10 @@ data/cache/wind/*
 data/processed/pjm_load/*
 !data/processed/pjm_load/README.md
 !data/processed/pjm_load/metadata.json
+# Other zones: only each zone's scaler file is tracked, never its arrays.
+!data/processed/pjm_load/zones/
+data/processed/pjm_load/zones/*/*
+!data/processed/pjm_load/zones/*/metadata.json
 data/processed/pjm_load_backup/
 data/research_history/**/*.npy
 data/research_history/**/*.parquet

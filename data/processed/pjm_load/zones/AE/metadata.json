@@ -1,0 +1,183 @@
+{
+  "created_at_utc": "2026-10-29T18:09:34.095916+00:00",
+  "zone": "AE",
+  "sample_count": {
+    "train": 2628,
+    "val": 600,
+    "total_raw": 3502
+  },
+  "exclusion_counts": {
+    "total_raw_days": 3502,
+    "dst_removed": 19,
+    "missing_load_removed": 0,
+    "missing_weather_removed": 135,
+    "covid_removed": 122,
+    "final_clean_days": 3228
+  },
+  "excluded_by_design": [
+    "MW_anchor",
+    "Fourier modes",
+    "custom losses",
+    "higher moments",
+    "user-facing abstractions",
+    "unified multi-zone model"
+  ],
+  "X_shape_train": [
+    2628,
+    24
+  ],
+  "X_shape_val": [
+    600,
+    24
+  ],
+  "Z_shape_train": [
+    2628,
+    23
+  ],
+  "Z_shape_val": [
+    600,
+    23
+  ],
+  "condition_spec": {
+    "month": {
+      "encoding": "one-hot",
+      "dim": 12
+    },
+    "dow": {
+      "encoding": "one-hot",
+      "dim": 7
+    },
+    "holiday": {
+      "encoding": "binary",
+      "dim": 1
+    },
+    "Tmax": {
+      "encoding": "z-score",
+      "dim": 1
+    },
+    "Tmin": {
+      "encoding": "z-score",
+      "dim": 1
+    },
+    "spread": {
+      "encoding": "z-score",
+      "dim": 1,
+      "definition": "max(load_day) - min(load_day)"
+    }
+  },
+  "condition_dim": 23,
+  "condition_order": [
+    "month_1",
+    "month_2",
+    "month_3",
+    "month_4",
+    "month_5",
+    "month_6",
+    "month_7",
+    "month_8",
+    "month_9",
+    "month_10",
+    "month_11",
+    "month_12",
+    "dow_0",
+    "dow_1",
+    "dow_2",
+    "dow_3",
+    "dow_4",
+    "dow_5",
+    "dow_6",
+    "is_holiday",
+    "Tmax_z",
+    "Tmin_z",
+    "spread_z"
+  ],
+  "load_scaler": {
+    "type": "MinMaxScaler [0,1] per-hour",
+    "fitted_on": "train days only",
+    "data_min_": [
+      748.21,
+      722.413,
+      713.8910000000001,
+      708.759,
+      702.121,
+      723.2429999999999,
+      720.3050000000001,
+      754.299,
+      696.8140000000001,
+      640.931,
+      590.0409999999999,
+      545.117,
+      504.599,
+      484.313,
+      493.029,
+      543.136,
+      648.542,
+      738.077,
+      827.222,
+      887.002,
+      970.008,
+      918.0369999999999,
+      787.833,
+      788.2149999999999
+    ],
+    "data_max_": [
+      1968.778,
+      1848.56,
+      1748.152,
+      1684.449,
+      1642.86,
+      1601.662,
+      1600.473,
+      1717.189,
+      1881.794,
+      2075.706,
+      2235.146,
+      2357.362,
+      2437.977,
+      2506.286,
+      2552.574,
+      2599.818,
+      2663.5440000000003,
+      2718.931,
+      2737.312,
+      2691.277,
+      2611.128,
+      2505.766,
+      2314.455,
+      2137.044
+    ],
+    "invert_formula": "MW = x_norm * (data_max_[h] - data_min_[h]) + data_min_[h]"
+  },
+  "temp_scaler": {
+    "type": "StandardScaler (z-score)",
+    "fitted_on": "train days only",
+    "columns": [
+      "Tmax",
+      "Tmin"
+    ],
+    "mean_": [
+      65.8231202435312,
+      48.122713089802126
+    ],
+    "scale_": [
+      17.059344997851145,
+      17.35553335056791
+    ]
+  },
+  "spread_scaler": {
+    "type": "StandardScaler (z-score)",
+    "fitted_on": "train days only",
+    "definition": "max(load_day) - min(load_day)",
+    "mean_": [
+      544.3071293759513
+    ],
+    "scale_": [
+      262.36806903908985
+    ]
+  },
+  "train_val_split": {
+    "method": "chronological",
+    "train_years": "2016-2023",
+    "val_years": "2024-2025"
+  }
+}
