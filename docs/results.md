@@ -159,42 +159,37 @@ unresolved limitation, not a rounding artifact — the three worst individual da
 
 Source: `data/research_history/pjm_load/reports/week7/energy_diagnosis.md`.
 
-## 8. Zone Expansion (Phase 2)
+## 8. Zone Expansion
 
-17 PJM zones, identical pipeline (same preprocessing, Z5 conditioning, Transformer
-architecture, corrected sampler, calibration step) — only the load data, scaler
-parameters, and temperature column differ per zone.
+All 17 PJM zones with load and temperature data now ship with their own model (`zone=` in `enerdatasynth.model("pjm_load", ...)`). Same pipeline, settings and calibration step for every zone (see [`docs/models/pjm_load.md`](models/pjm_load.md) §11 for the full discussion). Scores on each zone's 2024–2025 validation days, 3 generation seeds, normalized units (lower is better); source `data/reports/pjm_load/zone_results.csv`, built by `examples/pjm_load/evaluate_all_zones.py`:
 
-| Zone | Train days | RMSE | Peak | Ramp | Energy |
-|---|---|---|---|---|---|
-| **AP** (best) | 2793 | **0.0086** | 0.0084 | 0.0034 | 0.1121 |
-| DAY | 2793 | 0.0087 | 0.0011 | 0.0066 | 0.1427 |
-| PL | 2793 | 0.0114 | 0.0023 | 0.0034 | 0.2260 |
-| DEOK | 2793 | 0.0149 | 0.0061 | 0.0035 | 0.3217 |
-| CE | 2793 | 0.0159 | 0.0066 | 0.0058 | 0.0793 |
-| PN | 2793 | 0.0161 | 0.0090 | 0.0023 | 0.3506 |
-| DPL | 2793 | 0.0171 | 0.0214 | 0.0016 | 0.3262 |
-| BC | 2793 | 0.0183 | 0.0092 | 0.0037 | 0.2742 |
-| PS | 2793 | 0.0193 | 0.0014 | 0.0049 | 0.0633 |
-| RECO | 2793 | 0.0195 | 0.0095 | 0.0015 | 0.1190 |
-| JC | 2793 | 0.0238 | 0.0069 | 0.0044 | 0.1690 |
-| ME | 2793 | 0.0238 | 0.0144 | 0.0026 | 0.5148 |
-| DUQ | 2793 | 0.0242 | 0.0044 | 0.0030 | 0.1460 |
-| PE | 2793 | 0.0250 | 0.0161 | 0.0028 | 0.5608 |
-| AE | 2786 | 0.0392 | 0.0397 | 0.0068 | 0.9280 |
-| EKPC | 2793 | 0.0436 | 0.0383 | 0.0038 | 1.0288 |
-| **DOM** (worst) | 2793 | **0.1998** | 0.1958 | 0.0108 | 4.7833 |
+| Zone | Train / val days | RMSE (raw → calibrated) | Energy (raw → calibrated) | Peak | ACF | Load level, val ÷ train | Val days above train max |
+|---|---|---|---|---|---|---|---|
+| DUQ | 2785 / 602 | 0.0165 → 0.0121 | 0.275 → 0.047 | 0.0082 | 0.0361 | 1.001 | 0.3% |
+| CE | 2785 / 600 | 0.0183 → 0.0123 | 0.330 → 0.058 | 0.0066 | 0.0303 | 0.987 | 0.0% |
+| DEOK | 2785 / 602 | 0.0160 → 0.0129 | 0.353 → 0.274 | 0.0049 | 0.0115 | 1.001 | 0.3% |
+| AP | 2785 / 602 | 0.0212 → 0.0135 | 0.472 → 0.262 | 0.0164 | 0.0131 | 1.012 | 0.8% |
+| PN | 2785 / 602 | 0.0135 → 0.0145 | 0.258 → 0.290 | 0.0138 | 0.0127 | 0.987 | 0.0% |
+| JC | 2785 / 600 | 0.0241 → 0.0150 | 0.470 → 0.122 | 0.0138 | 0.0186 | 0.993 | 0.7% |
+| PS | 2785 / 600 | 0.0264 → 0.0153 | 0.519 → 0.043 | 0.0125 | 0.0296 | 0.999 | 1.3% |
+| BC | 2785 / 602 | 0.0216 → 0.0165 | 0.362 → 0.139 | 0.0288 | 0.0812 | 0.992 | 0.7% |
+| DAY | 2785 / 602 | 0.0138 → 0.0184 | 0.248 → 0.384 | 0.0272 | 0.0180 | 1.015 | 1.7% |
+| PE | 2785 / 602 | 0.0094 → 0.0191 | 0.142 → 0.425 | 0.0194 | 0.0229 | 0.988 | 0.3% |
+| PL | 2785 / 602 | 0.0197 → 0.0200 | 0.270 → 0.283 | 0.0166 | 0.0158 | 1.011 | 0.3% |
+| DPL | 2785 / 602 | 0.0337 → 0.0203 | 0.708 → 0.287 | 0.0239 | 0.0200 | 1.017 | 1.5% |
+| AE | 2628 / 600 | 0.0232 → 0.0228 | 0.105 → 0.042 | 0.0091 | 0.0263 | 0.988 | 0.0% |
+| RECO | 2785 / 600 | 0.0229 → 0.0233 | 0.020 → 0.101 | 0.0149 | 0.0251 | 0.997 | 0.3% |
+| ME | 2785 / 602 | 0.0110 → 0.0236 | 0.042 → 0.503 | 0.0228 | 0.0101 | 0.985 | 0.2% |
+| **EKPC** | 2785 / 602 | 0.0396 → 0.0494 | 0.936 → 1.174 | 0.0514 | 0.0382 | 1.090 | 0.8% |
+| **DOM** | 2785 / 602 | 0.2046 → 0.2022 | 4.887 → 4.830 | 0.1980 | 0.0911 | 1.219 | 7.8% |
 
-**DOM is a clear, unresolved outlier**: its RMSE (0.1998) is ~4.6× worse than the next
-worst zone (EKPC, 0.0436) and ~23× worse than the best (AP, 0.0086). No root cause for
-DOM's failure is recorded in this report. **16 of 17 zones generalize well; DOM does
-not, and this is not fixed.**
+**15 of 17 zones are modeled about as well as PS** (calibrated RMSE 0.0121–0.0236, median 0.0165). **DOM (0.2022) and EKPC (0.0494) are not, and the data explains it:** DOM's load grew 39% from 2016 to 2025, so its validation days average 22% above its training days and 7.8% exceed the training maximum; EKPC grew 9%. A model conditioned only on calendar and weather generates the training-period level. The research-phase run (older 6-dim conditioning) measured the same DOM failure without a diagnosis.
 
-**Only `PS` is exposed by the installed package's `pjm_load` resource today** — see
-`docs/research_status.md` §B. The 16-of-17-zone generalization result is a Phase 2
-research finding, not yet wired into the package's public zone list.
+**Calibration is not uniformly helpful across zones.** It lowers RMSE in 9 zones and raises it in 5 (DAY, EKPC, ME, PE, PN; PL and RECO unchanged), because the offset is fit on training days and does not transfer where the load level drifts. It is applied by default everywhere; `apply_calibration=False` gives the raw model.
 
-Source: `data/research_history/pjm_load/reports/phase2/summary_report.md`.
+**Against a tuned MLP denoiser** (all 17 zones, `data/reports/pjm_load/diffusion_zone_comparison.csv`): the Transformer has the lower first-difference, autocorrelation and ramp error in all 17 zones, the lower MMD² in 16, RMSE in 15 and Wasserstein distance in 14, with calibration on both; daily energy is a wash. The MLP here is trained like the Transformer and tuned per zone, unlike the research-phase MLP of §2, which was under-trained (RMSE 0.0465 on PS against about 0.022). Details in [`docs/models/pjm_load.md`](models/pjm_load.md) §11.
+
+**Research phase (kept for history).** The first zone study (research-lineage 6-dim conditioning, `data/research_history/pjm_load/scripts/zone_expansion.py`) reported 16 of 17 zones with RMSE 0.0086 (AP) to 0.0436 (EKPC) and DOM at 0.1998. That script averaged the load areas of AE, DPL and PL instead of summing them, so those zones' MW were not zone totals.
 
 ## 9. Limitations
 
@@ -211,7 +206,7 @@ Consolidated from the sections above — see `docs/research_status.md` and
    training run with the research-validated hyperparameters, not a from-scratch sweep.
 3. **The shipped default is calibrated** (scalar +0.02342, fit on training days). The seven
    legacy MLP checkpoints are not.
-4. **DOM zone failure is unresolved** (§8).
+4. **DOM (and, less so, EKPC) is poorly modeled**, because its load level moved between the training and validation years (§8). This is diagnosed but not fixed: the models see only calendar and weather.
 5. **Calibration is train-fit**, not independently validated on a held-out calibration
    set beyond the 1,200-day sample it was fit on (§6, `docs/research_status.md` §F).
 6. **In-sample validation only:** `data/reports/pjm_load/results_summary.md` states validation
@@ -219,7 +214,7 @@ Consolidated from the sections above — see `docs/research_status.md` and
    evaluates conditional fidelity, not out-of-distribution generalization.
 7. **Hot-day generation quality is weaker** than the aggregate metrics suggest (§7).
 8. **CNN's 118-minute training-time anomaly** (§2) was never explained.
-9. **No unified multi-zone model exists** — each zone in §8 was trained independently;
+9. **No unified multi-zone model exists** — each zone in §8 is a separate model, trained independently;
    `data/reports/pjm_load/future_experiments.md` lists a unified PJM model as a recommended,
    not-yet-implemented future experiment.
 10. **No wind model is scientifically validated.** See `docs/research_status.md` and

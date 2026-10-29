@@ -49,7 +49,7 @@ relevant once multi-day (e.g., 7-day) synthetic sequences are needed.
 
 ## Unified PJM Model
 
-**Current baseline:** one model trained on a single zone (PS).
+**Current baseline:** one model per zone, trained independently for each of the 17 PJM zones (no shared model).
 
 **Future experiment:** a single model conditioned on zone identity,
 trained across all PJM zones simultaneously, to test whether pooling

@@ -11,6 +11,8 @@ Auto-generated reports from the current package's own hyperparameter sweep and e
 | `future_experiments.md` | Hand-written — recommended next experiments, not yet implemented |
 | `figures/` | Validation plots (`enerdatasynth evaluate`) |
 
+`results_summary.md` and `failure_analysis.md` here describe zone PS (the default zone). Every zone's scores are in `zone_results.csv`, and the Transformer-versus-MLP comparison across all 17 zones is in `diffusion_zone_comparison.csv`; both come from the example scripts in `examples/pjm_load/` (`evaluate_all_zones.py`, `compare_diffusion_zones.py`). To get this folder's reports for another zone, run `enerdatasynth report --zone <ZONE>` (written to `reports/pjm_load/zones/<ZONE>/`).
+
 The sweep files (`hyperparameter_*`) describe the legacy MLP sweep. The rest of the current-package reports describe the shipped default, the calibrated Transformer (see `data/checkpoints/README.md`). `docs/results.md` is the canonical, cross-checked results reference for the project as a whole, reconciling both the current package's own numbers and the historical research numbers with sources traced. Read that first. This folder is where the current-package numbers actually come from, and it gets overwritten the next time you re-run `sweep`/`evaluate`/`report`.
 
 ## What should not be placed here

@@ -18,7 +18,7 @@ With your own copy of the PJM and NOAA files in `raw/pjm_load/`, `enerdatasynth 
 |---|---|---|
 | `raw/{pjm_load,wind}/` | Where you place the source files above to run `enerdatasynth preprocess` yourself. Empty, and ignored by git | [`raw/README.md`](raw/README.md) |
 | `cache/{pjm_load,wind}/` | Regenerable NOAA temperature fetch cache. Empty, and ignored by git | [`cache/README.md`](cache/README.md) |
-| `processed/{pjm_load,wind}/` | Built by `enerdatasynth preprocess` from your own data and ignored by git. Only `pjm_load/metadata.json` is tracked: the scalers the shipped checkpoint needs to turn conditions into model inputs and outputs back into MW | [`processed/README.md`](processed/README.md) |
+| `processed/{pjm_load,wind}/` | Built by `enerdatasynth preprocess` from your own data and ignored by git. Only `pjm_load/metadata.json` (zone PS) and `pjm_load/zones/<ZONE>/metadata.json` (the other 16 zones) are tracked: the scalers the shipped checkpoints need to turn conditions into model inputs and outputs back into MW | [`processed/README.md`](processed/README.md) |
 | `configs/{pjm_load,wind}/` | YAML mirrors of `RunConfig` hyperparameters (load only, since wind's config lives in code) | [`configs/README.md`](configs/README.md) |
 | `checkpoints/{pjm_load,wind}/` | The trained models this package ships (weights and normalization statistics, not data) | [`checkpoints/README.md`](checkpoints/README.md) |
 | `outputs/{pjm_load,wind}/` | Training logs and synthetic samples written by the CLI | [`outputs/README.md`](outputs/README.md) |

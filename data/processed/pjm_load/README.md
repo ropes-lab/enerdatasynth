@@ -1,6 +1,6 @@
 # `data/processed/pjm_load/`
 
-PJM load, zone PS, after `enerdatasynth preprocess`. **Only `metadata.json` is tracked.** The arrays and tables below are built from your own copy of the source files (see [`../../raw/pjm_load/README.md`](../../raw/pjm_load/README.md)) and ignored by git.
+PJM load, zone PS, after `enerdatasynth preprocess`. Every other zone is built the same way into `zones/<ZONE>/` next to this folder (`enerdatasynth preprocess --zone <ZONE>`). **Only each zone's `metadata.json` is tracked.** The arrays and tables below are built from your own copy of the source files (see [`../../raw/pjm_load/README.md`](../../raw/pjm_load/README.md)) and ignored by git.
 
 `metadata.json` holds the scaler parameters (`load_scaler`, `temp_scaler`, `spread_scaler`), the condition spec, and the exclusion counts. The shipped checkpoint needs it to build conditioning vectors and convert generated profiles back to MW, which is why it stays. It contains summary statistics, not observations.
 

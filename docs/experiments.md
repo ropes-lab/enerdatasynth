@@ -158,7 +158,11 @@ today. Source files are under `data/research_history/pjm_load/` unless noted.
 - **Still scientifically relevant:** Yes — this is the generalization evidence for any
   claim beyond a single zone.
 - **Source files:** `scripts/zone_expansion.py`, `reports/phase2/`.
-- **Part of the public package:** No — `pjm_load` exposes zone `PS` only today.
+- **Superseded by:** the per-zone models now shipped in the package, trained on the 23-dim
+  conditioning with the package's own preprocessing (`examples/pjm_load/train_all_zones.py`;
+  scores in `data/reports/pjm_load/zone_results.csv`, summarized in `docs/models/pjm_load.md` §11).
+  The numbers above are the research-phase results and are kept as history.
+- **Part of the public package:** Yes, since 0.9.0: all 17 zones ship, retrained on the package's 23-dim conditioning (see "Superseded by" above).
 - **Paper-worthy:** Yes, including the DOM failure — reporting only the 16 successes
   without the outlier would overstate generalization.
 
@@ -173,7 +177,8 @@ today. Source files are under `data/research_history/pjm_load/` unless noted.
   results currently diverge.
 - **Result:** A working, tested (230/230), installable package — but one that currently
   ships the MLP baseline (not the validated Transformer) for `pjm_load`, and exposes only
-  1 of 17 researched zones. See `docs/research_status.md` for the full, current state.
+  1 of 17 researched zones (both since fixed: the Transformer ships, for all 17 zones). See
+  `docs/research_status.md` for the full, current state.
 - **Still in progress:** training a Transformer checkpoint against the package's actual
   23-dim conditioning is the concrete next step to close that gap — see
   `docs/release_audit.md`.

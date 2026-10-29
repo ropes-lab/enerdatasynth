@@ -109,14 +109,16 @@ cited Week 7 Transformer numbers is not currently automated or verified** — se
   dataset exists in this repository to validate against (unchanged finding from the
   prior wind-specific audit this session).
 
+> **Update (multi-zone):** this audit describes the package when only zone `PS` shipped. Limitations 4 and 5 below no longer hold: all 17 PJM zones now ship, each with its own Transformer trained on the 23-dim conditioning (`docs/models/pjm_load.md` §11). The remaining limitations stand.
+
 ## Known Limitations (full list: `docs/research_status.md`, `docs/results.md` §9, `docs/models/pjm_load.md` §13)
 
 1. Conditioning mismatch between validated research results and the package's current
    preprocessing (critical).
 2. Package defaults to the legacy MLP checkpoint, not the recommended Transformer.
 3. Default sampling is uncalibrated.
-4. Only 1 of 17 researched zones is packaged.
-5. DOM zone fails badly and is unresolved.
+4. Only 1 of 17 researched zones is packaged (now all 17).
+5. DOM zone fails badly and is unresolved (now diagnosed as load growth after the training years; still poorly modeled).
 6. Hot-day generation quality is measurably weaker than aggregate metrics suggest.
 7. CNN's 118-minute training-time anomaly in the architecture comparison was never
    explained.
@@ -134,8 +136,8 @@ cited Week 7 Transformer numbers is not currently automated or verified** — se
 |---|---|---|
 | No Transformer checkpoint compatible with current 23-dim conditioning | HIGH | Package doesn't yet demonstrate its own headline result. Fix: `enerdatasynth train` (defaults to transformer already) + `enerdatasynth calibrate`. |
 | No calibration bundled for any checkpoint | MEDIUM | Default sampling is uncalibrated; run `enerdatasynth calibrate --run-id <run>` once a checkpoint exists. |
-| Only 1 of 17 zones packaged | MEDIUM | `generators/load_conditioning.py`'s `zones=["PS"]` would need extending, plus per-zone checkpoints/scalers bundled or trainable. |
-| DOM zone failure undiagnosed | MEDIUM (scientific, not a release blocker) | Worth a dedicated investigation before any paper claims "17/17" or omits DOM. |
+| Only 1 of 17 zones packaged (**resolved in 0.9.0: all 17 ship**) | MEDIUM | `generators/load_conditioning.py`'s `zones=["PS"]` would need extending, plus per-zone checkpoints/scalers bundled or trainable. |
+| DOM zone failure undiagnosed (**diagnosed: its load grew 39% after the training years; see `docs/models/pjm_load.md` §11**) | MEDIUM (scientific, not a release blocker) | Worth a dedicated investigation before any paper claims "17/17" or omits DOM. |
 | `run_benchmark.py` docstring claims a `benchmarks/` location that doesn't exist | LOW | Fixed: the docstring now names its real path, `examples/pjm_load/run_benchmark.py`. |
 | CNN 118-minute training anomaly unexplained | LOW (documentation completeness) | Not re-investigated; flagged rather than hidden. |
 | Full Part 17 test-expansion list not exhaustively implemented | LOW | Sampler regression test (the explicitly critical one) is done; broader coverage is a reasonable follow-up, not a blocker. |

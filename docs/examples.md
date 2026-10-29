@@ -14,6 +14,33 @@ Loads a trained checkpoint via `LoadDiffusionModel.from_run_id(...)` and generat
 python examples/pjm_load/generate_samples.py
 ```
 
+### `examples/pjm_load/plot_all_zones.py`
+
+Generates one July weekday from each of the 17 zone models and draws them in a grid (`docs/assets/pjm_load_all_zones_generated.png`). It needs no data, only the installed package, so it is a quick way to see that every zone works.
+
+```bash
+python examples/pjm_load/plot_all_zones.py
+```
+
+### `examples/pjm_load/train_all_zones.py` and `evaluate_all_zones.py`
+
+`train_all_zones.py` runs `enerdatasynth preprocess`, `train` and `calibrate` for each of the 17 PJM zones with the shipped Transformer settings (`transformer_T1000_H64_L2`), inside a scratch folder so the processed data never lands in your repository. This is how the bundled per-zone models were built. `evaluate_all_zones.py` then scores each zone's model on its validation days and writes `data/reports/pjm_load/zone_results.csv`. Both need your own copy of the raw PJM and NOAA files.
+
+```bash
+python examples/pjm_load/train_all_zones.py --raw-dir /path/to/raw --workdir /tmp/eds_zones
+python examples/pjm_load/evaluate_all_zones.py --workdir /tmp/eds_zones
+```
+
+### `examples/pjm_load/compare_diffusion_zones.py`
+
+Compares the shipped Transformer with an MLP denoiser trained with the same protocol and tuned over three configurations per zone, on all 17 PJM zones and ten metrics, with and without calibration. It needs your own raw data (`--raw-dir`) and the repository's checkpoints, and writes `data/reports/pjm_load/diffusion_zone_comparison.csv`. The result is summarized in [`docs/models/pjm_load.md`](models/pjm_load.md) §11.
+
+```bash
+python examples/pjm_load/compare_diffusion_zones.py --stage prep  --raw-dir /path/to/raw --workdir /tmp/eds_cmp
+python examples/pjm_load/compare_diffusion_zones.py --stage train --raw-dir /path/to/raw --workdir /tmp/eds_cmp
+python examples/pjm_load/compare_diffusion_zones.py --stage eval  --raw-dir /path/to/raw --workdir /tmp/eds_cmp
+```
+
 ### `examples/pjm_load/run_full_pipeline.py`
 
 A fast, small walkthrough of every pipeline stage — preprocess (if needed) → train a tiny model → generate → validate — in a couple of minutes rather than a full research-grade run. Not the production entry point (that's `examples/pjm_load/run_all.py` / `enerdatasynth pipeline`); this is for seeing every stage connect quickly.

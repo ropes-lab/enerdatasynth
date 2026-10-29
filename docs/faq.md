@@ -10,7 +10,7 @@ The SDK auto-discovers the best *available* checkpoint, preferring transformer r
 Degrees Fahrenheit — matching the training data. Not silently converted from Celsius. See [`docs/api_reference.md`](api_reference.md).
 
 **Can I generate load for a zone other than PS?**
-Not currently — `PS` (PSE&G, New Jersey) is the only zone the shipped pipeline has data/checkpoints for, even though 17 PJM zones were researched and 16 generalize well. See [`docs/models/pjm_load.md`](models/pjm_load.md#11-multi-zone-results) for the full multi-zone result, including the unresolved `DOM` outlier.
+Yes. Every one of the 17 PJM zones has its own trained model, bundled with the package: `enerdatasynth.model("pjm_load", zone="DOM")`, and the same for AE, AP, BC, CE, DAY, DEOK, DPL, DUQ, EKPC, JC, ME, PE, PL, PN and RECO. `PS` is the default, and zone names are not case-sensitive. The commands and conditions are identical for every zone. Each zone is a separate model with its own scalers, so the numbers you get back are that zone's megawatts. How well each one does is in [`docs/models/pjm_load.md`](models/pjm_load.md#11-multi-zone-results).
 
 **Can I generate wind data?**
 Yes — `enerdatasynth.model("wind", zone="1ch")` (or `"2ch"`/`"3ch"`), with real trained checkpoints bundled in this repository. It wraps a separately-developed diffusion pipeline (`wind_diffusion`, vendored from a Data-For-Good research project) behind the same `.set()`/`.sample()` interface load uses. See [`docs/models/wind.md`](models/wind.md) for what's actually validated (and what isn't — there's no raw wind data in this repository, so nothing here can be independently re-verified against ground truth yet) and [`docs/api_reference.md`](api_reference.md) for the full parameter reference.

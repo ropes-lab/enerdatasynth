@@ -12,9 +12,11 @@ load.set(month=7, Tmax=86, Tmin=70, weekday=True, holiday=False)
 samples = load.sample(n=100, seed=0)   # (100, 24) ndarray, MW
 ```
 
+Use `zone="PS"` (the default) for PSE&G in New Jersey, or any other PJM zone (`"AE"`, `"AP"`, `"BC"`, `"CE"`, `"DAY"`, `"DEOK"`, `"DOM"`, `"DPL"`, `"DUQ"`, `"EKPC"`, `"JC"`, `"ME"`, `"PE"`, `"PL"`, `"PN"`, `"RECO"`); each has its own trained model. The call is otherwise identical.
+
 That's it — no tensors, checkpoints, or architecture choices to think about. See [`docs/api_reference.md`](api_reference.md) for the full `.set()`/`.sample()` contract, and [`MODEL_CARD.md`](../MODEL_CARD.md) for what this model was trained on and its limitations.
 
-The trained checkpoints and the scaler file (`data/processed/pjm_load/metadata.json`) are committed here and also bundled in the PyPI wheel. There is no real data, so the above works immediately after `pip install enerdatasynth` (see [`docs/installation.md`](installation.md)). The rest of this page covers training a model from scratch, which needs your own copy of the data.
+The trained checkpoints and the scaler files (`data/processed/pjm_load/metadata.json` for PS, and `zones/<ZONE>/metadata.json` beside it for the other zones) are committed here and also bundled in the PyPI wheel. There is no real data, so the above works immediately after `pip install enerdatasynth` (see [`docs/installation.md`](installation.md)). The rest of this page covers training a model from scratch, which needs your own copy of the data.
 
 ## 1. Get raw data in place
 
@@ -26,6 +28,8 @@ yourself: [`data/README.md`](../data/README.md#data-sources) lists the sources,
 file from NOAA.
 
 ## 2. Preprocess
+
+(For a zone other than PS, add `--zone DOM` to this and to the training and calibration commands below; that zone's files go in a `zones/DOM/` subfolder, so nothing for PS is touched.)
 
 ```bash
 enerdatasynth preprocess

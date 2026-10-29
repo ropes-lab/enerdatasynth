@@ -22,7 +22,7 @@ context?
 | Raw temperature CSVs | `data/raw/pjm_load/` | Same as above — not bundled. |
 | Temperature cache | `data/cache/pjm_load/` | **Not bundled** (empty; `README.md` there explains it's a regenerable NOAA fetch cache, not source data). |
 | Processed arrays (current package) | `data/processed/pjm_load/X_daily_profiles*.npy`, `Z_conditions*.npy`, `df_train.parquet`, `df_val.parquet` | **Not bundled.** Built by `enerdatasynth preprocess` from your own copy of the raw files; git ignores them |
-| Scalers and condition spec | `data/processed/pjm_load/metadata.json` | **Bundled.** Summary statistics only (per-hour load min/max, temperature and spread mean/std, exclusion counts), zone `PS`, 23-dim conditioning. The shipped checkpoint needs it to build conditioning vectors and to convert output to MW |
+| Scalers and condition spec | `data/processed/pjm_load/metadata.json` (PS) and `data/processed/pjm_load/zones/<ZONE>/metadata.json` (the other 16 zones) | **Bundled.** Summary statistics only (per-hour load min/max, temperature and spread mean/std, exclusion counts), one file per zone, 23-dim conditioning. The shipped checkpoint needs it to build conditioning vectors and to convert output to MW |
 | Research-history datasets | `data/research_history/pjm_load/outputs/` | **Not bundled.** The Z5/Z9 tensors and per-zone tables were removed. What remains there is trained weights, scalers and calibration files |
 | Wind raw data | `data/raw/wind/` | **Empty — placeholder README only.** No wind dataset exists in this repository. See "Wind Data" below. |
 
@@ -40,9 +40,14 @@ context?
 
 ## Geographic Coverage
 
-- **Researched (Phase 2):** 17 PJM zones — AP, DAY, PL, DEOK, CE, PN, DPL, BC, PS, RECO,
-  JC, ME, DUQ, PE, AE, EKPC, DOM.
-- **Packaged (installed SDK today):** zone `PS` only.
+- **Packaged:** all 17 PJM zones with both load and temperature data — PS, AE, AP, BC,
+  CE, DAY, DEOK, DOM, DPL, DUQ, EKPC, JC, ME, PE, PL, PN, RECO — one trained model each.
+  PJM reports five more zones (AEP, ATSI, OVEC, PEP, RTO) that this package does not
+  cover, because the temperature file has no single-zone column for them.
+- **Zones made of several load areas:** AE (AECO + VMEU, reported whole as `AE` in 2016),
+  DPL (DPLCO + EASTON) and PL (PLCO + UGI). Preprocessing sums the areas into the zone
+  total and drops hours where a year's area set is incomplete (AE loses 1 Jan–31 May
+  2017, before VMEU was reported separately).
 
 ## Temporal Resolution
 
@@ -118,9 +123,8 @@ current package's 23-dimensional one-hot representation.
 ## Train/Validation Split
 
 Chronological: **2016–2023 train / 2024–2025 validation** (`week3.py`, Step 6) — not a
-random split. The shipped checkpoint's `PS`-zone dataset (2,785 train / 600 validation
-days, recorded in `metadata.json`) is consistent with this chronological convention but
-was not independently re-derived in this audit.
+random split. Each zone's dataset sizes are recorded in its own `metadata.json` (PS: 2,785
+train / 600 validation days; the other zones are in `data/reports/pjm_load/zone_results.csv`).
 
 ## Known Limitations
 
@@ -178,7 +182,7 @@ sections above. Full narrative: `docs/models/wind.md` §2.
 
 ## Reproducibility
 
-`enerdatasynth preprocess` reproduces the `PS`-zone processed dataset from raw CSVs,
+`enerdatasynth preprocess [--zone ZONE]` reproduces a zone's processed dataset from raw CSVs,
 **which you must supply yourself** — see `data/raw/pjm_load/README.md` for exactly which
 files and where to get them. `pip install enerdatasynth` does not ship raw data or trained
 checkpoints, by design (`docs/packaging.md`), and **this repository bundles no real data

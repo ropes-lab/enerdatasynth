@@ -45,6 +45,7 @@ data/
 └── processed/pjm_load_backup/    copy written by preprocess (git-ignored)
 
 data/checkpoints/pjm_load/<run_id>/             best.pt, latest.pt, loss_curve.png, result.json, calibration.json
+data/checkpoints/pjm_load/zones/<ZONE>/<run_id>/   the same for each zone other than PS (PS uses the flat folder above)
 data/outputs/pjm_load/
 ├── generated/                    X_generated_<run_id>.npy
 └── logs/                         per-epoch CSV training logs

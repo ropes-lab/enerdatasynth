@@ -14,6 +14,18 @@ enerdatasynth preprocess
 
 Builds `data/processed/pjm_load/{X_daily_profiles,Z_conditions}[_val].npy` and `metadata.json` from raw CSVs (`data/raw/pjm_load/`), which you supply yourself (sources: [`data/README.md`](../data/README.md#data-sources)). Only needs to be re-run when raw data changes.
 
+## Another zone
+
+Every command on this page works on one PJM zone at a time. It is PS unless you pass `--zone`:
+
+```bash
+enerdatasynth preprocess --zone DOM
+enerdatasynth train --zone DOM
+enerdatasynth calibrate --zone DOM --run-id transformer_T1000_H64_L2
+```
+
+A zone other than PS reads and writes in `zones/<ZONE>/` subfolders (`data/processed/pjm_load/zones/DOM/`, `data/checkpoints/pjm_load/zones/DOM/`, ...), so PS is never touched. `examples/pjm_load/train_all_zones.py` runs these three commands for every zone, in a working folder of your choice, which is how the bundled models were built. If you would rather set the zone yourself, `ENERDATASYNTH_ZONE=DOM` does the same as `--zone DOM`.
+
 ## Training a single configuration
 
 ```bash

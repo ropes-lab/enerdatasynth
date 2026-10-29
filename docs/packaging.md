@@ -37,7 +37,7 @@ twine check dist/*             # validates PyPI metadata without uploading
 
 ## What's inside the built package (and what isn't)
 
-The wheel contains `src/enerdatasynth/`'s Python files plus `enerdatasynth/_bundled/`: the shipped load Transformer (`best.pt`, `result.json`, `calibration.json`), the three wind presets (`model_checkpoint.pt`, `norm_stats.json`) and `metadata.json`, about 13 MB in total. There is no real data, no legacy MLP runs and no `data/research_history/`. `setup.py` copies the files in at build time and `MANIFEST.in` keeps them in the sdist; both lists must be kept in sync. Check a built wheel with `python -m zipfile -l dist/*.whl | grep -E '_bundled|\.pt|\.npy|parquet'`: you should see exactly those ten files and nothing else.
+The wheel contains `src/enerdatasynth/`'s Python files plus `enerdatasynth/_bundled/`: the shipped load Transformer for each of the 17 PJM zones (`best.pt`, `result.json`, `calibration.json` and that zone's `metadata.json`), and the three wind presets (`model_checkpoint.pt`, `norm_stats.json`). There is no real data, no legacy MLP runs and no `data/research_history/`. `setup.py` copies the files in at build time and `MANIFEST.in` keeps them in the sdist; both lists must be kept in sync. Check a built wheel with `python -m zipfile -l dist/*.whl | grep -E '_bundled|\.pt|\.npy|parquet'`: you should see exactly those 74 files (17 zones × 4, plus 6 for wind) and nothing else.
 
 ## The `enerdatasynth` CLI
 
@@ -71,6 +71,8 @@ manual `twine upload dist/*` from a machine that has a PyPI API token for
 this project.
 
 Since 0.8.0 the wheel carries the shipped checkpoints (see above), so a plain `pip install enerdatasynth` can generate for both resources from any folder. Releases 0.4.1 to 0.7.0 shipped code only and needed a clone of this repository. Training your own checkpoints still needs a clone and your own data.
+
+**0.9.0** adds a trained model for every PJM zone (17 in all; before, only `PS`), selected with `zone=` in Python and `--zone` on the command line. The wheel grows from about 13 MB to about 20 MB. Nothing about the PS commands changed. `MIGRATION.md` has the details.
 
 From 0.8.3, `requires-python >= 3.9` and `torch>=2.5` (before: `>=3.10` and `torch>=2.11,<2.12`). On older Python, pip silently installs 0.4.1. The exact torch that produced the checkpoints, 2.11.0, stays pinned in `requirements.txt` and in CI for the 3.10 and 3.12 jobs; the 3.9 job uses torch 2.8.0, the newest torch that installs on 3.9.
 

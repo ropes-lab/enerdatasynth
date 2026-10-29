@@ -1,5 +1,7 @@
 # Migration Report — Promoting Final Research to Production
 
+> **Update (multi-zone):** §4's note about `zone_expansion.py` is now done. The `zone` parameter runs through preprocessing, training, calibration and generation (`--zone` on the CLI, `zone=` in Python), and all 17 PJM zones ship one Transformer each, trained on the 23-dim conditioning (`docs/models/pjm_load.md` §11). Two data issues found on the way: AE, DPL and PL report several load areas per zone, which the research script averaged (wrong for MW) and the original preprocessing would have flagged as daylight-saving days; preprocessing now sums them (`sum_load_areas`).
+
 This documents the audit-and-promote pass that replaced the package's
 outdated default architecture (`SimpleMLPDenoiser`) with the one
 research actually validated as best (`TransformerDenoiser`), and

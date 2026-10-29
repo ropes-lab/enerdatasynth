@@ -13,7 +13,7 @@ The folders match `resources/wind/` wherever that makes sense (`data/`, `models/
 | `api.py` | Public entry points: `generate_load_profile()`, `list_models()`, `describe_model()`. Added to match `resources/wind/api.py` |
 | `config.py` | Thin re-export of `enerdatasynth.utils.config` (`RunConfig`, path constants, defaults). `PROJECT_ROOT`, `DATA_ROOT` and `ensure_dirs()` stay in the shared module; the docstring says why |
 | `exceptions.py` | `PjmLoadError`, `CheckpointNotFoundError`, `InvalidConditionError`. Mirrors `resources/wind/exceptions.py`. They subclass the builtin `FileNotFoundError` and `ValueError`, so existing `except` blocks keep working |
-| `manifest.json` | Metadata for the bundled checkpoints, collected from `data/checkpoints/pjm_load/*/result.json` (architecture, params, best validation loss, epochs, calibrated). Same shape as `resources/wind/manifest.json` |
+| `manifest.json` | Metadata for the bundled checkpoints, collected from `data/checkpoints/pjm_load/*/result.json` (architecture, params, best validation loss, epochs, calibrated), plus a `zones` section with the same for each of the 17 PJM zones. Same shape as `resources/wind/manifest.json` |
 | `data/preprocess.py` | Raw-CSV loading, DST and missing-data cleaning, conditioning-vector construction |
 | `data/temperature.py` | NOAA ISD fetch and zone-weighted temperature averaging |
 | `models/transformer.py` | Transformer denoiser, the recommended architecture and the shipped default |

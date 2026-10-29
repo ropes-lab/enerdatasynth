@@ -11,7 +11,7 @@
 pip install enerdatasynth
 ```
 
-That is enough to generate: the wheel includes the trained load Transformer and the three wind presets (about 13 MB). Use it from any folder. To see it work, use the blocks in the README, or run `python3 -m enerdatasynth demo`.
+That is enough to generate: the wheel includes a trained load Transformer for each of the 17 PJM zones and the three wind presets (about 20 MB). Use it from any folder. To see it work, use the blocks in the README, or run `python3 -m enerdatasynth demo`.
 
 ## Editable install (development)
 
