@@ -27,7 +27,7 @@ def test_model_unknown_name_raises():
 def test_model_unsupported_zone_raises():
     import enerdatasynth
     with pytest.raises(ValueError, match="not supported"):
-        enerdatasynth.model("pjm_load", zone="DOM")
+        enerdatasynth.model("pjm_load", zone="XYZ")
 
 
 def test_model_defaults_to_first_supported_zone():
@@ -152,7 +152,9 @@ def test_list_resources_reports_pjm_load():
     import enerdatasynth
     info = enerdatasynth.list_resources()
     assert "pjm_load" in info
-    assert info["pjm_load"]["zones"] == ["PS"]
+    from enerdatasynth.utils.config import PJM_ZONES
+    assert info["pjm_load"]["zones"] == PJM_ZONES
+    assert len(PJM_ZONES) == 17 and PJM_ZONES[0] == "PS"
     assert info["pjm_load"]["domain"] == "load"
     # Includes "weekday" alongside the ConditionField-modeled names --
     # condition_fields reflects everything .set() actually accepts

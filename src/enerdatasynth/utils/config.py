@@ -58,16 +58,41 @@ PROJECT_ROOT     = Path(os.environ.get("ENERDATASYNTH_PROJECT_ROOT", Path.cwd())
 # pipeline in this package to mirror most of these (no RAW_DIR,
 # PROCESSED_DIR, etc. equivalent -- it ships pre-trained; see
 # docs/models/wind.md).
+#
+# Zones. PJM load has one trained model per zone. The default zone, PS, keeps
+# the original flat layout (data/<category>/pjm_load/...), so everything that
+# existed before multi-zone support is exactly where it was. Every other zone
+# lives in a `zones/<ZONE>/` subfolder of the same category folder. Which zone
+# the training/evaluation commands work on is chosen with `--zone` on the CLI
+# (which sets $ENERDATASYNTH_ZONE before this module loads) or by setting that
+# variable yourself; generation (`enerdatasynth.model("pjm_load", zone=...)`)
+# takes the zone as an argument and does not depend on it.
+DEFAULT_ZONE = "PS"   # PSE&G / New Jersey
+PJM_ZONES = [
+    "PS", "AE", "AP", "BC", "CE", "DAY", "DEOK", "DOM", "DPL", "DUQ",
+    "EKPC", "JC", "ME", "PE", "PL", "PN", "RECO",
+]
+ZONE = os.environ.get("ENERDATASYNTH_ZONE", DEFAULT_ZONE).strip().upper()
+if ZONE not in PJM_ZONES:
+    raise ValueError(f"ENERDATASYNTH_ZONE={ZONE!r} is not a PJM zone this package supports: {PJM_ZONES}")
+
+
+def zone_dir(base: Path, zone: str | None = None) -> Path:
+    """`base` for the default zone, `base/zones/<ZONE>` for any other."""
+    zone = (zone or ZONE).upper()
+    return base if zone == DEFAULT_ZONE else base / "zones" / zone
+
+
 DATA_ROOT        = PROJECT_ROOT / "data"
 CONFIGS_DIR      = DATA_ROOT / "configs" / "pjm_load"
 RAW_DIR          = DATA_ROOT / "raw" / "pjm_load"
-PROCESSED_DIR    = DATA_ROOT / "processed" / "pjm_load"
-PROCESSED_BACKUP = DATA_ROOT / "processed" / "pjm_load_backup"
-CHECKPOINT_DIR   = DATA_ROOT / "checkpoints" / "pjm_load"
-OUTPUTS_DIR      = DATA_ROOT / "outputs" / "pjm_load"
+PROCESSED_DIR    = zone_dir(DATA_ROOT / "processed" / "pjm_load")
+PROCESSED_BACKUP = zone_dir(DATA_ROOT / "processed" / "pjm_load_backup")
+CHECKPOINT_DIR   = zone_dir(DATA_ROOT / "checkpoints" / "pjm_load")
+OUTPUTS_DIR      = zone_dir(DATA_ROOT / "outputs" / "pjm_load")
 GENERATED_DIR    = OUTPUTS_DIR / "generated"
 LOGS_DIR         = OUTPUTS_DIR / "logs"
-REPORTS_DIR      = DATA_ROOT / "reports" / "pjm_load"
+REPORTS_DIR      = zone_dir(DATA_ROOT / "reports" / "pjm_load")
 FIGURES_DIR      = REPORTS_DIR / "figures"
 RESEARCH_HISTORY_DIR = DATA_ROOT / "research_history" / "pjm_load"
 
@@ -105,29 +130,51 @@ BUNDLED_WIND_DIR       = BUNDLED_ROOT / "checkpoints" / "wind"
 BUNDLED_PROCESSED_DIR  = BUNDLED_ROOT / "processed" / "pjm_load"
 
 
-def checkpoint_search_dirs() -> list[Path]:
-    """Where to look for trained load checkpoints, in priority order."""
-    return [CHECKPOINT_DIR, BUNDLED_CHECKPOINT_DIR]
+def _project_zone_dir(current: Path, zone: str | None) -> Path:
+    """`current` (the working zone's folder, e.g. `CHECKPOINT_DIR`) as it is for
+    `zone`: unchanged for the working zone, the sibling zone folder otherwise."""
+    zone = (zone or ZONE).upper()
+    if zone == ZONE:
+        return current
+    flat = current if ZONE == DEFAULT_ZONE else current.parent.parent
+    return zone_dir(flat, zone)
 
 
-def find_checkpoint_dir(run_id: str) -> Path:
-    """Directory holding `run_id`'s files: the project's own copy if it has
-    one, otherwise the bundled one. Returns the project path when neither
+def checkpoint_search_dirs(zone: str | None = None) -> list[Path]:
+    """Where to look for trained load checkpoints of `zone` (default: the
+    working zone), in priority order: the project's own, then the bundled."""
+    return [_project_zone_dir(CHECKPOINT_DIR, zone), zone_dir(BUNDLED_CHECKPOINT_DIR, zone)]
+
+
+def find_checkpoint_dir(run_id: str, zone: str | None = None) -> Path:
+    """Directory holding `run_id`'s files for `zone`: the project's own copy if
+    it has one, otherwise the bundled one. Returns the project path when neither
     exists, so the caller's "not found" message names a sensible location."""
-    for root in checkpoint_search_dirs():
+    roots = checkpoint_search_dirs(zone)
+    for root in roots:
         if (root / run_id / "result.json").exists():
             return root / run_id
-    return CHECKPOINT_DIR / run_id
+    return roots[0] / run_id
 
 
-def processed_metadata_path() -> Path:
-    """`metadata.json` from the project's `data/processed/pjm_load/` if
-    present, else the copy bundled in the package."""
-    project = PROCESSED_DIR / "metadata.json"
-    return project if project.exists() else BUNDLED_PROCESSED_DIR / "metadata.json"
+def processed_metadata_path(zone: str | None = None) -> Path:
+    """`metadata.json` for `zone` (default: the working zone) from the project's
+    `data/processed/pjm_load/` if present, else the copy bundled in the package."""
+    project = _project_zone_dir(PROCESSED_DIR, zone) / "metadata.json"
+    return project if project.exists() else zone_dir(BUNDLED_PROCESSED_DIR, zone) / "metadata.json"
 
 
-ZONE = "PS"   # PSE&G / New Jersey
+def available_zones() -> list[str]:
+    """Zones that have both a scaler file and a trained checkpoint, in
+    `PJM_ZONES` order (project files and bundled files both count)."""
+    found = []
+    for z in PJM_ZONES:
+        if not processed_metadata_path(z).exists():
+            continue
+        if any(root.exists() and any(root.glob("*/result.json")) for root in checkpoint_search_dirs(z)):
+            found.append(z)
+    return found
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Conditioning vector definition

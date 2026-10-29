@@ -21,7 +21,7 @@ modules apply — both resources still generate through
 convenience on top of that, not a replacement for it.
 
 Usage:
-    enerdatasynth preprocess
+    enerdatasynth preprocess [--zone DOM]       # any of the 17 PJM zones; default PS
     enerdatasynth train [--architecture transformer|mlp] [--diffusion-steps T] [--hidden-dim H] [--n-layers L] ...
     enerdatasynth sweep [--epochs N] [--full-grid]
     enerdatasynth generate --diffusion-steps T --hidden-dim H --n-layers L
@@ -37,13 +37,23 @@ Usage:
 
 from __future__ import annotations
 import argparse
+import os
+import sys
 
-import numpy as np
 
-from enerdatasynth.utils.config import (
+import numpy as np  # noqa: E402
+
+from enerdatasynth.utils import config as _config  # noqa: E402
+from enerdatasynth.utils.config import (  # noqa: E402
     RunConfig, load_processed, DEFAULT_ARCHITECTURE,
     DEFAULT_T, DEFAULT_HIDDEN_DIM, DEFAULT_N_LAYERS, DEFAULT_N_HEADS,
 )
+
+
+def _add_zone_arg(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--zone", default=None, metavar="ZONE",
+                         help="PJM zone to work on (pjm_load only; default PS). Files for a "
+                              "zone other than PS live in a zones/<ZONE>/ subfolder.")
 
 
 def _add_run_config_args(parser: argparse.ArgumentParser) -> None:
@@ -221,15 +231,18 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     p_preprocess = subparsers.add_parser("preprocess", help="Build X/Z tensors from raw CSVs")
+    _add_zone_arg(p_preprocess)
     p_preprocess.set_defaults(func=cmd_preprocess)
 
     p_train = subparsers.add_parser("train", help="Train a single model configuration")
     _add_run_config_args(p_train)
+    _add_zone_arg(p_train)
     p_train.set_defaults(func=cmd_train)
 
     p_sweep = subparsers.add_parser("sweep", help="Run the hyperparameter sweep")
     p_sweep.add_argument("--epochs", type=int, default=60)
     p_sweep.add_argument("--full-grid", action="store_true")
+    _add_zone_arg(p_sweep)
     p_sweep.set_defaults(func=cmd_sweep)
 
     p_generate = subparsers.add_parser("generate", help="Generate synthetic profiles from a trained checkpoint")
@@ -243,11 +256,13 @@ def build_parser() -> argparse.ArgumentParser:
                                   "default: the checkpoint's own fallback).")
     p_generate.add_argument("--n-realizations", type=int, default=100,
                              help="Realizations to generate (only used with --resource wind).")
+    _add_zone_arg(p_generate)
     p_generate.set_defaults(func=cmd_generate)
 
     p_calibrate = subparsers.add_parser("calibrate", help="Fit the scalar bias correction for a trained checkpoint (pjm_load only)")
     _add_run_config_args(p_calibrate)
     p_calibrate.add_argument("--run-id", required=True)
+    _add_zone_arg(p_calibrate)
     p_calibrate.set_defaults(func=cmd_calibrate)
 
     p_evaluate = subparsers.add_parser("evaluate", help="Run failure analysis (+ validation plots for pjm_load) for a run/preset")
@@ -257,17 +272,20 @@ def build_parser() -> argparse.ArgumentParser:
                              help="Required when --resource pjm_load.")
     p_evaluate.add_argument("--preset", choices=["1ch", "2ch", "3ch"], default="3ch",
                              help="Required when --resource wind.")
+    _add_zone_arg(p_evaluate)
     p_evaluate.set_defaults(func=cmd_evaluate)
 
     p_report = subparsers.add_parser("report", help="Regenerate reports/results_summary.md")
     p_report.add_argument("--resource", choices=["pjm_load", "wind"], default="pjm_load",
                            help="Which resource to report on (default: pjm_load).")
+    _add_zone_arg(p_report)
     p_report.set_defaults(func=cmd_report)
 
     p_pipeline = subparsers.add_parser("pipeline", help="Run the full pipeline end-to-end")
     p_pipeline.add_argument("--epochs", type=int, default=60)
     p_pipeline.add_argument("--full-grid", action="store_true")
     p_pipeline.add_argument("--skip-preprocess", action="store_true")
+    _add_zone_arg(p_pipeline)
     p_pipeline.set_defaults(func=cmd_pipeline)
 
     p_demo = subparsers.add_parser("demo", help="Generate and print a few profiles from the bundled models")
@@ -277,9 +295,26 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _switch_zone_if_needed(args: argparse.Namespace, argv: list[str] | None) -> None:
+    """`--zone` picks the zone whose folders the load commands read and write. Those
+    folders are fixed when `enerdatasynth.utils.config` loads (from $ENERDATASYNTH_ZONE),
+    which has already happened by the time the flag is parsed, so a real command-line
+    run restarts itself once with the variable set. Called from Python with an explicit
+    `argv`, it cannot restart the interpreter, so it asks for the variable instead."""
+    zone = (getattr(args, "zone", None) or _config.ZONE).upper()
+    if zone == _config.ZONE:
+        return
+    if argv is not None:
+        raise SystemExit(f"--zone {zone} needs ENERDATASYNTH_ZONE={zone} set before enerdatasynth is "
+                         f"imported (this process is working on zone {_config.ZONE}).")
+    os.environ["ENERDATASYNTH_ZONE"] = zone
+    os.execv(sys.executable, [sys.executable, "-m", "enerdatasynth", *sys.argv[1:]])
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
+    _switch_zone_if_needed(args, argv)
     args.func(args)
 
 

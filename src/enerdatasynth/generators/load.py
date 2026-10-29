@@ -88,7 +88,8 @@ class LoadDiffusionModel(BaseGenerator):
 
     @classmethod
     def from_run_id(cls, run_id: str, checkpoint_root: str | Path | None = None,
-                     device: str | None = None, use_calibration: bool = True) -> "LoadDiffusionModel":
+                     device: str | None = None, use_calibration: bool = True,
+                     zone: str | None = None) -> "LoadDiffusionModel":
         """
         Construct from a run_id produced by `enerdatasynth train` /
         `enerdatasynth sweep`. Reads architecture and hyperparameters
@@ -104,8 +105,12 @@ class LoadDiffusionModel(BaseGenerator):
         only architecture that existed at the time. So the fallback
         here is "mlp", not `DEFAULT_ARCHITECTURE` — a deliberate
         historical default, not the current recommended one.
+
+        `zone` picks which PJM zone's checkpoint to load (default: the working
+        zone, PS unless `$ENERDATASYNTH_ZONE` says otherwise); it is ignored when
+        `checkpoint_root` is given.
         """
-        ckpt_dir = Path(checkpoint_root) / run_id if checkpoint_root is not None else find_checkpoint_dir(run_id)
+        ckpt_dir = Path(checkpoint_root) / run_id if checkpoint_root is not None else find_checkpoint_dir(run_id, zone)
         result_path = ckpt_dir / "result.json"
         if not result_path.exists():
             raise CheckpointNotFoundError(

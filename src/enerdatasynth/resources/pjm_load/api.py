@@ -123,18 +123,19 @@ def generate_load_profile(
     if units not in ("MW", "normalized"):
         raise InvalidConditionError(f"units must be 'MW' or 'normalized', got {units!r}")
 
-    metadata_path = processed_metadata_path()
+    zone = zone.upper()
+    metadata_path = processed_metadata_path(zone)
     if not metadata_path.exists():
         raise CheckpointNotFoundError(
-            f"No scaler file (metadata.json) found at {metadata_path}. "
-            f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
+            f"No scaler file (metadata.json) found for zone {zone} at {metadata_path}. "
+            f"Run `enerdatasynth preprocess --zone {zone}` first (see docs/quickstart.md)."
         )
     with open(metadata_path) as f:
         metadata = json.load(f)
 
     start = time.time()
-    resolved_run_id = run_id or _discover_best_checkpoint()
-    model = LoadDiffusionModel.from_run_id(resolved_run_id, device=device)
+    resolved_run_id = run_id or _discover_best_checkpoint(zone=zone)
+    model = LoadDiffusionModel.from_run_id(resolved_run_id, device=device, zone=zone)
 
     conditions: dict[str, Any] = {"month": month, "Tmax": Tmax, "Tmin": Tmin, "weekday": weekday, "holiday": holiday}
     if day_of_week is not None:

@@ -250,13 +250,13 @@ def model(name: str, zone: Optional[str] = None) -> ResourceModel:
 
         load = enerdatasynth.model("pjm_load", zone="PS")
 
-    Currently supported: `name="pjm_load"`, `zone="PS"` (the only zone
-    the shipped preprocessing/training pipeline currently produces
-    data for — see MIGRATION.md for what multi-zone support would
-    require); `name="wind"`, `zone="1ch"|"2ch"|"3ch"`. Automatically
-    uses the best available trained checkpoint; no architecture,
-    checkpoint path, or run_id is exposed. See `list_resources()` /
-    `describe_resource(name)` to discover what's registered.
+    Currently supported: `name="pjm_load"` for any of the 17 PJM zones
+    (`zone="PS"` is the default; the others are AE, AP, BC, CE, DAY, DEOK,
+    DOM, DPL, DUQ, EKPC, JC, ME, PE, PL, PN and RECO, each with its own trained
+    model); `name="wind"`, `zone="1ch"|"2ch"|"3ch"`. Zone names are not
+    case-sensitive. Automatically uses the best available trained checkpoint;
+    no architecture, checkpoint path, or run_id is exposed. See
+    `list_resources()` / `describe_resource(name)` to discover what's registered.
     """
     reg = registry.get_registry()
     if name not in reg:
@@ -266,13 +266,13 @@ def model(name: str, zone: Optional[str] = None) -> ResourceModel:
     supported_zones = entry.zones
     if zone is None:
         zone = supported_zones[0]
-    if zone not in supported_zones:
+    matches = [z for z in supported_zones if z.lower() == str(zone).lower()]
+    if not matches:
         raise ValueError(
             f"Zone {zone!r} is not supported for model {name!r}. "
-            f"Supported zones: {supported_zones}. "
-            f"See research_history/scripts/zone_expansion.py for exploratory "
-            f"multi-zone work not yet promoted into this package."
+            f"Supported zones: {supported_zones}."
         )
+    zone = matches[0]
 
     built = entry.construct(zone)  # registry.ConstructResult
     return ResourceModel(

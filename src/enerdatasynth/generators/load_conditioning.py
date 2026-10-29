@@ -34,7 +34,8 @@ from enerdatasynth.generators.load import LoadDiffusionModel
 from enerdatasynth.registry import ConstructResult, ResourceEntry, register_resource
 from enerdatasynth.resources.pjm_load.exceptions import CheckpointNotFoundError, InvalidConditionError
 from enerdatasynth.utils.config import (
-    N_DOW, N_MONTHS, COND_DIM, checkpoint_search_dirs, processed_metadata_path,
+    N_DOW, N_MONTHS, COND_DIM, PJM_ZONES, checkpoint_search_dirs, processed_metadata_path,
+    available_zones,
 )
 
 _DOW_NAMES = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
@@ -91,7 +92,7 @@ assert condition_dim(LOAD_CONDITION_SPEC) == COND_DIM, (
 )
 
 
-def _discover_best_checkpoint(checkpoint_root: Path | None = None) -> str:
+def _discover_best_checkpoint(checkpoint_root: Path | None = None, zone: str | None = None) -> str:
     """
     Find the best available trained checkpoint: prefers any
     architecture="transformer" run (lowest best_val_loss among those),
@@ -112,7 +113,7 @@ def _discover_best_checkpoint(checkpoint_root: Path | None = None) -> str:
     # An explicit root searches only that folder. By default, search the
     # project's data/checkpoints/pjm_load/ first, then the checkpoints
     # bundled in the package; a run id in both is taken from the project.
-    roots = [Path(checkpoint_root)] if checkpoint_root is not None else checkpoint_search_dirs()
+    roots = [Path(checkpoint_root)] if checkpoint_root is not None else checkpoint_search_dirs(zone)
     by_run = {}
     for root in reversed(roots):
         if root.exists():
@@ -125,7 +126,8 @@ def _discover_best_checkpoint(checkpoint_root: Path | None = None) -> str:
 
     if not candidates:
         raise CheckpointNotFoundError(
-            f"No trained checkpoints found under {roots[0]} or in the installed package. "
+            f"No trained checkpoints found under {roots[0]} or in the installed package"
+            + (f" for zone {zone}" if zone else "") + ". "
             f"Run `enerdatasynth train` first (see docs/quickstart.md)."
         )
 
@@ -140,17 +142,17 @@ def _load_construct(zone: str) -> ConstructResult:
     logic `model()` used to run inline before construction became
     resource-delegated, moved here (from `sdk.py`) so `sdk.py` itself
     needs no per-resource edit; mirrors `wind_conditioning.wind_construct`."""
-    metadata_path = processed_metadata_path()
+    metadata_path = processed_metadata_path(zone)
     if not metadata_path.exists():
         raise CheckpointNotFoundError(
-            f"No scaler file (metadata.json) found at {metadata_path}. "
-            f"Run `enerdatasynth preprocess` first (see docs/quickstart.md)."
+            f"No scaler file (metadata.json) found for zone {zone} at {metadata_path}. "
+            f"Run `enerdatasynth preprocess --zone {zone}` first (see docs/quickstart.md)."
         )
     with open(metadata_path) as f:
         metadata = json.load(f)
 
-    run_id = _discover_best_checkpoint()
-    generator = LoadDiffusionModel.from_run_id(run_id)
+    run_id = _discover_best_checkpoint(zone=zone)
+    generator = LoadDiffusionModel.from_run_id(run_id, zone=zone)
     return ConstructResult(
         generator=generator,
         metadata=metadata,
@@ -161,7 +163,8 @@ def _load_construct(zone: str) -> ConstructResult:
 
 def _load_checkpoint_status() -> dict:
     """`describe_resource("pjm_load")`'s checkpoint-availability hook."""
-    status = {"processed_dataset_available": processed_metadata_path().exists()}
+    status = {"processed_dataset_available": processed_metadata_path().exists(),
+              "zones_available": available_zones()}
     try:
         status["best_run_id"] = _discover_best_checkpoint()
         status["checkpoint_available"] = True
@@ -174,7 +177,7 @@ def _load_checkpoint_status() -> dict:
 register_resource(ResourceEntry(
     name="pjm_load",
     generator_cls=LoadDiffusionModel,
-    zones=["PS"],
+    zones=list(PJM_ZONES),
     condition_spec=LOAD_CONDITION_SPEC,
     extra_set_keys=LOAD_EXTRA_SET_KEYS,
     construct=_load_construct,
