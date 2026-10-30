@@ -24,10 +24,10 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 ## Quick start
 
 ```bash
-pip install --upgrade enerdatasynth
+pip install enerdatasynth
 ```
 
-`--upgrade` matters if you installed the package before: a plain `pip install` keeps whatever older version you have, and only version 0.9.0 and newer know all 17 PJM zones. You can check with `python3 -c "import enerdatasynth; print(enerdatasynth.__version__)"`.
+Installed it before? Add `--upgrade` (`pip install --upgrade enerdatasynth`): pip leaves an older installed version alone, and only 0.9.0 and newer know all 17 PJM zones. `python3 -c "import enerdatasynth; print(enerdatasynth.__version__)"` shows what you have.
 
 Then copy a whole block below into your terminal and press Enter. Each one imports the package, sets conditions, generates a day and prints its 24-hour profile.
 

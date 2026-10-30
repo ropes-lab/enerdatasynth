@@ -8,10 +8,10 @@
 ## Using the package
 
 ```bash
-pip install --upgrade enerdatasynth
+pip install enerdatasynth
 ```
 
-(`--upgrade` replaces an older version you may already have; the 17 PJM zones need 0.9.0 or newer.) That is enough to generate: the wheel includes a trained load Transformer for each of the 17 PJM zones and the three wind presets (about 20 MB). Use it from any folder. To see it work, use the blocks in the README, or run `python3 -m enerdatasynth demo`.
+(If you installed it before, use `pip install --upgrade enerdatasynth` instead: pip keeps an older installed version otherwise, and the 17 PJM zones need 0.9.0 or newer.) That is enough to generate: the wheel includes a trained load Transformer for each of the 17 PJM zones and the three wind presets (about 20 MB). Use it from any folder. To see it work, use the blocks in the README, or run `python3 -m enerdatasynth demo`.
 
 ## Editable install (development)
 
