@@ -9,8 +9,9 @@ description = "A research SDK for synthetic energy resource profiles (PJM electr
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
-    { name = "Sonakshi Sharma", email = "s.sonakshi2006@gmail.com" },
+    { name = "Sonakshi Sharma" },
     { name = "Pranav Tikkawar" },
+    { name = "Mehrnoush Ghazanfariharandi" },
     { name = "Robert Mieth" },
 ]
 requires-python = ">=3.9"
