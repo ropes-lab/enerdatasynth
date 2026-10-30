@@ -246,6 +246,10 @@ Scores below are on each zone's 2024–2025 validation days (3 generation seeds,
 
 *Generated load for each zone model (July weekday, 86/70 °F; mean and 5th–95th percentile of 100 days, each in its own zone's megawatts). Made by `examples/pjm_load/plot_all_zones.py` from the shipped models alone; it is generated output, not a comparison with real load.*
 
+![Real versus generated, one validation day per zone](../assets/pjm_load_real_vs_generated_all_zones.png)
+
+*Real versus generated for every zone. One 2024 validation day per zone, chosen by a fixed rule (the day nearest the zone's median validation `Tmax`), with the real profile (black), one generated profile for the same condition vector (dashed) and the 5th–95th percentile of 100 draws (band). Each panel has its own scale. The real profile lies inside the band for a median of 22 of 24 hours, and for at least 18 hours in 15 of the 17 zones; PS (10 hours) and RECO (13) are the weakest on these days. DOM's generated level is far below the real one, the load-growth effect described above. Made by `examples/pjm_load/plot_real_vs_generated_all_zones.py`; it needs the preprocessed arrays for every zone.*
+
 What the table says:
 
 - **15 of 17 zones are modeled about as well as PS.** Calibrated RMSE runs from 0.0121 (DUQ) to 0.0236 (ME), median 0.0165, against 0.0153 for PS.
