@@ -24,8 +24,10 @@ Two resources share one interface, `enerdatasynth.model(<name>, zone=...)`.
 ## Quick start
 
 ```bash
-pip install enerdatasynth
+pip install --upgrade enerdatasynth
 ```
+
+`--upgrade` matters if you installed the package before: a plain `pip install` keeps whatever older version you have, and only version 0.9.0 and newer know all 17 PJM zones. You can check with `python3 -c "import enerdatasynth; print(enerdatasynth.__version__)"`.
 
 Then copy a whole block below into your terminal and press Enter. Each one imports the package, sets conditions, generates a day and prints its 24-hour profile.
 
@@ -53,7 +55,7 @@ enerdatasynth.show(samples)
 EOF
 ```
 
-To get a different PJM zone, change `zone="PS"` to its code (for example `zone="DOM"`); everything else stays the same. You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the numbers in `.set(...)` to ask for a different day. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
+To get a different PJM zone, change `zone="PS"` to its code (for example `zone="DOM"`); everything else stays the same. If you get `Supported zones: ['PS']`, you have an old version; run the upgrade command above. You get the 24-hour profile: one row per hour, in MW for load and m/s for wind (wind is the average of each hour's twelve 5-minute values; `"2ch"` and `"3ch"` also show direction). Change the numbers in `.set(...)` to ask for a different day. Use `n=` to generate more days; `show` prints the first, and `samples` holds them all as a plain numpy array (`(n, 24)` for load, `(n, 288, 2)` for wind). The trained models ship inside the package, so this works from any folder. The first run takes about a minute while torch loads.
 
 It works on Python 3.9 and newer. If `pip install` gives you version `0.4.1`, your Python is older than 3.9. Wind sampling is slow on CPU for larger `n`; see [docs/models/wind.md](docs/models/wind.md). Typing the same lines inside `python3` works too. To train your own checkpoints you need a clone of this repository and your own copy of the data; see [docs/installation.md](docs/installation.md) and [docs/quickstart.md](docs/quickstart.md).
 
