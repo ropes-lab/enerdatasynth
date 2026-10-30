@@ -52,7 +52,7 @@ from enerdatasynth.resources.pjm_load.evaluation.calibration import calibrate_ch
 from enerdatasynth.generators import BaseGenerator, LoadDiffusionModel
 from enerdatasynth.demo import demo, load, show, wind
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 __all__ = [
     "__version__",

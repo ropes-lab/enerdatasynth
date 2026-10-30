@@ -74,6 +74,8 @@ Since 0.8.0 the wheel carries the shipped checkpoints (see above), so a plain `p
 
 **0.9.0** adds a trained model for every PJM zone (17 in all; before, only `PS`), selected with `zone=` in Python and `--zone` on the command line. The wheel grows from about 13 MB to about 20 MB. Nothing about the PS commands changed. `MIGRATION.md` has the details.
 
+**0.9.1** changes only the package metadata: the four authors are listed in paper order. Nothing else differs from 0.9.0.
+
 From 0.8.3, `requires-python >= 3.9` and `torch>=2.5` (before: `>=3.10` and `torch>=2.11,<2.12`). On older Python, pip silently installs 0.4.1. The exact torch that produced the checkpoints, 2.11.0, stays pinned in `requirements.txt` and in CI for the 3.10 and 3.12 jobs; the 3.9 job uses torch 2.8.0, the newest torch that installs on 3.9.
 
 ## Before making the repository public

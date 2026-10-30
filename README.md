@@ -104,7 +104,7 @@ No paper yet. If you use this software, please cite the repository:
 ```bibtex
 @software{enerdatasynth,
   title  = {enerdatasynth: A Research SDK for Synthetic PJM Energy Resource Profiles},
-  author = {Sharma, Sonakshi and Tikkawar, Pranav and Mieth, Robert},
+  author = {Sharma, Sonakshi and Tikkawar, Pranav and Ghazanfariharandi, Mehrnoush and Mieth, Robert},
   year   = {2026},
   note   = {Software}
 }
