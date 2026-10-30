@@ -14,6 +14,8 @@ figure is reproducible and not a best-of-N pick.
 Usage:
     python examples/pjm_load/plot_real_vs_generated.py                  # shipped default
     python examples/pjm_load/plot_real_vs_generated.py --run-id T100_H256_L4
+    ENERDATASYNTH_ZONE=DOM python examples/pjm_load/plot_real_vs_generated.py --out docs/assets/real_vs_generated_by_zone/pjm_load_real_vs_generated_DOM.png
+                                                                        # another zone (needs that zone's preprocessed arrays)
 
 Reproduce:
     1. From a clone of this repository: `pip install -e ".[research]"`.

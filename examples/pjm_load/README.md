@@ -8,7 +8,7 @@ The repository ships no real data. Every script below except where noted reads t
 |---|---|---|---|
 | `exploratory_data_analysis.py` | Inspects the processed dataset: mean daily shape, per-hour spread, split sizes | printed | Seconds |
 | `generate_samples.py` | Loads the trained checkpoint through `LoadDiffusionModel` and generates profiles for the real validation conditions | printed | Seconds |
-| `plot_real_vs_generated.py` | Six validation days chosen by a fixed rule on `Tmax`, real profile next to a generated one for the same conditions | `docs/assets/pjm_load_real_vs_generated.png` | Under a minute |
+| `plot_real_vs_generated.py` | Six validation days chosen by a fixed rule on `Tmax`, real profile next to a generated one for the same conditions | `docs/assets/pjm_load_real_vs_generated.png` (PS); set `ENERDATASYNTH_ZONE` and `--out` for another zone, as in `docs/assets/real_vs_generated_by_zone/` | Under a minute |
 | `compare_checkpoints.py` | Compares trained checkpoints over several seeds on the validation set; the evidence for the shipped default | `data/reports/pjm_load/checkpoint_comparison.csv` | A few minutes |
 | `run_benchmark.py` | AR, ARMA, ARIMA and SARIMA against a trained checkpoint, using library code only | `data/reports/pjm_load/benchmark_comparison.csv` | Depends on data size |
 | `plot_all_zones.py` | One generated July weekday for each of the 17 zone models, in a grid. Needs no data | `docs/assets/pjm_load_all_zones_generated.png` | About a minute |
